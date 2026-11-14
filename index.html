@@ -173,6 +173,27 @@ table.sx{border-collapse:separate;border-spacing:0;width:100%;table-layout:fixed
 .h2r{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
 .h2r h2{margin:0}
 /* temporada */
+.tp tr.pr{cursor:pointer}
+.tp .nm{display:block;font-weight:700;line-height:1.2}
+.tp .bar{display:block;height:5px;border-radius:3px;background:#e4e4e1;margin-top:5px;overflow:hidden}
+.tp .bar i{display:block;height:100%;background:var(--ink);border-radius:3px}
+.tp td.lo{color:var(--warn);font-weight:900} .tp td.up{color:var(--ok);font-weight:900}
+.tp td small{display:block;font-size:10.5px;font-weight:800;color:var(--bad);letter-spacing:.02em}
+.kp.k4{grid-template-columns:repeat(2,1fr)}
+.dist{display:flex;gap:6px;align-items:flex-end;height:96px;margin-top:4px}
+.dist div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
+.dist i{display:block;width:100%;background:var(--ink);border-radius:5px 5px 0 0;min-height:2px}
+.dist i.l{background:#3a3c40}
+.dist b{font-size:13px;font-weight:900;margin-bottom:3px}
+.dist span{font-size:11px;font-weight:800;color:var(--mute);margin-top:4px}
+.hm{padding:9px 0;border-top:1px solid var(--line)}
+.hm:first-of-type{border-top:0}
+.hm .t{display:flex;justify-content:space-between;gap:8px;font-weight:800}
+.hm .t span{font-weight:700;color:var(--mute);font-size:12.5px;flex:none}
+.hm .d{font-size:13.5px;margin-top:2px}
+.hm.no .t b,.hm.no .d{color:var(--mute)}
+.si{display:block;font-size:11.5px;font-weight:700;color:var(--mute);margin-top:1px}
+.si b{color:var(--bad);font-weight:900}
 table.tp{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 .tp th{font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:6px 4px;text-align:center;border-bottom:2px solid var(--ink)}
 .tp th:first-child,.tp td:first-child{text-align:left}
@@ -289,6 +310,42 @@ function acumulado(excluir,grupo){
   });
   return out;
 }
+/* Quién ha participado en el último periodo (cambios libres): los marcados y los que han salido en Directo. */
+function ultimos(m){var g=F(m).reg,o={};convocados(m).forEach(function(p){if(sxOf(m,p.id)[g]||(m.part||{})[p.id])o[p.id]=1;});return o;}
+/* Minutos por jugador en un partido. Periodos cerrados: exactos. Último periodo: estimación a partes iguales entre los que participan. */
+function minutosDe(m){
+  var X=F(m),g=X.reg,pm=X.n===4?10:8,U=ultimos(m),k=Object.keys(U).length,out={};
+  convocados(m).forEach(function(p){
+    var a=sxOf(m,p.id),t=0;for(var s=0;s<g;s++)if(a[s])t+=pm;
+    if(U[p.id])t+=k>5?pm*5/k:pm;
+    out[p.id]=t;
+  });
+  return out;
+}
+function stats(grupo,excluir){
+  var ms=S.matches.filter(function(m){return m!==excluir&&jugado(m)&&(!grupo||F(m).grupo===grupo);});
+  ms.sort(function(a,b){return(a.fecha+(a.hora||"")).localeCompare(b.fecha+(b.hora||""));});
+  var out={n:ms.length,g:0,p:0,pl:{}};
+  S.roster.forEach(function(p){out.pl[p.id]={conv:0,desc:0,racha:0,min:0,per:0,ini:0,ult:0,porPer:[0,0,0,0,0,0],fal:0,elim:0,hist:[]};});
+  ms.forEach(function(m){
+    var t=total(m);if(t[0]+t[1]>0){if(t[0]>t[1])out.g++;else if(t[0]<t[1])out.p++;}
+    var mins=minutosDe(m),X=F(m),U=ultimos(m);
+    S.roster.forEach(function(p){
+      var o=out.pl[p.id];
+      if(m.conv[p.id]){
+        var a=sxOf(m,p.id),np=0,f=m.faltas[p.id]||0;
+        for(var s=0;s<X.reg;s++)if(a[s]){np++;o.porPer[s]++;}
+        if(U[p.id]){np++;o.porPer[X.reg]++;o.ult++;}
+        if(a[0])o.ini++;
+        o.conv++;o.racha=0;o.per+=np;o.min+=mins[p.id];o.fal+=f;if(f>=X.R.faltas)o.elim++;
+        o.hist.push({m:m,conv:true,per:np,min:mins[p.id],fal:f});
+      }else{o.desc++;o.racha++;o.hist.push({m:m,conv:false});}
+    });
+  });
+  return out;
+}
+function fmin(x){return Math.round(x);}
+function fcorta(m){var q=/^(\d{4})-(\d{2})-(\d{2})$/.exec(m.fecha||"");return q?(+q[3])+" "+MESES[+q[2]-1]:"";}
 /* Estado de cada casilla libre: "must" si el jugador ya solo puede cumplir el mínimo jugando ahí, "no" si no debe jugar. */
 function pistas(m,c){
   var X=F(m),R=X.R,maxJ=X.reg-R.minDescanso,out={};
@@ -427,7 +484,7 @@ function render(){
   var h="";
   if(saveFail)h+='<div class="estado bad"><b>No se pueden guardar los datos</b>Este navegador no permite almacenamiento. Los cambios se perderán al cerrar.</div>';
   if(ui.tab==="partidos")h+=m?vMatch(m):vList();
-  else if(ui.tab==="temporada")h+=vTemporada();
+  else if(ui.tab==="temporada")h+=ui.pid?vFicha(ui.pid):vTemporada();
   else if(ui.tab==="plantilla")h+=vRoster();
   else if(ui.tab==="normativa")h+=vRules();
   else h+=vSettings();
@@ -487,18 +544,23 @@ function vDatos(m){
   return h+'</div>';
 }
 function vConv(m){
-  var R=F(m).R,n=convocados(m).length;
+  var R=F(m).R,n=convocados(m).length,ST=stats(null,m);
   var cls=n>R.maxConv?"bad":n>=R.minConv?"ok":"warn";
   if(!S.roster.length)return'<div class="card empty"><b>La plantilla está vacía</b><br>Añade los jugadores en la pestaña Plantilla.</div>';
   var h='<div class="card"><h2>Convocatoria</h2><div class="count"><b>'+n+'</b><span class="sub">de '+R.maxConv+' convocados</span><span class="pill '+cls+'" style="margin-left:auto">'+(n>R.maxConv?"Sobran "+(n-R.maxConv):n===R.maxConv?"Completa":n>=R.minConv?"Válida":"Mínimo "+R.minConv)+'</span></div>';
   sortedRoster().forEach(function(p){
     var on=!!m.conv[p.id];
-    h+='<div class="pl '+(on?"":"off")+'"><span class="num">'+p.num+'</span><div class="n"><span>'+esc(p.name)+'</span>'+(on||n===0?"":'<input class="inp" data-mot="'+p.id+'" value="'+esc(m.motivos[p.id]||"")+'" placeholder="Motivo de la desconvocatoria" autocomplete="off">')+'</div><button class="chk '+(on?"on":"")+'" data-a="conv" data-v="'+p.id+'" aria-pressed="'+on+'" aria-label="Convocar a '+esc(p.name)+'">✓</button></div>';
+    h+='<div class="pl '+(on?"":"off")+'"><span class="num">'+p.num+'</span><div class="n"><span>'+esc(p.name)+'</span>'+infoConv(ST,p)+(on||n===0?"":'<input class="inp" data-mot="'+p.id+'" value="'+esc(m.motivos[p.id]||"")+'" placeholder="Motivo de la desconvocatoria" autocomplete="off">')+'</div><button class="chk '+(on?"on":"")+'" data-a="conv" data-v="'+p.id+'" aria-pressed="'+on+'" aria-label="Convocar a '+esc(p.name)+'">✓</button></div>';
   });
   h+='</div>';
   if(n)h+='<div class="card"><h2>Mensaje para las familias</h2><textarea id="wa" rows="9" readonly aria-label="Mensaje de convocatoria">'+esc(waText(m))+'</textarea><button class="btn dark block" data-a="copiar" style="margin-top:10px">Copiar mensaje</button></div>';
   h+='<div class="row"><button class="btn ghost" data-a="convtodos" style="flex:1">'+(n?"Quitar todos":"Marcar los "+Math.min(R.maxConv,S.roster.length)+" primeros")+'</button><button class="btn dark" data-a="sec" data-v="sextos" style="flex:1">Ir a sextos</button></div>';
   return h;
+}
+function infoConv(ST,p){
+  if(!ST.n)return"";
+  var o=ST.pl[p.id];
+  return'<small class="si">'+fmin(o.min)+' min · '+o.conv+' conv.'+(o.racha>=1?' · <b>'+o.racha+(o.racha===1?' partido fuera':' seguidos fuera')+'</b>':'')+'</small>';
 }
 function vSextos(m){
   var X=F(m),R=X.R,g=X.reg,c=check(m),C=convocados(m),P=pistas(m,c),h="",s;
@@ -560,16 +622,52 @@ function lpRow(m,p,cur,dentro,P){
   return'<div class="lp '+(fuera?"out":"")+'"><span class="num">'+p.num+'</span><div class="n">'+esc(p.name)+tag+'</div><div class="fb"><button data-a="lfal" data-v="'+p.id+'" data-d="-1" aria-label="Quitar falta a '+esc(p.name)+'">−</button><b class="'+(f>=R.faltas?"f5":f===R.faltas-1?"f4":"")+'" aria-label="'+f+' faltas">'+f+'</b><button data-a="lfal" data-v="'+p.id+'" data-d="1" aria-label="Falta de '+esc(p.name)+'">+</button></div><button class="sw '+(dentro?"":"in")+'" data-a="lsw" data-v="'+p.id+'">'+(dentro?"Sale":"Entra")+'</button></div>';
 }
 function vTemporada(){
-  var tf=ui.tf||"",ac=acumulado(null,tf||null),h="",R=sortedRoster();
+  var tf=ui.tf||"",st=stats(tf||null),h="",R=sortedRoster(),ord=ui.ts||"num";
   h+='<div class="seg">'+[["","Todos"],["mini","Liga Alevín"],["inf","Liga Infantil"]].map(function(x){return'<button data-a="tf" data-v="'+x[0]+'" class="'+(tf===x[0]?"on":"")+'">'+x[1]+'</button>';}).join("")+'</div>';
-  h+='<div class="kp"><div><b>'+ac.n+'</b><span>Partidos jugados</span></div><div><b>'+ac.g+'</b><span>Ganados</span></div><div><b>'+ac.p+'</b><span>Perdidos</span></div></div>';
-  if(!ac.n)return h+'<div class="card empty"><b>Aún no hay partidos jugados</b><br>Aquí verás las convocatorias y los periodos de cada jugador en cuanto haya partidos con fecha pasada y convocatoria.</div>';
-  var mxD=0;R.forEach(function(p){if(ac.pl[p.id].desc>mxD)mxD=ac.pl[p.id].desc;});
-  h+='<div class="card"><h2>Reparto por jugador</h2><table class="tp"><thead><tr><th>Jugador</th><th>Conv.</th><th>Desc.</th><th>Periodos</th><th>Media</th></tr></thead><tbody>';
-  R.forEach(function(p){var o=ac.pl[p.id];
-    h+='<tr><td><b>'+p.num+'</b>'+esc(p.name)+'</td><td>'+o.conv+'</td><td class="'+(mxD>0&&o.desc===mxD?"hi":"")+'">'+o.desc+'</td><td>'+o.sx+'</td><td>'+(o.conv?(o.sx/o.conv).toFixed(1).replace(".",","):"–")+'</td></tr>';});
-  h+='</tbody></table><p class="hint">Cuenta los partidos con fecha de hoy o anterior y convocatoria marcada. Periodos suma todos los sextos o periodos jugados, incluido el último; con el filtro «Todos» se mezclan sextos de 8 minutos y periodos de 10. En rojo, quienes más veces se han quedado sin convocar. Ganados y perdidos salen del marcador de la pestaña Directo.</p></div>';
+  h+='<div class="kp"><div><b>'+st.n+'</b><span>Partidos jugados</span></div><div><b>'+st.g+'</b><span>Ganados</span></div><div><b>'+st.p+'</b><span>Perdidos</span></div></div>';
+  if(!st.n)return h+'<div class="card empty"><b>Aún no hay partidos jugados</b><br>Aquí verás minutos, convocatorias y descansos de cada jugador en cuanto haya partidos con fecha pasada y convocatoria.</div>';
+  var mx=0,sum=0,cnt=0;R.forEach(function(p){var o=st.pl[p.id];if(o.min>mx)mx=o.min;if(o.conv){sum+=o.min;cnt++;}});
+  var media=cnt?sum/cnt:0;
+  if(ord==="min")R.sort(function(a,b){return st.pl[b.id].min-st.pl[a.id].min;});
+  else if(ord==="desc")R.sort(function(a,b){return(st.pl[b.id].desc-st.pl[a.id].desc)||(st.pl[b.id].racha-st.pl[a.id].racha);});
+  h+='<div class="card"><div class="h2r"><h2>Reparto por jugador</h2></div>';
+  h+='<div class="lv" style="margin:0 0 10px">'+[["num","DORSAL"],["min","MINUTOS"],["desc","DESCANSOS"]].map(function(x){return'<button data-a="ts" data-v="'+x[0]+'" class="'+(ord===x[0]?"on":"")+'">'+x[1]+'</button>';}).join("")+'</div>';
+  h+='<table class="tp"><thead><tr><th>Jugador</th><th>Conv.</th><th>Desc.</th><th>Min.</th><th>Media</th></tr></thead><tbody>';
+  R.forEach(function(p){
+    var o=st.pl[p.id],cl=o.conv&&media?(o.min>media*1.25?"up":o.min<media*0.75?"lo":""):"";
+    h+='<tr class="pr" data-a="ficha" data-v="'+p.id+'"><td><span class="nm"><b>'+p.num+'</b>'+esc(p.name)+'</span><span class="bar"><i style="width:'+(mx?Math.round(o.min/mx*100):0)+'%"></i></span></td><td>'+o.conv+'</td><td>'+o.desc+(o.racha>=2?'<small>'+o.racha+' seguidos</small>':'')+'</td><td class="'+cl+'">'+fmin(o.min)+'</td><td>'+(o.conv?fmin(o.min/o.conv):"–")+'</td></tr>';
+  });
+  h+='</tbody></table><p class="hint">Toca un jugador para ver su ficha. Media de minutos del equipo: '+fmin(media)+'. En verde, quien supera la media en más de un 25 %; en ámbar, quien queda más de un 25 % por debajo. «Seguidos» son partidos consecutivos sin convocar hasta hoy.</p>';
+  h+='<p class="hint">Minutos: 8 por sexto y 10 por periodo de infantil. En el último periodo, con cambios libres, es una estimación: se reparte a partes iguales entre quienes participan. Solo cuentan los partidos con fecha de hoy o anterior y convocatoria marcada.</p></div>';
   return h;
+}
+function vFicha(pid){
+  var p=S.roster.filter(function(x){return x.id===pid;})[0];
+  if(!p){ui.pid=null;return vTemporada();}
+  var tf=ui.tf||"",st=stats(tf||null),o=st.pl[p.id],h="";
+  h+='<button class="btn ghost block" data-a="ficha" data-v="" style="margin-bottom:12px">Volver a Temporada</button>';
+  h+='<div class="card"><h2>'+p.num+' · '+esc(p.name)+'</h2><p class="sub" style="margin:0">'+(tf==="mini"?"Liga Alevín":tf==="inf"?"Liga Infantil":"Todas las competiciones")+' · '+st.n+(st.n===1?' partido jugado':' partidos jugados')+'</p></div>';
+  h+='<div class="kp"><div><b>'+fmin(o.min)+'</b><span>Minutos</span></div><div><b>'+(o.conv?fmin(o.min/o.conv):"–")+'</b><span>Media por partido</span></div><div><b>'+o.per+'</b><span>Periodos</span></div></div>';
+  h+='<div class="kp"><div><b>'+o.conv+'</b><span>Convocado</span></div><div><b>'+o.desc+'</b><span>Sin convocar</span></div><div><b>'+o.racha+'</b><span>Seguidos fuera</span></div></div>';
+  h+='<div class="kp"><div><b>'+o.ini+'</b><span>Sale de inicio</span></div><div><b>'+o.ult+'</b><span>Último periodo</span></div><div><b>'+o.fal+'</b><span>Faltas'+(o.elim?' · '+o.elim+' elim.':'')+'</span></div></div>';
+  if(tf&&o.conv){
+    var n=tf==="inf"?4:6,mxp=0,i;for(i=0;i<n;i++)if(o.porPer[i]>mxp)mxp=o.porPer[i];
+    h+='<div class="card"><h2>Cuándo juega</h2><div class="dist">';
+    for(i=0;i<n;i++)h+='<div><b>'+o.porPer[i]+'</b><i class="'+(i===n-1?"l":"")+'" style="height:'+(mxp?Math.round(o.porPer[i]/mxp*100):0)+'%"></i><span>'+(i+1)+'º</span></div>';
+    h+='</div><p class="hint">Veces que ha jugado cada '+(tf==="inf"?"periodo":"sexto")+' en '+o.conv+(o.conv===1?' partido':' partidos')+' como convocado.</p></div>';
+  }else if(o.conv){
+    h+='<p class="hint" style="margin:0 0 12px">Elige Liga Alevín o Liga Infantil en Temporada para ver en qué periodos juega.</p>';
+  }
+  h+='<div class="card"><h2>Partido a partido</h2>';
+  if(!o.hist.length)h+='<p class="sub" style="margin:0">Sin partidos.</p>';
+  o.hist.slice().reverse().forEach(function(x){
+    var m=x.m,ind=(m.ind||{})[p.id],ev=ind&&ind.ev?{s:"conseguido",p:"parcial",n:"no conseguido"}[ind.ev]:"";
+    h+='<div class="hm '+(x.conv?"":"no")+'"><div class="t"><b>'+esc(m.rival||"Rival")+'</b><span>'+esc(fcorta(m))+(m.comp?" · "+esc(m.comp):"")+'</span></div>';
+    if(x.conv)h+='<div class="d">'+x.per+' '+(x.per===1?"periodo":"periodos")+' · '+fmin(x.min)+' min · '+x.fal+' '+(x.fal===1?"falta":"faltas")+'</div>'+(ind&&ind.t?'<div class="d sub">Objetivo: '+esc(ind.t)+(ev?" ("+ev+")":"")+'</div>':'');
+    else h+='<div class="d">No convocado'+((m.motivos||{})[p.id]?" · "+esc(m.motivos[p.id]):"")+'</div>';
+    h+='</div>';
+  });
+  return h+'</div>';
 }
 function evBtns(scope,id,val){
   return'<div class="ev">'+[["s","SÍ"],["p","PARC"],["n","NO"]].map(function(x){return'<button class="'+x[0]+" "+(val===x[0]?"on":"")+'" data-a="ev" data-scope="'+scope+'" data-v="'+id+'" data-e="'+x[0]+'" aria-pressed="'+(val===x[0])+'">'+x[1]+'</button>';}).join("")+'</div>';
@@ -648,7 +746,7 @@ function vSettings(){
   h+='<div class="card"><h2>Partidos del calendario</h2><p class="sub" style="margin:0 0 10px">Añade los partidos de un archivo de calendario. Los que ya existan (misma fecha y rival) no se duplican.</p><label class="btn ghost block" style="text-align:center">Importar partidos<input type="file" id="impm" accept="application/json,.json" hidden></label></div>';
   h+='<div class="card"><h2>Equipo y normativa</h2><label class="f" style="margin-bottom:12px">Nombre del equipo en marcador y mensajes<input type="text" data-team="nombre" value="'+esc(equipo())+'" autocomplete="off"></label><button class="btn ghost block" data-a="tab" data-v="normativa">Ver normativa y valores</button></div>';
   h+='<div class="card"><h2>Instalar en el móvil</h2><div class="rule"><b>iPhone</b><p>Abre la app en Safari, pulsa Compartir y elige «Añadir a pantalla de inicio».</p></div><div class="rule"><b>Android</b><p>Abre la app en Chrome, pulsa el menú y elige «Instalar aplicación».</p></div></div>';
-  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Partidos Alevín A · versión 1.3<br><span class="sub">'+S.matches.length+' partidos guardados · '+S.roster.length+' jugadores</span></p></div>';
+  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Partidos Alevín A · versión 1.4<br><span class="sub">'+S.matches.length+' partidos guardados · '+S.roster.length+' jugadores</span></p></div>';
   return h;
 }
 
@@ -662,7 +760,7 @@ document.addEventListener("click",function(e){
   var a=b.dataset.a,v=b.dataset.v,m=match(),keep=true;
   if(a!=="askdel"&&a!=="asklimpiar"&&a!=="askdelp"&&a!=="asksalir"&&a!=="askproponer")ui.confirm=null;
   switch(a){
-    case"tab":if(ui.tab==="plantilla")save();ui.tab=v;if(v==="partidos")ui.mid=null;keep=false;break;
+    case"tab":if(ui.tab==="plantilla")save();ui.pid=null;ui.tab=v;if(v==="partidos")ui.mid=null;keep=false;break;
     case"volver":ui.mid=null;keep=false;break;
     case"nuevo":ui.mid=newMatch().id;ui.sec="datos";keep=false;break;
     case"abrir":ui.mid=v;ui.sec=convocados(match()).length?"sextos":"datos";keep=false;break;
@@ -681,17 +779,19 @@ document.addEventListener("click",function(e){
     case"sx":var arr=sxOf(m,v,true),s=+b.dataset.s;arr[s]=arr[s]?0:1;save();$("sx").innerHTML=vSextos(m);return;
     case"falta":var f=(m.faltas[v]||0)+1;if(f>F(m).R.faltas)f=0;m.faltas[v]=f;save();$("sx").innerHTML=vSextos(m);return;
     case"asklimpiar":ui.confirm="clr";break;
-    case"limpiar":m.sx={};m.faltas={};break;
+    case"limpiar":m.sx={};m.faltas={};m.part={};break;
     case"askproponer":ui.confirm="prop";break;
     case"proponer":if(!proponer(m))toast("Hacen falta al menos 5 convocados");break;
     case"fmt":m.formato=v;if((m.liveSx||0)>F(m).n-1)m.liveSx=0;break;
     case"rf":ui.rf=v;rerenderKeepScroll();return;
     case"tf":ui.tf=v;rerenderKeepScroll();return;
+    case"ts":ui.ts=v;rerenderKeepScroll();return;
+    case"ficha":ui.pid=v||null;render();window.scrollTo(0,0);return;
     case"lsx":m.liveSx=+v;break;
     case"pt":if(!m.score)m.score={};var ks="s"+(m.liveSx||0),sc=m.score[ks]||{n:0,r:0},w=b.dataset.w;sc[w]=Math.max(0,(sc[w]||0)+(+b.dataset.d));m.score[ks]=sc;break;
     case"tm":if(!m.tm)m.tm={};var hf=(m.liveSx||0)<F(m).n/2?"h1":"h2",mxt=hf==="h1"?2:3;m.tm[hf]=Math.max(0,Math.min(mxt,(m.tm[hf]||0)+(+b.dataset.d)));break;
     case"lfal":m.faltas[v]=Math.max(0,Math.min(F(m).R.faltas,(m.faltas[v]||0)+(+b.dataset.d)));break;
-    case"lsw":var la=sxOf(m,v,true),ls=m.liveSx||0;la[ls]=la[ls]?0:1;break;
+    case"lsw":var la=sxOf(m,v,true),ls=m.liveSx||0;if(ls===F(m).reg&&la[ls]){if(!m.part)m.part={};m.part[v]=true;}la[ls]=la[ls]?0:1;break;
     case"copiar":copiar(waText(m));return;
     case"ev":
       if(b.dataset.scope==="obj"){var o=m.obj[v];o.ev=o.ev===b.dataset.e?"":b.dataset.e;}
@@ -782,7 +882,7 @@ document.addEventListener("submit",function(e){
 });
 function typing(){var a=document.activeElement;return!!a&&(a.tagName==="TEXTAREA"||(a.tagName==="INPUT"&&a.type!=="file"));}
 document.addEventListener("focusout",function(){if(pendingRender)setTimeout(function(){if(pendingRender&&!typing())rerenderKeepScroll();},60);});
-A.check=check;A.F=F;A.proponer=proponer;A.acumulado=acumulado;A.waText=waText;A.ui=ui;A.render=render;
+A.check=check;A.stats=stats;A.minutosDe=minutosDe;A.F=F;A.proponer=proponer;A.acumulado=acumulado;A.waText=waText;A.ui=ui;A.render=render;
 A.getState=function(){return S;};
 A.setAuth=function(st,email){ui.auth=st;ui.user=email||"";ui.loginBusy=false;if(st!=="in"){ui.mid=null;ui.tab="partidos";}render();};
 A.loginResult=function(err){ui.loginBusy=false;ui.loginErr=err||"";if(err)render();};
