@@ -70,6 +70,11 @@ input:focus,textarea:focus,select:focus,button:focus-visible{outline:2px solid v
 .btn.block{display:block;width:100%}
 .row{display:flex;gap:8px;flex-wrap:wrap}
 
+.dot{flex:none;width:11px;height:11px;border-radius:50%;background:#b9bbbd}
+.dot.ok{background:var(--ok)} .dot.pend{background:#d99a00} .dot.bad{background:var(--bad)}
+.login{max-width:420px;margin:28px auto 0}
+.login label.f{margin-bottom:12px}
+.err{background:var(--bad-bg);color:var(--bad);border-radius:8px;padding:9px 11px;font-weight:700;font-size:14px;margin-bottom:12px}
 /* lista de partidos */
 .m{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}
 .m .d{flex:none;width:52px;text-align:center;background:var(--ink);color:#fff;border-radius:8px;padding:6px 0;line-height:1.1}
@@ -183,18 +188,20 @@ var ROSTER=[];
 var RULES={porSexto:5,minJugar:2,minDescanso:2,minConv:10,maxConv:12,faltas:5};
 var MESES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
 
-var mem=null;
+var A=window.__app={onSave:null,login:null,logout:null};
 function load(){
   var s=null;
   try{s=JSON.parse(localStorage.getItem(KEY));}catch(e){}
-  if(!s||!s.roster){s={roster:ROSTER.map(function(r,i){return{id:"p"+(i+1),num:r[0],name:r[1]};}),matches:[],rules:{},seq:ROSTER.length};}
+  if(!s||!s.roster||(!s.roster.length&&!(s.matches||[]).length)){s={roster:ROSTER.map(function(r,i){return{id:"p"+(i+1),num:r[0],name:r[1]};}),matches:[],rules:{},seq:ROSTER.length};}
   s.rules=Object.assign({},RULES,s.rules||{});
   return s;
 }
 var S=load();
 var saveFail=false;
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S));saveFail=false;}catch(e){saveFail=true;}}
-var ui={tab:"partidos",mid:null,sec:"datos",confirm:null};
+function store(){try{localStorage.setItem(KEY,JSON.stringify(S));saveFail=false;}catch(e){saveFail=true;}}
+function save(){store();if(A.onSave)A.onSave();}
+var ui={tab:"partidos",mid:null,sec:"datos",confirm:null,auth:"loading",user:"",sync:"pend",syncTxt:"Conectando con la nube…",loginErr:"",loginBusy:false};
+var pendingRender=false;
 
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function $(id){return document.getElementById(id);}
@@ -212,7 +219,8 @@ function menos45(h){
   return("0"+Math.floor(t/60)).slice(-2)+":"+("0"+(t%60)).slice(-2);
 }
 function convocados(m){return sortedRoster().filter(function(p){return m.conv[p.id];});}
-function sxOf(m,pid){if(!m.sx[pid])m.sx[pid]=[0,0,0,0,0,0];return m.sx[pid];}
+var ZERO=[0,0,0,0,0,0];
+function sxOf(m,pid,create){if(!m.sx[pid]){if(!create)return ZERO;m.sx[pid]=[0,0,0,0,0,0];}return m.sx[pid];}
 function totalDe(m,pid){var a=sxOf(m,pid),t=0;for(var i=0;i<5;i++)t+=a[i]?1:0;return t;}
 
 /* ---- Comprobación de la normativa (Reglas Oficiales de Minibasket FAB, art. 4 y 19) ---- */
@@ -254,13 +262,21 @@ function nombres(ps){return lista(ps.map(function(p){return"#"+p.num+" "+p.name.
 
 /* ---- Pintado ---- */
 function render(){
+  pendingRender=false;
   var m=ui.tab==="partidos"?match():null;
   var hd='<img src="'+LOGO+'" alt="Fundación CB Granada">';
+  if(ui.auth!=="in"){
+    $("hd").innerHTML=hd+'<div class="h-t"><b>Partidos</b><span>Alevín A · Temporada 2026/27</span></div>';
+    $("nav").innerHTML="";document.querySelector("nav").style.display="none";
+    $("main").innerHTML=ui.auth==="loading"?'<div class="card empty">Cargando…</div>':vLogin();
+    return;
+  }
+  document.querySelector("nav").style.display="";
   if(m){
-    hd+='<div class="h-t"><b>'+esc(m.rival?"vs "+m.rival:"Partido nuevo")+'</b><span>'+esc(fechaLarga(m)||"Alevín A · Temporada 2026/27")+'</span></div><button class="back" data-a="volver">Partidos</button>';
+    hd+='<div class="h-t"><b>'+esc(m.rival?"vs "+m.rival:"Partido nuevo")+'</b><span>'+esc(fechaLarga(m)||"Alevín A · Temporada 2026/27")+'</span></div>'+dot()+'<button class="back" data-a="volver">Partidos</button>';
   }else{
     var t={partidos:"Partidos",plantilla:"Plantilla",normativa:"Normativa",ajustes:"Ajustes"}[ui.tab];
-    hd+='<div class="h-t"><b>'+t+'</b><span>Alevín A · Temporada 2026/27</span></div>';
+    hd+='<div class="h-t"><b>'+t+'</b><span>Alevín A · Temporada 2026/27</span></div>'+dot();
   }
   $("hd").innerHTML=hd;
   $("nav").innerHTML=[["partidos","Partidos"],["plantilla","Plantilla"],["normativa","Normativa"],["ajustes","Ajustes"]].map(function(x){
@@ -272,6 +288,15 @@ function render(){
   else if(ui.tab==="normativa")h+=vRules();
   else h+=vSettings();
   $("main").innerHTML=h;
+}
+function dot(){return'<span id="dot" class="dot '+ui.sync+'" role="img" aria-label="'+esc(ui.syncTxt)+'" title="'+esc(ui.syncTxt)+'"></span>';}
+function vLogin(){
+  var h='<form id="lf" class="card login"><h2>Iniciar sesión</h2>';
+  if(ui.loginErr)h+='<div class="err" role="alert">'+esc(ui.loginErr)+'</div>';
+  h+='<label class="f">Correo<input type="email" id="le" autocomplete="username" autocapitalize="none" required></label>';
+  h+='<label class="f">Contraseña<input type="password" id="lp" autocomplete="current-password" required></label>';
+  h+='<button class="btn block" type="submit" '+(ui.loginBusy?"disabled":"")+'>'+(ui.loginBusy?"Entrando…":"Entrar")+'</button>';
+  return h+'<p class="hint">Entra con el usuario que te ha dado el entrenador del equipo. La primera vez hace falta conexión a internet.</p></form>';
 }
 function fechaLarga(m){
   var p=/^(\d{4})-(\d{2})-(\d{2})$/.exec(m.fecha||"");if(!p)return"";
@@ -317,7 +342,7 @@ function vDatos(m){
 function vConv(m){
   var R=S.rules,n=convocados(m).length;
   var cls=n>R.maxConv?"bad":n>=R.minConv?"ok":"warn";
-  if(!S.roster.length)return'<div class="card empty"><b>La plantilla está vacía</b><br>Importa la plantilla en Ajustes o añade los jugadores en Plantilla.</div>';
+  if(!S.roster.length)return'<div class="card empty"><b>La plantilla está vacía</b><br>Añade los jugadores en la pestaña Plantilla.</div>';
   var h='<div class="card"><h2>Convocatoria</h2><div class="count"><b>'+n+'</b><span class="sub">de '+R.maxConv+' convocados</span><span class="pill '+cls+'" style="margin-left:auto">'+(n>R.maxConv?"Sobran "+(n-R.maxConv):n===R.maxConv?"Completa":n>=R.minConv?"Válida":"Mínimo "+R.minConv)+'</span></div>';
   sortedRoster().forEach(function(p){
     var on=!!m.conv[p.id];
@@ -408,9 +433,10 @@ function vRules(){
   return h+'</div><button class="btn ghost block" data-a="rulereset">Restablecer valores de la normativa</button>';
 }
 function vSettings(){
-  var h='<div class="card"><h2>Copia de seguridad</h2><p class="sub" style="margin:0 0 10px">Los datos se guardan solo en este dispositivo. Exporta una copia para llevarlos a otro o para no perderlos.</p><div class="row"><button class="btn dark" data-a="exportar" style="flex:1">Exportar copia</button><label class="btn ghost" style="flex:1;text-align:center">Importar copia<input type="file" id="imp" accept="application/json,.json" hidden></label></div></div>';
+  var h='<div class="card"><h2>Cuenta y sincronización</h2><div class="rule"><b>Usuario</b><p>'+esc(ui.user)+'</p></div><div class="rule"><b>Estado</b><p id="synctxt">'+esc(ui.syncTxt)+'</p></div><div class="row" style="margin-top:10px">'+(ui.confirm==="out"?'<button class="btn danger" data-a="salir" style="flex:1">¿Seguro? Cerrar sesión</button>':'<button class="btn ghost" data-a="asksalir" style="flex:1">Cerrar sesión</button>')+'</div></div>';
+  h+='<div class="card"><h2>Copia de seguridad</h2><p class="sub" style="margin:0 0 10px">Los datos se sincronizan entre los dispositivos del equipo. Importar una copia sustituye los datos de todos.</p><div class="row"><button class="btn dark" data-a="exportar" style="flex:1">Exportar copia</button><label class="btn ghost" style="flex:1;text-align:center">Importar copia<input type="file" id="imp" accept="application/json,.json" hidden></label></div></div>';
   h+='<div class="card"><h2>Instalar en el móvil</h2><div class="rule"><b>iPhone</b><p>Abre la app en Safari, pulsa Compartir y elige «Añadir a pantalla de inicio».</p></div><div class="rule"><b>Android</b><p>Abre la app en Chrome, pulsa el menú y elige «Instalar aplicación».</p></div></div>';
-  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Partidos Alevín A · versión 1.0<br><span class="sub">'+S.matches.length+' partidos guardados · '+S.roster.length+' jugadores</span></p></div>';
+  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Partidos Alevín A · versión 1.1<br><span class="sub">'+S.matches.length+' partidos guardados · '+S.roster.length+' jugadores</span></p></div>';
   return h;
 }
 
@@ -422,7 +448,7 @@ function rerenderKeepScroll(){var y=window.scrollY;render();window.scrollTo(0,y)
 document.addEventListener("click",function(e){
   var b=e.target.closest("[data-a]");if(!b)return;
   var a=b.dataset.a,v=b.dataset.v,m=match(),keep=true;
-  if(a!=="askdel"&&a!=="asklimpiar"&&a!=="askdelp")ui.confirm=null;
+  if(a!=="askdel"&&a!=="asklimpiar"&&a!=="askdelp"&&a!=="asksalir")ui.confirm=null;
   switch(a){
     case"tab":if(ui.tab==="plantilla")save();ui.tab=v;if(v==="partidos")ui.mid=null;keep=false;break;
     case"volver":ui.mid=null;keep=false;break;
@@ -440,7 +466,7 @@ document.addEventListener("click",function(e){
       if(convocados(m).length)m.conv={};
       else sortedRoster().slice(0,S.rules.maxConv).forEach(function(p){m.conv[p.id]=true;});
       break;
-    case"sx":var arr=sxOf(m,v),s=+b.dataset.s;arr[s]=arr[s]?0:1;save();$("sx").innerHTML=vSextos(m);return;
+    case"sx":var arr=sxOf(m,v,true),s=+b.dataset.s;arr[s]=arr[s]?0:1;save();$("sx").innerHTML=vSextos(m);return;
     case"falta":var f=(m.faltas[v]||0)+1;if(f>S.rules.faltas)f=0;m.faltas[v]=f;save();$("sx").innerHTML=vSextos(m);return;
     case"asklimpiar":ui.confirm="clr";break;
     case"limpiar":m.sx={};m.faltas={};break;
@@ -457,6 +483,8 @@ document.addEventListener("click",function(e){
       break;
     case"rulereset":S.rules=Object.assign({},RULES);toast("Valores restablecidos");break;
     case"exportar":exportar();return;
+    case"asksalir":ui.confirm="out";rerenderKeepScroll();return;
+    case"salir":if(A.logout)A.logout();return;
     default:return;
   }
   save();
@@ -500,10 +528,29 @@ function exportar(){
   }catch(e){toast("No se ha podido exportar en este navegador");}
 }
 
-window.__app={check:check,state:function(){return S;},ui:ui,render:render};
+document.addEventListener("submit",function(e){
+  if(e.target.id!=="lf")return;e.preventDefault();
+  if(!A.login){ui.loginErr="La sincronización no se ha cargado. Recarga la página con conexión.";render();return;}
+  var em=$("le").value,pw=$("lp").value;ui.loginBusy=true;ui.loginErr="";render();$("le").value=em;A.login(em,pw);
+});
+function typing(){var a=document.activeElement;return!!a&&(a.tagName==="TEXTAREA"||(a.tagName==="INPUT"&&a.type!=="file"));}
+document.addEventListener("focusout",function(){if(pendingRender)setTimeout(function(){if(pendingRender&&!typing())rerenderKeepScroll();},60);});
+A.check=check;A.ui=ui;A.render=render;
+A.getState=function(){return S;};
+A.setAuth=function(st,email){ui.auth=st;ui.user=email||"";ui.loginBusy=false;if(st!=="in"){ui.mid=null;ui.tab="partidos";}render();};
+A.loginResult=function(err){ui.loginBusy=false;ui.loginErr=err||"";if(err)render();};
+A.setSync=function(code,txt){ui.sync=code;ui.syncTxt=txt;var d=$("dot");if(d){d.className="dot "+code;d.title=txt;d.setAttribute("aria-label",txt);}var t=$("synctxt");if(t)t.textContent=txt;};
+A.applyRemote=function(team,matches){
+  S.roster=team.roster||[];S.rules=Object.assign({},RULES,team.rules||{});S.seq=team.seq||S.roster.length;S.matches=matches||[];
+  store();
+  if(ui.mid&&!match()){ui.mid=null;}
+  if(typing())pendingRender=true;else rerenderKeepScroll();
+};
+A.clearLocal=function(){try{localStorage.removeItem(KEY);}catch(e){}S=load();};
 render();
 if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol)){try{navigator.serviceWorker.register("sw.js").catch(function(){});}catch(e){}}
 })();
 </script>
+<script type="module" src="sync.js"></script>
 </body>
 </html>
