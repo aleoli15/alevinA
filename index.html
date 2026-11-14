@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Partidos Alevín A</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Alevín A">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+<style>
+:root{
+  --ink:#111214; --red:#c8102e; --red-d:#9d0c24; --paper:#f4f4f2; --card:#fff;
+  --line:#dcdcd8; --mute:#6b6d70; --ok:#1e7a3c; --ok-bg:#e3f3e8; --warn:#a86a00; --warn-bg:#fdf1d6;
+  --bad:#b3122b; --bad-bg:#fbe3e7;
+  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--ink);background:var(--paper);overscroll-behavior-y:none}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+.app{max-width:820px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
+
+/* cabecera */
+header{position:sticky;top:0;z-index:20;background:#fff;padding:calc(8px + var(--sat)) 14px 8px;display:flex;align-items:center;gap:10px;border-bottom:4px solid var(--ink);box-shadow:0 3px 0 var(--red)}
+header img{height:44px;width:auto;flex:none}
+.h-t{flex:1;min-width:0}
+.h-t b{display:block;font-size:19px;font-weight:900;letter-spacing:.02em;text-transform:uppercase;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-t span{display:block;font-size:11px;font-weight:800;color:var(--red);letter-spacing:.06em;text-transform:uppercase;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.back{flex:none;border:0;background:var(--ink);color:#fff;border-radius:8px;height:36px;padding:0 12px;font-weight:800;font-size:13px}
+
+main{flex:1;padding:14px 12px calc(84px + var(--sab))}
+
+/* pestañas del partido */
+.seg{display:flex;gap:6px;margin:0 0 12px;overflow-x:auto;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.seg button{flex:1 0 auto;border:0;border-radius:8px;background:var(--ink);color:#fff;font-weight:800;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;padding:10px 12px}
+.seg button.on{background:var(--red)}
+
+/* barra inferior */
+nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--ink);padding-bottom:var(--sab)}
+nav div{max-width:820px;margin:0 auto;display:flex}
+nav button{flex:1;border:0;background:none;color:#a9abae;font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:15px 4px 14px;border-top:3px solid transparent}
+nav button.on{color:#fff;border-top-color:var(--red)}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+h2{font-size:13px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;margin:0 0 10px;padding-left:9px;border-left:5px solid var(--red);line-height:1.2}
+.sub{color:var(--mute);font-size:13px}
+
+/* formulario */
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.grid .w2{grid-column:1/-1}
+label.f{display:block;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+label.f input,label.f select,textarea,.inp{display:block;width:100%;margin-top:4px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:9px 10px;font-size:16px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);min-height:42px}
+textarea{resize:vertical;font-weight:500;line-height:1.4}
+input:focus,textarea:focus,select:focus,button:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+.lv{display:flex;gap:6px;margin-top:4px}
+.lv button{flex:1;border:1px solid var(--line);background:#fff;border-radius:8px;min-height:42px;font-weight:800;font-size:13px;letter-spacing:.04em}
+.lv button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+.btn{border:0;border-radius:10px;background:var(--red);color:#fff;font-weight:800;padding:12px 16px;font-size:14px;letter-spacing:.03em}
+.btn.dark{background:var(--ink)}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn.danger{background:#fff;color:var(--bad);border:1px solid var(--bad)}
+.btn.block{display:block;width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+
+/* lista de partidos */
+.m{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}
+.m .d{flex:none;width:52px;text-align:center;background:var(--ink);color:#fff;border-radius:8px;padding:6px 0;line-height:1.1}
+.m .d b{display:block;font-size:19px;font-weight:900}
+.m .d i{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.m .t{flex:1;min-width:0}
+.m .t b{display:block;font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m .t span{display:block;font-size:12.5px;color:var(--mute)}
+.pill{flex:none;font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:4px 9px}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.bad{background:var(--bad-bg);color:var(--bad)}
+.empty{text-align:center;padding:34px 16px;color:var(--mute)}
+
+/* convocatoria */
+.pl{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.pl:first-of-type{border-top:0}
+.num{flex:none;width:34px;text-align:center;font-weight:900;font-size:17px;font-variant-numeric:tabular-nums}
+.pl .n{flex:1;min-width:0;font-weight:700}
+.pl .n input{margin-top:5px;font-size:14px;min-height:36px;padding:6px 9px;font-weight:500}
+.chk{flex:none;width:46px;height:38px;border-radius:8px;border:2px solid var(--ink);background:#fff;font-weight:900;font-size:17px;color:#fff}
+.chk.on{background:var(--ink)}
+.pl.off .n>span,.pl.off .num{color:var(--mute)}
+.count{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.count b{font-size:26px;font-weight:900;font-variant-numeric:tabular-nums}
+
+/* sextos */
+.estado{border-radius:12px;padding:11px 12px;margin-bottom:12px;font-weight:700;border:1px solid}
+.estado.ok{background:var(--ok-bg);color:var(--ok);border-color:#b9dfc5}
+.estado.warn{background:var(--warn-bg);color:var(--warn);border-color:#f0d79a}
+.estado.bad{background:var(--bad-bg);color:var(--bad);border-color:#f1b9c2}
+.estado b{display:block;font-size:13px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
+.estado ul{margin:6px 0 0;padding-left:18px;font-weight:600;font-size:13.5px}
+.sx-wrap{overflow-x:auto}
+table.sx{border-collapse:separate;border-spacing:0;width:100%;table-layout:fixed;font-variant-numeric:tabular-nums}
+.sx col.cw{width:29%}
+.card.flush{margin-left:-12px;margin-right:-12px;border-radius:0;border-left:0;border-right:0;padding:8px 6px 12px}
+.card.flush .hint{padding:0 6px}
+.sx th{background:var(--ink);color:#fff;font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;padding:7px 2px;text-align:center}
+.sx th.r{background:var(--red)}
+.sx th.g{background:#3a3c40}
+.sx th:first-child{border-radius:8px 0 0 0;text-align:left;padding-left:8px}
+.sx th:last-child{border-radius:0 8px 0 0}
+.sx td{border-bottom:1px solid var(--line);padding:3px 2px;text-align:center;background:#fff}
+.sx tr:nth-child(even) td{background:#f1f1ef}
+.sx td.who{text-align:left;padding:4px 4px 4px 2px}
+.sx td.who div{display:flex;align-items:center;gap:6px}
+.sx td.who b{flex:none;width:26px;text-align:center;font-weight:900;font-size:15px}
+.sx td.who span{font-weight:700;font-size:13px;line-height:1.15;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.sx tr.out td.who span{text-decoration:line-through;color:var(--mute)}
+.cell{width:100%;height:38px;border-radius:7px;border:1.5px solid #b9bbbd;background:#fff;font-weight:900;font-size:15px;color:#fff;padding:0}
+.cell.on{background:var(--ink);border-color:var(--ink)}
+.cell.six.on{background:#3a3c40;border-color:#3a3c40}
+.tot{display:block;border-radius:7px;padding:8px 0;font-weight:900;font-size:15px}
+.tot.ok{background:var(--ok-bg);color:var(--ok)}
+.tot.warn{background:var(--warn-bg);color:var(--warn)}
+.tot.bad{background:var(--bad-bg);color:var(--bad)}
+.fal{width:100%;height:38px;border-radius:7px;border:1.5px solid #b9bbbd;background:#fff;font-weight:900;font-size:15px;padding:0}
+.fal.f4{background:var(--warn-bg);border-color:var(--warn);color:var(--warn)}
+.fal.f5{background:var(--bad);border-color:var(--bad);color:#fff}
+.sx tfoot td{background:#fff!important;border-bottom:0;padding-top:7px;font-weight:900;font-size:13px}
+.sx tfoot td.who{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding-left:8px}
+.cnt{display:block;border-radius:999px;padding:3px 0}
+.cnt.ok{background:var(--ok-bg);color:var(--ok)} .cnt.warn{background:var(--warn-bg);color:var(--warn)} .cnt.bad{background:var(--bad-bg);color:var(--bad)}
+.hint{font-size:12.5px;color:var(--mute);margin-top:10px}
+
+/* objetivos */
+.ev{display:flex;gap:6px}
+.ev button{width:38px;height:38px;border-radius:50%;border:2.5px solid;background:#fff;font-size:10px;font-weight:900;padding:0}
+.ev .s{border-color:var(--ok);color:var(--ok)} .ev .p{border-color:#d99a00;color:#a86a00} .ev .n{border-color:var(--bad);color:var(--bad)}
+.ev .s.on{background:var(--ok);color:#fff} .ev .p.on{background:#d99a00;color:#fff} .ev .n.on{background:var(--bad);color:#fff}
+.ob{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:10px}
+.ob .hd{background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:6px 8px 6px 12px;font-weight:900;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase}
+.ob .hd .ev button{width:32px;height:32px;background:transparent}
+.ob .hd .ev .s.on{background:var(--ok)} .ob .hd .ev .p.on{background:#d99a00} .ob .hd .ev .n.on{background:var(--bad)}
+.ob textarea{border:0;border-radius:0;margin:0}
+.ind{padding:9px 0;border-top:1px solid var(--line)}
+.ind:first-of-type{border-top:0}
+.ind .top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.ind .top span{flex:1;min-width:0;font-weight:700}
+
+/* normativa */
+.rule{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.rule:first-of-type{border-top:0}
+.rule b{flex:none;width:58px;font-size:11px;font-weight:900;letter-spacing:.05em;color:var(--red);padding-top:2px}
+.rule p{margin:0;font-size:14px}
+.stp{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.stp:first-of-type{border-top:0}
+.stp span{font-weight:600;font-size:14px}
+.stp div{display:flex;align-items:center;gap:8px;flex:none}
+.stp button{width:38px;height:38px;border-radius:8px;border:1px solid var(--line);background:#fff;font-weight:900;font-size:18px}
+.stp b{min-width:24px;text-align:center;font-size:17px;font-variant-numeric:tabular-nums}
+
+.toast{position:fixed;left:50%;bottom:calc(74px + var(--sab));transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:10px;padding:10px 16px;font-weight:700;font-size:14px;z-index:40;max-width:90%;text-align:center}
+@media (min-width:600px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.cell,.fal{height:42px}.sx col.cw{width:34%}.sx td.who span{font-size:15px}.card.flush{margin-left:0;margin-right:0;border-radius:12px;border:1px solid var(--line);padding:10px 12px}}
+@media (prefers-reduced-motion:no-preference){.cell,.chk,.ev button{transition:background .12s}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header id="hd"></header>
+  <main id="main"></main>
+</div>
+<nav><div id="nav"></div></nav>
+<script>
+(function(){
+"use strict";
+var LOGO="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFUAAACECAIAAABu9fCHAABAKUlEQVR42t29d5gcxbU2/p6qDhN3NkqrnHNEwiCBwCQBNsnkbAMCrsnZBIcLGGwwGZucL2ByMJggIbIIkgiKSCjnXWm1cWJ3V9X5/dEzo10J2/q+a3/Gv370PJrd7enuU3Xyec9pMsag68HMQoiXXnr5oIMOTCQSzIz/2IOIWlvb3nrrrZNOOtEYQ0TbnSC2+zk8adXq1RdceFHTlqbwN/+hxIdP3ty89eJLLl2zdi0R7UiL2HHziej3N93SsGnDl199/f8D+hcuXNS0pfH3N91CRDvychf6tdZSynnz5j/55JNENOOdd/AffRABeOOtt4noiccfnz9/gZRSa/2395+IiH5/8y1ePsOwPvn0c6W0ZVnAf54KYGZLSqWCTz/5nGF7hewNv7uZiLZXAaZ0KKWYecGChbYbs9yEdBKWE124cDEzK6XMf9oRkjNv3nzLjlpuwnITthOdP3/BduSIzgsG4N77Hwi8nCWlbUnl59+ePv0/VAWEz/z29OkqyFtSWlIGfv6BBx8qU9pl/7XWzLx169a67r2FjJCboEgSoD332peZtdb/cfsfUrTnXvsCRNGkcBNCOvU9+7a2tnamSJQ1H4CXXnqlafMGuE4fQ2M1kRWZO2f2kiVLhRD/WSxgjBFCzF+wYM7sz+HExgfoYQA30rhp3at/eb1M7zb9J4QA8OdnnyeQMeYYuD+nKNuW7+WeevqZ/zgRCJ/2mWeeD/w8LHk2Ij+CY5gJ9Oxzz5fpLZ4aqorly1dEokmyotKO/9Wu/8ruUeEmSdh9+g1Mp9MhR/2ncL4xpr29o0+/QSTsVCT5hd3rWbuenDjJSDxRtXbturIWFOXVmvnue4V8mh17vLAGklUDMdVIdiPr16569S+vE9F2lvN7e2itiej5F15cv3Ylu9EDyKkCjYI1ApIdO5tpfWfmzDLVoswM06e/AxCY9yMnSiLPONWOWmAicdddf9Rab+OZ7/chpVRK3XPPfUSWQ3yaE/MMp4B92Ar9mBkzZoa+DgDBzFLKdDo9Z+5ckC0N72rsgJFmnuxEfmi77ES/mPvZK6++JqVU6vvOAkopIcQLL7407+u57EQPsiOTyM2CNbAHbDAD8osvv/I8z7IsZhahMVy5atXmzZvhOL0gBpP02AiQUubyZAogEta11/3W930h6PscDoaRq+d5v73h9yQsIpwfS3hKC0KeeTjL7iDY7ob1G9auW188PxSDxYu/0UEeQgyCrDTQzDZRU6APdNx9HIed6OKFX9973wM7+s/fM8k3Usr7H3hoyeL57ET3t+0DLLspUBaED1QxDTICluV7mRXLVxTpD7+5avUaABDUk4QsWkQoDeXpG1IpMkZYkRtu+N3mzZullN9PW2iMkVI0NTX97nc3CSsimK9PVfqBUQwiMGAT9SEZBkUrV63qQn/z1uaQg2oYgig8yQI2ZLw93cjx0aiRdvPWxquu/vX31hcKfZ6rrvn1ls0bjeWcHItNjkY35ZXFYSBIglCDYvCzZcuWLv5PNpctxwAMEMAgQch6RvnqhmQqwcZyE48/9sibb75t2/b3TQq01rZtz5gx89GHH7IiFVVsbkxWKN/kPC0IYAbAQPmhfd/vQn88Fg8D4CY24dkEEMhoNOWCQY59bbJCGSOl9fNzzm1paflecUG48+3t7eecd4GUlmK+PpHsI+SWrKcUU4kcZt6C4jPH4/Eu9A8Y0D/8sBTaC6Ui/BqhI8+eNhcnUvs6rrbd9etWn3f+Rd9D+v/rnPNXrViq7ci+tnVOLJlXpjWnqMTwFnEOvLjEAQP6F+kVoRuwx+RJJGypzWLob6ATDAOAIAkFxS05Jck8UFFZwWxHK5595qm7/3ivbdtBoP7txAdBYNv23X+697lnnnKiFUnme1LVUlBbXgWBISpKdJzEPIEV0FIpYUV22WV86PiJUJ/vssv4XSbsarxcIGkGChEQGMQAIAktGZXx9RDbvreiKlAqEklccsnFb789w3FspdS/19txHOfdd9+//LLLXDfha3VPZeUI28lq05JVAhRyPggWxF9RMFJoP7/77ruPGDk85BoRKg/Lss4683SGAYkWwU1QNgAwMROzVrw1owM2J8diF8bjBc0WyRNPOnnx4m9s+9+2BEop27aXLFl67PEnwMBjXBRPnBqJBUY1tfuBMsW0HcECWqTOiXA1zFnTTpei6MiI0GfK5/N77zXFsqJQqhFQrNMcuFz0qiTQkdOtOaXZ3FZROdV1fGGl29oOOfTwVatW/1uWIFT4GzZsPPSwIzpaWgJpHxx1b0ulNOu2rGrPKlmWfCBLhggNYAQqGkvtu+8+hUJBCFH0f6WUZ559zvIVKwYNGYLAX0CaySJB7aTC1CeDidCY0TlfW0TPVtWNlkI7kbVrVh140MHr12/4f7wESinLshoaGg7+0SGrVi7XTnSsFH9OVZHhrK8bOwIhCQQCLCBDxhKU07QIBsobOmzowkWLzjzrv6SUzEzMvG7dun79+u0xZR8i+uTjDxGJ36ujR3FkGflxUJSFBkBCAY6FQdWOa8vVSu+7dfNaJnjpYcNHvfXmXwcM6B8EgWVZ/2/Yft269Qf/6JAl3yyEWzGA+L267v1JZJVe3xr4igUYgAQKZDxB/WE9D+8iyiKf2We/qZ5X+OyTj9auXde3bx8B4JnnnifC7NlzvvzyK9uOwug3ha+Jq1kyUIAWzGAjiX2FtW3K0zzAst6u7tYbDDfx7dIle+29z9y5X9q2HSj1rwuQwqSFbdtfz5v/w333W/LNIkSSfYnfqqvvL62cMRvaA0+xIBCBQAViJkoa8tm8zT60se3Y7Dlz5879igjPPvdC0f6/8cbbzGRZlh8ETCDQR6xWQTtEMUhB0hNsCMyQxFnPrG31Pa2H23JGTW1/Atx4w4aN+x8w9dVXX3Nsm5n/Fa6BMYYZtm2//Mqr++yz77pVa+Am+jOm13YbZomcUhta/VzAgoquixKwhIgw2cA61p9yQAATPM8TUjCLV1551RgjVqxYOW/efJKuMUYQMWADHTBvsRcDBYAFsiBDTVpcgoJZ2xxklR5h2+9V1Y0jYRy3kCsceeRRv/7Nf4c2Vf3zGCHcdiklEa6//oajjz42n80bJzLRkh90qx9uWRlfrWvxc76xSnUaQ2QRWQxFFCfxPgft0DbAgCBibUi68xcs+PbbZXLcuPEvvvCME4kFWjMRhSYCtBnmSHZEqVpCoUMMCi/hGU577FjoYckT3Ngi5S/V2rHd99975+NZn06cOKFHfT0RKaW+o+Tyf0J5aJullIsWLTru+BOfePxRx40HjCMj7l9q67pJ2eYF61uVr1lSuegV3pAAEiBN+G/ktsAIEAMG0AzbtrxcepcJE2XffgPmzJnNtnusHdlojAcmQAJNMKMgx5CdDwkIaSAQERMEwRh0FEwAU+eIk6Nxj/GhX4AbXb1syZP/87RhPWHChGg0Gq5CWFbdyYUIJSg0TFLKTCZz2+13nHbatOXLliJaYYz+TTJ5f6rKYd6U9hvaAubQjadixa+0YZpQAbzLwaPIWaDQEawhOsR2FjNYFXr36SeTqarVq1axZd8sE2Oi9tuFvE0iXKdNxMdSJADATOWMWTGWKH5Ie9yh2LXx42RsiuPO8QrN0laBem/mjJdeelUIGjp0SDweF0KE5de/n7oNnZHy0dLS8tDDj0w78+wXnn9WGWIrMlyI52rqzojH04Fa0x60ZbWgoqlDZ+pLayAZv0ZmI4wFkoAyfHMyNUXJZ9iHUqnKKhmLJZuamoUtD1fO6bb7tTTf+L4FAmgTzCiSY4yV68xVBEIxogq940BxW94UjJ4QjZyWSATMXwSBtiLNWza/+eZfn33uxZUrV9m2XVGRTCQSoXb4W0e4TI2NjbM++eTW2+645NLLn3/umZbmNrgxh+jCePyZmtphkOva/cZ2pRRLQWXhLD9SKKhMqGB6n/17qWCBJMgz/KNE/E67YkHWf1kErDgSi1LvfoM2rN/ouvYLJjkOIlXrHNTaPNvzo1IUwMMhX9UVmmCIuNPyctcyGjMMM0mqi1m9kvZ86DvSmecLuTwDXgFQgOjevefAgQMGDhrYp0/v2traVCoVi0UFCcPG8/y2traNGzetW79+zeo1q1et3rq1EWDAhutGiI6OuFckEuPI3pJXWzJKKxZERFyKUbaRTSWHH4QI09HcPg8qBpEzerzrvlPXLdfkLVL+kUj7vt+3X1/q3Xfgho2bHNt+mZP9taiJSZmyftjUtESrGIkc9OUmeiliTQRRXueiY11cAC4LBRAwiEyvqF0VcxawesLL/lX5a7WGMfAV2N+JUrqAdGBZkKI30WFO5IxIfBxkay5o9BQbEqVgnssiz512nkAgDdQSPciFazkdg8yxGSLlB93qRVq1ZtU60oehI/D9vv16W7FYDMYE4Cw4QtiQVUMseqe29uDm5kWBHxHyHirsC3cErDRY8I5CBiIwF8lyCQyxMas2ZnWNFNe6sQuc+CztfRYUlrrWCoo0UTEFIQCbmQECBQQDDlNU9USDSQxmubcT3Q12neKONr0w8AmwBAkADC6laEJNRGGoBgqJN0AUWMrqDuRciJzRw2377W7dKvLm20xQIyhvjBIAm2g0atXV1S5b+g3DaWEj2HIIqzuCwZbzQU3tUS3NH/m+EOKXyD3HCckwBGIwbWM57vSp/KMjCECaTWtOR8AHEjKCxsAeTlYEtNqYT6D+Aq+FWBIpRh1wNNw9hNNHWorNYh2Q4YM8bGV/HVgQ2QIh0dzpNlQUc3TmKQYkAMNXimwHmLXeKxJ5qbYuprCs3bMFScaWoj7XdXV1YuiQIYABYRUrCYBgE61o9a2Ceae27sxEwhgzD8ENyFWa8P7FkGjbTRnE6MwVoVgIhitIC1EgUSciF1P+VM4+Ar+XwR0meig7hogDZQhHwPkdR1IGDwTZ4/z2C1WmEjIDGIJNkCVySxcOzXAxQ4eiMqbw7wZcybiRcnPZZ2NOSyRndusWLZiVWws2M5glYaXQIABmwIABYsKEXcIdnA/NJea2IFa3Bc3p4KHKyieqq2sgnjT526lQx8QcbgT/fUnmkrKQQIHwQ8j9YDcRPwnvQCs70up4WgYcqMq6Wlb6CQrGUcdhIv1n8pqJ9xLOD+EUyIiuG9vJrm0nf8XHNoTuEHcj/7jJVEE8mqp+rLKqOR2saPMlMwGCwCTmoRiqTpwwXuw1ZU83kkSgvyTVKLRbWmRJ1Nihlm3J/9SJzune7eho7HbkbkS2G0gABjuLCQrP8pjzzASOgmwS6wV8Pzdy5PBZH703fNgQz8+tlWSDokwEBMyKzfbLyTtctJPaNwQpqAeJm3XmJs4cHk18Vtf9dDu6bGu+sSOQJX61QZvIfAGFQDtu4od77y1Gjx41ZuwYUoVmgffZi21LErMlkPX56y35ZJafr6x6rVvtp1FzBacDo11GV5YvGZ7Sd6mTHY4BS1l/DSOYAiDwvQiRlPL2W28eOnTI3Xfeblu2CwR+EBAJYB7UNyaIGzbMtE3b/L0ljhAZw5fp9HQ3eLWm9uWKmuo8z2sp5H12wrgFCPXie8ZvAZMqjBk7ZvSY0UJKefRRRzKMEPJJeFmwKHp3YEASJGhdR7BwS2GPnPygom6/muRbMdMijOzkAFDXBaCSsIalBItxB+ULMJJIa9WnT59CLuu40ZEjRwAYOXK4HYl6+Wx9j3qlAklUAN+EAgAJ/pt83+n3FngLq6ecwg+q4x8n6vbK0eLm3MasskAWFZ+BAAEUmP/MeZKCYY45+khLSgHg5JOOjyVSIgi+EeYNClIMHdqX0KwxOwQwrc6olVsKB2es40RcupaR22zh33pITagkuoXyM9mPSMv3soMGDpw7e9YpPz01n23/xVW/bG1tvfjSK3Lp1uNPOGHOZx/37dPH9/IRac0i/3qRS3GXhaXOsk7FxBSz8SV8R5yC6NFpsb65sCanyZC9zUqGER2qSMxAsIC0CIJERdUpJ58EgMKkzWWXX3n7bX+w4pU9fPUKJ6MsdNnVKd6QiQiMALAAm0gVKecdFUF4Sw1UEz1H/hWcdkka1kLQuzPf2XPPyevWrR89dpd0e/vAwUNWrVgWT1YsmPflwIEDPvn0s6kHHhQESpLlsbpOx85ApFVQ0dBx59WlsqQxwWYE2ijALnnp1IkxiSEIAeFwbt9gCZVtu+jiy++845YgUEVUR2tr29jxEzdv2qQd5yQl/8DxraHDV4oqeDuHJ4yEiUqu8Hfsv00oEH6Eji1sHCkK+Y4n/ufpn556ktYa4JFjJi5fugTSgjZ9+vVd+s0Cx7GllC+8+PJxxx7nRmLKmITh6aiqFqJQsny8YwhJDCYTWsFt8kileBVEUEA3Etcg+xg8K/Cr6+oWzv+qtraGGSJEBdfUVD/y8IOatcP4s1Qvk18DUkVieHvRCzmv5ITyjiqQYYA40wfsN8K40irkO84578KfnnqS53lEtKmhsaFhE1m2ZdvCsRsaNq1YsUIIUSgUjj3mqKuuvtorpB1ptQu8K4MoCbPtyszbrG8xNQswbWcgOvknAaMK+At7T6DggpX2Hnrgvm7d6owxInQopZRBoA4+aOp9993vexlbyF+JwkKoFKA7LcHfs2/le/K25SHw11AkyPdzg4eOvOXm3xVT7kI88MAj6batju2cb9yIZQde9u4/3ktEQgit9XXX/nrUmF08L0tCLCClyySXVoG3c/m6miLq9DQBuAJYatQvkJEkvELmttvvPPzwQ8OE0rb6n2XJfD7/8/8689rrbgjyHWlJ51G2iXUc0NwluvxHlqgoCgLsMy+HYRJa+7/65dXxeDwIAtd1v/jiqztuvw12bDThtyI6RjEiiccffeSdd951HCcIAsdxrrzycmMUC7nK6IIxgv/OsnfmPt6WCCBoIM7YyuZ8yqalCPIdv/zVby695KJCoRASX6Q/xPwvXLTotNPPuOLySy69/BecT6+26DSRawEnAM0QZd+Td1iIsiyUVCEDAsiDm4jh+xWp2qkH7MfMrutuamg49rjjc4WCsOSVxvUDdYVxJJEmOuXUn65evSYSiTDz1P33q6zqDt9vIc4RBH0H9YyubnhZVxEAKCAGtMGcTpllkjnXcdHFl/7ql1dPm3bml199Ve4FEJ2+Kp54/LHRY8aPGDZs4g8mWV5hqTCniUwjcxWgACp6I7ydt8PYIfkQPgFDAdC6qqqyoqICgFLBCSeeumb1CkRjF5vI7oG9kvkHbF2lXXbcLZsbjj/h5Hw+DyCZTFZXV0Ep7px36GIJO9+q050JgqEYKaYmmGmUWSy05RV2m7TnxIkTxo2f+Oijj6hAlaP3bfQLQdKOr161+qyzzty0YRNbjsO8BPp4kZ4jTB2Id1CEXSxxpzxMaJZEeHVptba0Nje3ENF119/48YfvIp463pcXKreFjQtqBc41kdMCC4nU3DmfXn3Nr4mopaWluaUFlmUz7O9UP2Ud3NnOlR6lG+hrUieK9EJoxzBLu2Fjw09P/dmyb5dL6ZaZvwv9sWgUBCsSlZFkw5YtkgSDHNBGMqcg/Ri8ClAcZEq+VOftp05bwiWkRYREDYgcu6Oj+fPZczo60rfffgc50V0U3WAiGTYCECAJaie+zkQmBSA3du+99zY1bf163oL21i3k2DUkYkTbWd8dt72Y9gbFQFXAEyicQh3r2DjFhLVYv2GDiMadaMyAYrFY2UXYVq6qqKiIx6Id6Ux3afd3IrN1AMNCiCiEAv+Kch9TcDVHh8LKgPNF+887Kt2i5we4hAlGzBUBQdx7/wOFfD6fS8toxcWBYzNlwE6RYShgNqALtPuFw0Gu/eWXX3ntr28SiJnHkowwpQEJZqbOLFamPCz0RkEJ0DJWfxD5N+HbjCjIB2tjQJgYjTUa3qRVPB6vqanZtprlrGs+nx85evyaVavrbPcdq2pVHPd7mQ+8wDcGIJCA4EqI09k52bh9IPJAHqxCJ7TkIzJvE4koYxWZn4i0NkxAv359V61b1w/idRW3IBxQnkAEQ4gyBWwCwuEis5aDvr16NzQ0KGMk0WtIDWaZBRMziGiHbJ8ExQAXtBb6KfKeQKE9dHfZACyI9o5EzonERmTpIN3R4OcHDOi/eNG8aDQaan0RcoLWOhqNDhkyGFBNFn0ReAdk5fPR6i/q62+pqjww6vaUQhpuM+oOk9kNrWeb9AxTaDOGDAghg3bRxwKUIwyDdRVHNTEErV69mokqmWPMOZh3yU+AA3CM6T0R5NgkIaohWMj16zcYZiNwNcVHkMyCRWf92pXROoyeYQpnmI7dTOvdJtNulGSut8QBsegfqmvm1NW/Eqs6OCO+CoIGCXAwZOiQaDQaYoS38b8xRkq5x+RJ70x/E4I+EuoApZubg7qIdUE0cmki2iaxEbyR1SbNG5k3G/2tNjZjrMeuT4a6BoIgAJKonc3piFig65GzbTtgXg8UwJvAF8jcPRw/Ae7z8C+izFMiXgU0kiHAte2C1r9EfBpF2tiIoqbrknkM1U3g4FsbS4XsK6zfULwHiXpBAx27lxCVCsrTTR16lW+qjflA+GFQuvvuu5UhQ0X+L0NAPv3s8ylT9mbbrWd6iyuioIKBBtuC4rZIWCJqSUuAGNogF5gOrXPKcOeceGc7jNAJ4R6QT5B3FWdcEj6b64xbD+tska0A/Zyi9yPfAXObideTPJXSNpMHvgTRXyC2GUXPh7uWN0pqh4jgSKqUMmYLIQiAYc5pkwl0OjCBYSEoQuSxOYQ6NhGTX5g166M99phc9v+K9IeRlVJq/ITdlixexG7kl8o9j6NNxBYREylmbUo+NxezWxKQncovXIYOdnWRFKGa6AbOPYICiFKg4ZBfsbpbR3sI2QxzrsjtwXIt8SpWAB1HkesR9ZioFFxuuyJt73Frhi6qnWLxUhAsUFgFD5i7k7gfhetkngr5UaPHfP3VnO+wf1TCFZw57XRmZQt5LxWWkU6AFBchMI6AS4gIRCVFBbmCpNhOIdP2wUcJgdIOvhqxR5GYyrYPzCYFwhjIqVruwtKCeJ/0Bpj92HmMkzdxzC8n2KiL28+8fXwjCY6gSOmfK8ghEkUXkJOgFTB3I2eTZFZnnz3NsqzOUJVtLaHhIuayudHjJmxYt0Y77kQtnjJJycgRZCfe/vuRAG+//0XmNYQEwIwGmIeE9xTl/6QTpxnnOeFPk9mjtHMxR3tACKADYa6Sukb7XdJNnXCq2xe/wgBdA1EGiE4WmbmkZFDo23/ggnlfdDb+2/m/ZIxJJBO333aL1kGM5Jekz6J0DlzJUNvo75r6/o44hLbP1YR3YmQYaaA35EXadTU/Rz6ApymwQZci2o9FBpwGyx0yvPgOp3MH77PTGYpQySiAp1F6LoKYEFoHt936h0QisV0XtNixc+KoI4+49PIrc7n2uGXPEvo40TFH6DpQlGFKmd9tDh/vsPvFcAi8Q6FAADbQzqae5BFwPob/G8q/J/xD4PZh0UJsAaJzFqGrqFPX9E8np7P4HAwwIQrqDvqS1DEi/TGpmGXlcu2/uPKXR/7k8LLa+w7+71x7tyzr/AsvvuePdzlO3JfS0vpEdk7lyFAIZnhhxaprYiCEGAvABUlGPnSKiuvDZRUZ/hcDreHgCJHJkogRXuGKgVrkwktSkdWJwExl9RoDKTYF6lJuLP7PEAQXiIGIsEyYJ0zhzygEluUo5fvZ886/8E9/vCtsDdkugUTf2f8fYg/uuPOuK6+8KvALTjTlg2PG7G+sQ4w1DnYtSZdIdE3+MEPDbILZAD2C7O1TMigXzskA1YZvEPkHZOEsjl3LsSZjJLblukMTgyL9ALCCVDcjepC0yqDdki00YI95K8zXpN6A/55QWUE2KMh3uJHYzTfddNFFF4QOz3dkz74Tq1Tmgtlz5l551dUfvv8ewLBjsC0w1xkaCDGYZS8SlUwWoIAMYSubhew3E19D8d2N7ZWC5W0uUYkRGGwxmthcYeduN/FaFj6HeSwqq+Jw/8OvRYAvKbgO2QRZY1l2h0wJ4TAXgDbmTaRXQK+CaRIMEAIFlQOw3/5Tb77p97vuOlEpJYT8TvAJ/R2sVugUAfjrX9+47/4HPvjgo1y2PSxwwra7wk3Ci+nuRj6C5Ci22rANRI4SrGgbmAsgZgFkBaqYPMAwi+L+U9mGFCHoFFb1xDdQZ4vMBtLbt62H6bFAAT6ASCz5w733Pv+8cw899MchXnA7md9Z+supodBVXLZs+dvTp8+c+d7CRYuatmwlRqAUwILJAxvwoexca6LVoA5CF9HoRL8BNJAEaXAGnAS1kKlgEWO0UymBVQ6iOhk8DYoTcuBrKfcKBQLkolhKd2xbG11bV7vLLuP233+/Aw+cOmzo0BJkjv9+2x7tDFYvFJ7Oq7j0228vueSymTNmwnaU0d0hL2H3WOMWgACQtF2+nKiYF+AYKAJ8geBpKlyKWD2LNVC3IH8mYrvBKrDJlixFp3ENYfqfNMEFosDLCG4RuU2sLWEh8CbtMelPf7x73LixnR84VGH4x2CLnesoDDOz4Y9vvPHmmWf+1zsz31OWLZhPo9hfUHESRzLEiiCpi9EyIAZZQCVRDdFqqF8i9xPRkSTZj2U7eATsKpJHifZfUPZb6BRQCbIAw2zKhXWiEMatgDRwDJyXTcVP2RVGK8v+7LPZZ53989dff71MfIgy2hnSaCexmmF6891337399junT58BaOkmDoN1tUiMhNWiddqYUNyptK4SZAMOiIi2gr8m9Rq8tynIwXRn8SanwlprBGiGOZA62gkusD9bP2F3V7ZqQAIUAAqsUapwlEAPcaYqYAn09chOl6wKWQD777/fJZdefPBBB+081s7aeSgigIWLFs98dyagpBO3pFhm+AGTnUjOMJZ1oAgoLLMbICC0w2yG+ZbMHAo+h1pHJkQWgPnnxqmHaCVjAz7Qn8U5FLkJBQN6k4I3KejFYjfISWyPYFkPmQAckASDSYFz4I1klkJ9BbVSQArBTkT72U8/++zgbw4++KCDQrjhP3P/y92Va9etu/HG3//5mWez6TaA4EQBioJqICpBERRzzxlwK7gVxpS0mQ1IkAfzA1jPIeUzGwqTNGwBRHS0yCwk5QKaEZQcbQGqgqgCxUEug4my4HaYrWAvvLKfAzhVWfOzn5569dVX1dd3/845P/9b+kONAsC2bQCZTObFF1964okn58yeozSroipmdAGEQYZonFKKLmSN3hApEvnwl8xgFqA40AreSCxKZ4piHpG/q9OOBGABlqQJE3c588xpxx9/XCQSCduBQo27k/K/s/xfBvY3NjbOX7Bg4cJFS5Z829beoRi6KO3bLD0zhCBtDAlBggASzFqbEDu8Xsp1MFAaIEgBEkUbrtmRsjicgYikBCCNJmOEkKJkjE2xzkIaDKb2jsy7733Q0NA4evSoXXYZ36tXL3RJRf6T9v/tt2d88OGHn38+e8nSb5s2b0YRQiOdaCI0s0RgZh0okAABuiDsmAkKZTyJsBNEpAMf7AFkuwkwB36uZMVhOQnlZwBIJ1k6DYCQbkx7BUBLJ6b9QFiWkLKk4MjPZ0sPI6pru40YMXzy7rvtu+8+P/7xj3ZmCf4B/WFS5JFHHztz2hmdTKYAFGBZTkT5GcgIgVgradvV1dX5Qh7AsKFD581bMGrkiFGjR9XV1qxfv+GNN98KfG/0mDE//ekps2fPeenFF0G07z77/uxnp1jSeu31vz7//PMnnHBCLB5/7NFHe/TqfdRPjiCiWZ98+vVXX40aNSoSjc6bN7+2tra9vT2fy4FLDZx2nJlZ5VFEWxXbPB997PHTT/vZ33f+usz/+c7D931mvuIXVwkh4smaWLK674Ahu03a89jjTzrgwB/V9+z7p3vuq+/Z55JLr3jq6T8D9NTTz8yfP3/PPacwc2V1t5+ddiYzz537BTMfd8JJAPbZdyozL1y4iIQDspYtW7Zo0eIZ78xkZkA8/ednlyxZCuDFl172PG/lypWFQj6erLz0siuYedddd9u0cdMuE3br3XfAW29NnzXrk1tuvb2yqtuIkWOPP+HkAw78Ub8BQ0lGkqk6IcQvrryamX3f//sE7pT/M3TIEGNMPp+rSlXM/WzWu++8/cRjDx904NSW5pbzzv35oEGDCPjRwQcB3NDQMHbs2AOmHtDe0ZGqrNy8eXN7R8cPfrDrokWLhw8bDqBf/76+79fU1PTs0xesHde96Q+3nnDCSb+/+RbAFAqFTZsaAAwaOODmP9w6YddJrhuJRGPt7R3MfNRRR8YT8S1NTcccffQBB+w3Y8aMyy+7ZPLk3YcNG/rsM089/eQTX37x2fhxY7OZDmPM4MGDd4Y08Q/nxwHo3bsXQEJajVuaHNe59LIrYrHYdb/9ne/7DQ2N9fXdl69YEbJZc3MzgNN+9rOI61ZVpgqFQiwadaMJ3/dD/Txlyp5vT5/e2Niw264TQq+2T58+Lc1brrnqFwDi8ZjSKrQySqm62lpm9jyvW7c6IjrllFMAtLa119d3//Krr6+//rpbb79z7tw5ffv2Wbt2bffu9clEYuKuE4z2ANGjR33nPNf/iv5evXoJO0oE7XurVq0544zTHnzwoUQiAQ4y2Uy/vn2btm6NxWIQdjqTbWpqMoZd100kEu0dHZZlaW3S6XSyIglg+LChlrSi0eiuu04EYNtWY2NDt271p59xFgDHdjzPBxCNxVpaWt2Ia4zJ5/M9e/Rcs3p1KlUhpcxlM926dctms5ZlXXHZJVubNvfq2bNnjx4ffPD+xk2b3pkxk6Qr7UjfPr3/CfSHCqK2tiaVShnDgN6wccPIESPqutWFc9GatzbX1NQsWLCAiKpraltbWhobNz/51FPGmEQi0dGRJqLBgwa6rptMJAAMHjRo+Ijh1TU1k3bfHUA0Gh0/buw555zz6CMPAkgkE77vAaiuqrZtq2ePHkII7fu9evV89/0PPv54llIKxu/bt8+iRYuFsM859wIi6tGz5/IVK1auXBmPxZTWYFNVXdW9e/3OmDaxY7+NUkopVQ6hhBA9evTo3buXVgrg9vaOWZ98euRPftLS3AKgoaFx6tT9zzj9NMuy6urqWtvahg8f9uxzLwgh+vbtm8lmAMyd89mY0aP+8tpr3er7FAqF3SdNOfHEU+pqayw78tDDj55y8kkXXHDevfc9QETNW5ubmrYANHPmu7+78bd/ff3Vr76eB+ihw4Zs3NTw9bz5Yd96zx49Bgzod86559x7z93M3KtXz+kzZpx3wYXdunWr79GDTdCvb9/u3buFUdCORP29+W/bHZlMds2atbNmzRo+cqy0ogBu/sOtjY2NluVEE1VCWocdftS6des2N25+9tnnI7GKgYNHXHHlNdF45YEHHzp85Lhoomq33adM3HVSv4FDASsSr4wlqy03QTISjVfakQrASaRq48lqwLHcRCxZnUzVSiceiaV23W2P/ace3LP3ACcSP/Lo48aOnzhlr31/+av/JpLTzvr56jVrOtLpJ/7nKSKxaNFizyts2bJl8+YtVTXdhbRHjRn/wQcfrlq5KpvN7khU5/lvpfoPsxAik80uXrRo+fIV3y5bvmLlyrVr123c1NDS3JLp6JC2bdmO7+XHjRs3etSo555/ybBhZhPkAAvQgBF23GgF4wk7ZoLcdoxmRRJGa2YWgmzLKuRzEFbZudRahX4dCRJCMhsT5HfIr9tAIJ2E9vOAdCKuX8gJy500abd+ffv26tXzo49mzZk723Iiyg9g/FgiVVdX27Nnz0EDBwwePGjIkMH9+/UdM2ZsMrktC05FMyjE55/PPuXUn65atbbsWgAWIIvgG+MDJN249tIhMlY6kXgsFnb1EIlVq1Z7XsF2nDBTYAk6//xzR44cEYvFotHoVVf/aumSbywnQiSCQnbS5Ml//OOdruOuXLX6yCOPOvjgg3/3u98KEi+8+NKNN/7WdhPMDKPOOeec0aNGtrW3Fwr5v7z2xrx5X9tORCkNcK+ePWzbyWTSbe0dhWzbthWKVBgTpjpF4PswupRzKqYyBg4a+Nyzz0ycOKFYAi1z/tSDfgwgEq+yIxXlTSMrmkjV9uo7cLdJe034wWQS1oSJu7/yyqvvvf/BokWL1q5d29zcnM/ntVKffvpZfc8+wopYbsKJVgD42WlnlFnuwosvA+DGUpabJBmNJ6uamprCP42fsFuffoPCz/fd/yAAN1bpRFMAHXjwIeUrPPjQI6U/VYDk1AN/lMvlWltbV6xYMfeLL96ePv3Rxx4/4shjAGm5ScuNSyeWrKxzY6mSjhNONBWJVwE45LCfMHMQBMaYYmBnjB4zbqIQtu3GI7GKM878r/vuf+C11/46e86c1atXhzPzrr3utwBi8eTXX8/bUaKY+YYbbwqJdKIpAIcfcXQQBJlMJlDquedfBOBEKyw3SVYslqhauXKV1lprc8utt9f37Ov7vtb61tvv6Ez/AVMPDoIgm80GQfDGG28BZEcrLDcJGYvEUhs3btxRtq+86hqA3HiKhD1y1LiPP/74jTffevChR6ad+V/CjjnRCiHk+Ak/KHfiFekPgmD4yHEgByQfefTxHa+rtZ68595hmHf7HXcppQqeN33GO3fddfcf/3RPJpPVWr/x5psAOdGUG6sE8N/XXs/MhUKBmVevWRONV5EVDemPJirXrFkbXnnp0m8n7rp7Pp9n5ltuuz2kP7zCzX+4lZnDPy1cuEjaMekk7EgFyO3VZ2BbW5sxZtOmhs8++2zN2rXhfra0tFTWdCcZDXnw889nh3fp6OhIVtYJOw7IkaN30dqERIlynBMEPjioras/+qgjtdZBEGza1PD57NkffvhREAQEbN3aEmqsrc1bpZSObV911S8vuujCC86/cOOGDUKI6qpqwC5b3SFDhpTLiv369h0xYjgrr5iN5WJ8arQeMmTw/vvtm8vlAKjSQBGtNQl7yp57lDMOPXv1qK6p0YEiIrCqrq6MxWJE9MKLL02ePHnMmAlfffVVmDINZ9kEntd/4NARI4aHls8Yk0pVGK0A4fteuQRcpN/zvFw+DwhjdCaTllJ+PW/eqNHjJk+adPUvf23b9rr1G9raWqRlAdiyuSkkrG+/fpZl2W60pa0NQLIiablOyFoknMGDBgL49ttvW1paiWi3H0wEjOgKZTTMQohTTj05XJdy9kL5Xo+evceMGQ1gyZIlSqmqyqpePXuAAylF2LoUrsvmLVuIKN3R3pFOA9ja3NzS2mo7Dhvv4IMOrKioMIYty4rH4/FYDMaARKFQCLab/1MoFAoFD9Jpa2vfvHkLAClkW0eaSNTX1992+52T95jS3NxiWxaApuZwWBS6d6tjZtZBW2sbgKpUZVhgVUolU6mePXsA+OjjWStWrACw5557dC6IhDX6MGoYM3p06NiE9AshwP6ECeOTyaTW+pVXXs3nC0Q0YEB/QAshAdTV1pbzMcwcSyZ79uwZDnbKZzNhGubwww8NzW1Yy6qqrAQUCeH7vh+U6A/50PP9IAiktIwqNDQ0AujZs0d1VRXJyFtvTb/8sksbtzRbtqONAdDW2hp+OZGIa62V8hoaG0PvtTJVwVqz8nv36tWte3cAX3719bx58wFMnLiLE02GHB62EgBYs2Z1W2srF7sZEbJlaJl/uPdeAFpaW9+Z+a7nFQAMHDig/Nf6+vrwGTZvbgIQi8ZSFSkAmzdvBge+V+jTf9CUPfcgoi+//DKdTgOoSKUAJhK+H/h+0GX/Ay8IgkAIAfCGjRsBVFZW1tbWGpUr5NoBZpXz8x0gAkRzS0tYC5g8edJRRx197nnn7zVlTwDJZCKRTIbTBwYNGug6DoD16zYsWLgIwKCBA4cMGaKDghACVEooL1z8wYcfATBGh9tQKrdYkyftDmD9uvWLFi3J5fIABg8eVBacbt3qQretaWsTgFRlRQix3bixAQDrwtQD9k8mk0qpF154SWsDoLq6KoS5+oHveV5xRnKR/30vCFQoUevXbwgjk5qamv79BwweOnxA//4jR46YN3/Bk//zBISd7kh7nheLxY45+qhjjj6q/ExbtjRt3LDBcl3l+cOHDQ1vsGzZ8o2bNjKz4ziTdtt18YKviEhQcfROwfOef+Gln/zkiLIaAuB7Xn3PXmF30Oez57S2bN60aWPfvn2GDhkCWKF+ra2rBZDP50PRq66ujsdjAJqatgIAycMO/TGADRs2fPjxrN/YFoDqqioAJEQQqDDKAmCF+5DP5YxSCOnfsCH8W1VVZW1N9Wt/eSn8cd68+U889jikzOay+Xw+BJKUzQcRnf3z81ubN8eS1crDiOHDwzFjN998o+s4gQoc29ljj8mPPPwgABLF9F0sFnvzjTeamppqa2vL9BtVmDhhfFVVlTFm1KiR11xzTWVVFYD+/fpGExXh0Km62joA6UymvaMDQE11TbigmzdvBtCnb/+999oLwGefz16xcnWodSqrKsOBV0GgQkXTef5brpRopnVr14a/HDd2zOuvvfzAAw/lcnmllOM6diRGhGw219bWDmD58hUHHjj1V7+51rKscCJYCVcu+g/oHzr2Jxx/3JFH/sSxHQC77fYD203oTvAj27bzufTTf342XI58vhCahSlTpoSC8MO997rxxhuHDxsGoHv37jU11YHvQzi1tTVhGj6c5NOtW1EdNjVtJaKDD5oacvszz77Q1tyYyWQ77T8ZrcIbbZv/VygUSnlYa+OmhhCE3qd3Lynlz39+9ssvv2xZVk11dSpVwWwKuVyY50mn0++8M/Pe+x4ILdy0M05jhlIqEkv269sXgNZqw8aNy5cvb2lpCfNoAwYOZO0JIUOCwyX74suvynwUZnz3mDwpNARtbW2ZTCY8Mx6P9+xRD+O50VhIzObNW9pbthpjKlOVAJhN09atzHzYYYeG1uTqq6549rkXQlatqaku1ZV1qFBC/R9OESuVMKS1pakpJK+uW12o5xYuXBxqxLq6WhjDRrW2FaWuqrZH69bNH330MTPvu88P+/QbpLxcj571tbU1Wuunnn5m5IiRo0ePPff8C8NU7NgxowED5iBQSql8ocDMtmWFXkqolrt1rx8+fLhS6u3pM0aMHDV69JhLLr08dCt69+4FmHg8FmaTbNsaM2587969J03aLVQHa9euq6qt33vvvZjZtu3Jk3Y//rhjUqkKAJ1gzzqTzZb5nwHk82G4ytKyOtrbw/GIgwYNnDBx94MOOnjM2NFh90avXj3BGjDNzc1KqUjEtW2biJ974UUiSqUqTj75BMCMHjWqoqJCSrls2fJ0usP31bffLg/HmJx4wnEA6upqBwzoZ1nWoAH9QRSLxSzLsiyroiIJ4JBDflRXV2tZ1uefz25s2LR27ZpZn3waZmKGDx8OIB6L1VRXG2Mm7LLL11/OWbx48XHHHKO1bmtv37hh7SE//lGqogLA/PkLPvrwoxUrVoZqJZlMlBLkIb930v/pjnSxrkSktb+poXGc1iNHjPhi7mcho4Zj5oYOGTJz+psAbMu2LKu+vn7Y0CFbGtbNmDFz9erVtbW1Rxx+6N133T1wQP/PP/s8Xyh0dHQIaYOsjo70XXf/0feDxsZGx00EQXDZFVcS4Pm+G01+POuTa371a8e2N23aJKSTz+Xuue/+eCy2bt16abnMpram5pslS+Kx2JjRo0B01JFHlAcYhsj98MPDjzzORp1y8onGmGw2e/SxJ65c/o3rRl9//bUDDtg/VZESlmtMuN9F/iff923bvufe+84/71w3lgLg5dqffOrpsD2y85HNZmfMmHniyaf4XnDhhef16NGjoaFh5rvvL1myBCS71dUKQfl8IZ8vKBUo3wMMhCMtG2CtNXR+W51HKZhCMSJ3Etr3EJY8YdmRaFDIlNBdjnRcsBFCGG1c14lEIu0dHf369qmuru5WV1df371Xr5713btHY9HPP5/z0IMPjt9lwofvz0xWJNetWzd42BghhJdre+211w877NBVq1aNGjtRaaMKHQ89/OiZ004PgsAqzcMMQgCxH/jJiqrqqqpZn3yyYcPGDRs2rlu3bt369Rs3btq8pamjvYMhpO3cdecdpeSMLZ0ICI0NjaFnK6WURK4bIyJmY5gNIC1LupXFYUZak21LGQmLnL5S5EYsGQ8VmDHGiVYU0Z9ac9h9YFgSFQpeLl+wLLlqxapVWFYunG0rUjrxVWvWTNxtcn19fSqVtG27kM9HYkkhRVt7W79+/UYMH/b1V1+HjYZd6p+NjY3GGCktCoJA8bEnnJxLp0t1tZKmIIukFEKAyIlWhHJRzCgyLMcphzQ+GKxLvr6wGIJZqyCsdcYIFkBaB0CBEQWcIpQImqCBQGvLkAEUdwJQEgkpLBAzW65LIkLoAnIIFWRHR7q9pXX5t4sBCDtGQijNxxx3UmUqNXDgwJaW1kgsWsi2NzQ0FOkPx+BNnXrAc88/t3b1KjuSVFppX9uRWBlFUc4CFOuqjB3nv3JpxmqEsT/bVSSioN4s51LwmvD2ZPu3FM8yHIJFJIiqmB5n/06kz0bsDBFthBZEhuEDMfB/c+5jUofA3pOtTTBpcJvRM0nlQ2QVM+vvrm0KKYVlE8XKQ/6Z4fuqsWFz46aNkA50vv+AgVOnHhCmPIv0H7D/fl/OnXvV1dc8/NCDgHTjCa2UMbyzjY+l4qMPcxhF7kMiAxBYEh1prIUIvqQgp80PyOlgBlFAXA2KMwCuYKpnIQGLCUAK9AUHcygYBvsWJCrD1CpQwTiHMs/Ct0D678KvDW8vF0IIJxYr5HMw6tzzLrj+umtraqq3zb8M+19qaqofevD+v7z22uAhg7xsWxn2tmOT4d+6swYsohOsaDPxVjItxA0wCSGvQawAvhn5HNgj+GAFBESq1KjoAT7DA+eJ04TfU8GDuYqiUdAmQjNxC8xWwSeQa3VKZe7kEeq1QrZ18KD+r7/+6j1/urumprrc/7Lt/Q9h3H74YYfOnTP7wgsvCQr5oJDf+XmGAtDg8bDGaJkHWwxiOEA7eD84u8L5mIL5UIlS35jc1q0HYgiAGEnQAgSfkDcZ7g+N3QHjgiVggQrgMWyNg6XBOz2HnyxLBoVM4GUvuvjSL+bOOfSQHxdfe1ACBXbBv4f478rK1F133f729DdHjBzu5dqJSAj5j1igOIdmT7YdhumE1Q4xHyciCsEzKLBAZodvhrBXA7gGM9kH87HsEofgoCKUXBM5RHvC3kmBFFIS2Mu1jx4zdvqM6XfecVsqVVGao0d/s/4XjsNVSh104NTZn396+RVXsg6CQsay7PLXQr0YjigrXy5cnhEQPowBDBX/gZADTyTpsPiYgjQMF0W6KKZUBPkwM3cY/TH7NsR4yCw4HOmiCZpgAA8YAavc/htuWPgYnQFvRGRZVpBPg9XlV1z5+WefHDj1gHDbd8RCiO+s+YaMkEwmb/nDTe+/P3Pc+PFero2Zy3GeCoKgkA8KGT/frjyPIBQoAjGKrShTBShR+pcERUCDIUaxWM5BFlwNSoAqABcAyAUqQHGmKqY0zDKYUSyHQkaIkqUrJEFJEi5ROEFJgQmkPM/PtweFTFDIqyAIQynLspiNl2vbdbfdPvrw/Vv+cFM8Httx2/8x/ilkBK31XlOmfPbprBtu+N1td9zp5doAy4lEE5WpylSqqipVV1e3bPmKtavXQFpRxlroFhhVnFdApRYBqgBSJDzSH5EarkUepsrIBhgiWg+ey0E7myiwHMoHV5L4hk17OBOLWRBJIsMQ4A5CBOQRWKu+/fuOGDG8qWlrW1t7e3tHOp32C3mFIBKNX/Ob6371y6vCbvpwstz/Pf6pjAKfN2/+0qVLe/Xu1a2urrq6pqIi6dgOCXr40cfOmnZGJFbpa2Vo+76NzrNhbEYAvU3xEVkgVQbHEYFhIbQLjG1zNbp0HAkmW0ov1/bAgw+ffda0EKSTzmRaW1q2bGlav379iBEjxo8fF6b3/yEKztoZ8G9YKhk/ftz48ePQdfa2hIxFowA0c4RxGLsRIk0gsGGYol2gmKDPtP8tBweKSA8WPnFU0EKjvmR/V3LGkp1jdhmNrN+hYISRu5MdAAbhnDsKBwExQwNvcDF3FYtFQw6NRCKRSKSutnbo0KGd3wKyMxBAayffohi++SKUsbKyCbVgZSoFwMAI5svg9oXlFcHrZKg8fkRO4/Yl8C5C9AdkdRDXQ96K3FwUDmPnUhFvIF3FYi7709kbz/YdlGghltsYiJnhAI3gt+GbMJ+VSgkhwncSdXZSdx78/H+AfyxOS++KpS+hg3pLK0qaM+BlMFXgtGHRaS4HC9JaL2dtCRll2sLGI9iEHBhADtzCpoM5gHYYgrAMupF1nrsoZ01IMH8D3UFsac1WtHfv3sUB9l1G3vwfekfA/+rtmmFavnt9Dx34ELQEKlKCg0qwZJaMKKPFmGWkBwm7ngSDJSCJy6MLBcNiGOZ6UH/IpdCtrKMMwZDMIYhWMkeApVBMUEHQvb5753LA//Xxv6Vfa51IJEaPHskcQIhPEBSn5pQa4BgcNZjPKkdmd5YJJs2lKKo8Zao0MiABmsRWVpj5rCKA6aQFBcgQfYIAQjD748aOraioKLux/x76y2+ROnDq/gDbJOaSWkk6Apji0FxiwBBeEh6Y9zK27tIuXYZGU6lZAvuwA+BV4W/3ZFFgLesvSNsQAB/y44P/KW9l+9/SH1bjjjv26ERFNXw/S3jeFKIcTomksNVnPuv3KRgKe5KRGRjRdUqgKAXPAsgAk2ANNfZ78OeTinNxAJEBxxnPw08T4PuJiuojDj+sy2vc/n30k1KqT58+Rxx+WKDytrSehbeKVDgpRIAF8+2UU2zO4UiiNDWs09iibV2+BGhCBdHP2Q3At3BOMgtmA8QYy6CeQsEWMlC5ww87rE+f3qGR+zfTX+xBZL7s0ostOyK07hC4CXkXMOA6pgfgfUzePuwcikh7CSaPch991wmOEmgnPhTuXmx/DP9eylcDBsYFfk+FDrDUWlruZZdeiH/SIf4Z71sTWutddhk/7cwzPS8Ttey3yX8A+cGMF+HdLAt1bF+LhAZTaUZrKe6lLv3NxTiKjMANHKsjeSvln4Y3hMXDVJgOL2rZBS99xrRpEyZM+MfA7n9u/8c/0oJMhNbW1l0m7r5x/TrpRkjr0437uPBB9DCSe7AVNnaHxGqgStA9XPgDp69B4lyKb4WWpRESGlzBmE3qDKR9YBrcp+ApIbWf79Ov31dfzK6srAxbLL4X+x9qAWNMTU3Nn596goSAMSzkA8In4CFO7G1kC5dneG3r6aPOczN421g5ATQTprD1lIlHgYdQCISA0SA8+T+PV1eHqSv6vvB/5975KVP2fPDBBwIvK4CokAz+lINWcC0AsCm/RaA4ypc7DXUoftBgA9QxOoAPoDRzhKRgDvzs/fffv9eUPf9ZnP9Ppr80Ry844/Sf3XX3PV4h46mALed+yh+P9FsURIBqJsfAMGuw5uJyGEAzawYzHHA1U5Qxg4LjKP0nUTCW7anA93J/uue+s848I4xn/4nP/E9+XYllWUGgLrzg3B496qdNOzPd0RqNVX5r9Lmc3ZXFMRSZwk4PkGRUgyIEEMVBtQTBpMAbjZlFwUvkf0EKJGLCyeXaUpXVDz/852OOPvJf8X4V+le8qyPsGlq4cPGFF130wfvvAlYkGi+wAesqlqMgRrCcwNZrFLwt/IPZORD2N1DfwCyGaiOGkBGIQj4DqP33P/CPf7x7xIhh/6qXy/yLXkIbBEEYjT7y6GPDho8scUdcRlOIpRBNwk3ATUg3CSeBSAKRJKIVIlIhZTQ8eeTIMY888lh4kRDb+K846F/3Grdy73w+n3/++Rf+58mn58z9ItPRBjBgSWmRlFwuXOkgLLelqmonT9r9lJNPOvrooyMRd2d62L93/N9FFrS2S3y7ZMmSjz76eNYnny1cuGhjQ0O6I2PY2LadSlX07FE/ftzYSZN2/+Heew8ZMriUX1KWJf+lj/f/Ae6/XTMrfBHwAAAAAElFTkSuQmCC";
+var KEY="alevinA.partidos.v1";
+var ROSTER=[];
+var RULES={porSexto:5,minJugar:2,minDescanso:2,minConv:10,maxConv:12,faltas:5};
+var MESES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+
+var mem=null;
+function load(){
+  var s=null;
+  try{s=JSON.parse(localStorage.getItem(KEY));}catch(e){}
+  if(!s||!s.roster){s={roster:ROSTER.map(function(r,i){return{id:"p"+(i+1),num:r[0],name:r[1]};}),matches:[],rules:{},seq:ROSTER.length};}
+  s.rules=Object.assign({},RULES,s.rules||{});
+  return s;
+}
+var S=load();
+var saveFail=false;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));saveFail=false;}catch(e){saveFail=true;}}
+var ui={tab:"partidos",mid:null,sec:"datos",confirm:null};
+
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function $(id){return document.getElementById(id);}
+function match(){for(var i=0;i<S.matches.length;i++)if(S.matches[i].id===ui.mid)return S.matches[i];return null;}
+function sortedRoster(){return S.roster.slice().sort(function(a,b){return a.num-b.num;});}
+function newMatch(){
+  var m={id:"m"+Date.now(),fecha:"",jornada:"",rival:"",cond:"L",comp:"",hora:"",llegada:"",llegadaManual:false,lugar:"",
+    conv:{},motivos:{},sx:{},faltas:{},obj:{ataque:{t:"",ev:""},defensa:{t:"",ev:""},actitud:{t:"",ev:""}},normas:"",ind:{},notas:""};
+  if(S.matches.length){var l=S.matches[S.matches.length-1];m.comp=l.comp||"";}
+  S.matches.push(m);save();return m;
+}
+function menos45(h){
+  var p=/^(\d{1,2}):(\d{2})$/.exec(h||"");if(!p)return"";
+  var t=(+p[1])*60+(+p[2])-45;if(t<0)t+=1440;
+  return("0"+Math.floor(t/60)).slice(-2)+":"+("0"+(t%60)).slice(-2);
+}
+function convocados(m){return sortedRoster().filter(function(p){return m.conv[p.id];});}
+function sxOf(m,pid){if(!m.sx[pid])m.sx[pid]=[0,0,0,0,0,0];return m.sx[pid];}
+function totalDe(m,pid){var a=sxOf(m,pid),t=0;for(var i=0;i<5;i++)t+=a[i]?1:0;return t;}
+
+/* ---- Comprobación de la normativa (Reglas Oficiales de Minibasket FAB, art. 4 y 19) ---- */
+function check(m){
+  var R=S.rules,C=convocados(m),n=C.length,maxJ=5-R.minDescanso,out={errs:[],avisos:[],sext:[],pl:{},n:n,nivel:"ok"};
+  if(n===0){out.nivel="warn";out.avisos.push("Marca primero la convocatoria.");return out;}
+  if(n>R.maxConv)out.errs.push("Hay "+n+" convocados: el máximo en acta es "+R.maxConv+".");
+  if(n<5)out.errs.push("Con menos de 5 jugadores no se puede empezar el partido.");
+  else if(n<R.minConv)out.avisos.push("Con "+n+" jugadores (menos de "+R.minConv+") el partido se juega y el árbitro lo anota al dorso del acta.");
+  var imposible=n>=5&&n*maxJ<5*R.porSexto;
+  if(imposible)out.avisos.push("Con "+n+" jugadores no es posible que todos descansen "+R.minDescanso+" sextos: se hacen los cambios necesarios para tener 5 en pista y el árbitro lo anota en el acta.");
+  for(var s=0;s<6;s++){var c=0;C.forEach(function(p){if(sxOf(m,p.id)[s])c++;});out.sext[s]=c;}
+  var faltan=[],sobran=[];
+  for(s=0;s<5;s++){if(out.sext[s]<R.porSexto)faltan.push((s+1)+"º");else if(out.sext[s]>R.porSexto)sobran.push((s+1)+"º");}
+  if(sobran.length)out.errs.push("Sextos con más de "+R.porSexto+" jugadores: "+lista(sobran)+".");
+  var poco=[],mucho=[];
+  C.forEach(function(p){
+    var t=totalDe(m,p.id),st="ok";
+    if(t>maxJ&&!imposible){st="bad";mucho.push(p);}
+    else if(t<R.minJugar){st="warn";poco.push(p);}
+    out.pl[p.id]={t:t,st:st};
+  });
+  if(mucho.length)out.errs.push(nombres(mucho)+(mucho.length>1?" juegan":" juega")+" más de "+maxJ+" de los 5 primeros sextos: "+(mucho.length>1?"deben":"debe")+" descansar "+R.minDescanso+" completos.");
+  var completo=!faltan.length&&!sobran.length;
+  if(poco.length){
+    var txt=nombres(poco)+(poco.length>1?" no llegan":" no llega")+" a "+R.minJugar+" sextos completos en los 5 primeros.";
+    if(completo)out.errs.push(txt);else out.avisos.push(txt);
+  }
+  if(faltan.length)out.avisos.push("Sextos sin completar: "+lista(faltan)+" ("+R.porSexto+" jugadores por sexto).");
+  if(out.sext[5]>R.porSexto)out.avisos.push("El 6º sexto tiene "+out.sext[5]+" marcados: en el 6º hay cambios libres, marca solo el quinteto de salida.");
+  var elim=C.filter(function(p){return(m.faltas[p.id]||0)>=R.faltas;});
+  elim.forEach(function(p){out.pl[p.id].out=true;});
+  if(elim.length)out.avisos.push(nombres(elim)+(elim.length>1?" están eliminados":" está eliminado")+" por "+R.faltas+" faltas.");
+  out.nivel=out.errs.length?"bad":(faltan.length||poco.length?"warn":"ok");
+  return out;
+}
+function lista(a){return a.length>1?a.slice(0,-1).join(", ")+" y "+a[a.length-1]:a[0];}
+function nombres(ps){return lista(ps.map(function(p){return"#"+p.num+" "+p.name.split(" ")[0];}));}
+
+/* ---- Pintado ---- */
+function render(){
+  var m=ui.tab==="partidos"?match():null;
+  var hd='<img src="'+LOGO+'" alt="Fundación CB Granada">';
+  if(m){
+    hd+='<div class="h-t"><b>'+esc(m.rival?"vs "+m.rival:"Partido nuevo")+'</b><span>'+esc(fechaLarga(m)||"Alevín A · Temporada 2026/27")+'</span></div><button class="back" data-a="volver">Partidos</button>';
+  }else{
+    var t={partidos:"Partidos",plantilla:"Plantilla",normativa:"Normativa",ajustes:"Ajustes"}[ui.tab];
+    hd+='<div class="h-t"><b>'+t+'</b><span>Alevín A · Temporada 2026/27</span></div>';
+  }
+  $("hd").innerHTML=hd;
+  $("nav").innerHTML=[["partidos","Partidos"],["plantilla","Plantilla"],["normativa","Normativa"],["ajustes","Ajustes"]].map(function(x){
+    return'<button data-a="tab" data-v="'+x[0]+'" class="'+(ui.tab===x[0]?"on":"")+'">'+x[1]+'</button>';}).join("");
+  var h="";
+  if(saveFail)h+='<div class="estado bad"><b>No se pueden guardar los datos</b>Este navegador no permite almacenamiento. Los cambios se perderán al cerrar.</div>';
+  if(ui.tab==="partidos")h+=m?vMatch(m):vList();
+  else if(ui.tab==="plantilla")h+=vRoster();
+  else if(ui.tab==="normativa")h+=vRules();
+  else h+=vSettings();
+  $("main").innerHTML=h;
+}
+function fechaLarga(m){
+  var p=/^(\d{4})-(\d{2})-(\d{2})$/.exec(m.fecha||"");if(!p)return"";
+  var s=(+p[3])+" "+MESES[+p[2]-1]+" "+p[1];
+  if(m.hora)s+=" · "+m.hora;
+  if(m.jornada)s+=" · J"+m.jornada;
+  return s;
+}
+function vList(){
+  var h='<button class="btn block" data-a="nuevo" style="margin-bottom:14px">Nuevo partido</button>';
+  if(!S.matches.length)return h+'<div class="card empty"><b>Aún no hay partidos</b><br>Crea el primero para preparar la convocatoria y los sextos.</div>';
+  var ms=S.matches.slice().sort(function(a,b){return(b.fecha||"9999").localeCompare(a.fecha||"9999");});
+  ms.forEach(function(m){
+    var p=/^(\d{4})-(\d{2})-(\d{2})$/.exec(m.fecha||""),c=check(m);
+    var pill=c.n===0?'<span class="pill warn">Sin convocar</span>':c.nivel==="ok"?'<span class="pill ok">Sextos OK</span>':c.nivel==="bad"?'<span class="pill bad">Revisar</span>':'<span class="pill warn">Incompleto</span>';
+    h+='<button class="m" data-a="abrir" data-v="'+m.id+'"><span class="d">'+(p?'<b>'+(+p[3])+'</b><i>'+MESES[+p[2]-1]+'</i>':'<b>–</b><i>fecha</i>')+'</span><span class="t"><b>'+esc(m.rival||"Rival por definir")+'</b><span>'+(m.cond==="V"?"Visitante":"Local")+(m.hora?" · "+esc(m.hora):"")+(m.lugar?" · "+esc(m.lugar):"")+'</span></span>'+pill+'</button>';
+  });
+  return h;
+}
+function vMatch(m){
+  var secs=[["datos","Datos"],["conv","Convocatoria"],["sextos","Sextos"],["obj","Objetivos"],["notas","Notas"]];
+  var h='<div class="seg">'+secs.map(function(s){return'<button data-a="sec" data-v="'+s[0]+'" class="'+(ui.sec===s[0]?"on":"")+'">'+s[1]+'</button>';}).join("")+'</div>';
+  if(ui.sec==="datos")h+=vDatos(m);
+  else if(ui.sec==="conv")h+=vConv(m);
+  else if(ui.sec==="sextos")h+='<div id="sx">'+vSextos(m)+'</div>';
+  else if(ui.sec==="obj")h+=vObj(m);
+  else h+=vNotas(m);
+  return h;
+}
+function fld(lbl,k,type,val,cls,extra){return'<label class="f '+(cls||"")+'">'+lbl+'<input type="'+type+'" data-k="'+k+'" value="'+esc(val)+'" '+(extra||"")+'></label>';}
+function vDatos(m){
+  var h='<div class="card"><h2>Partido</h2><div class="grid">';
+  h+=fld("Rival","rival","text",m.rival,"w2",'autocomplete="off"');
+  h+='<div class="w2"><label class="f">Condición</label><div class="lv"><button data-a="cond" data-v="L" class="'+(m.cond!=="V"?"on":"")+'">LOCAL</button><button data-a="cond" data-v="V" class="'+(m.cond==="V"?"on":"")+'">VISITANTE</button></div></div>';
+  h+=fld("Fecha","fecha","date",m.fecha)+fld("Jornada","jornada","text",m.jornada,"",'inputmode="numeric" autocomplete="off"');
+  h+=fld("Hora","hora","time",m.hora)+fld("Llegada","llegada","time",m.llegada);
+  h+=fld("Competición","comp","text",m.comp,"w2",'autocomplete="off"')+fld("Lugar","lugar","text",m.lugar,"w2",'autocomplete="off"');
+  h+='</div><p class="hint">La llegada se calcula 45 minutos antes de la hora; puedes cambiarla a mano.</p></div>';
+  h+='<div class="row"><button class="btn dark" data-a="sec" data-v="conv" style="flex:1">Ir a convocatoria</button>';
+  h+=ui.confirm==="del"?'<button class="btn danger" data-a="borrar">¿Seguro? Eliminar</button>':'<button class="btn danger" data-a="askdel">Eliminar partido</button>';
+  return h+'</div>';
+}
+function vConv(m){
+  var R=S.rules,n=convocados(m).length;
+  var cls=n>R.maxConv?"bad":n>=R.minConv?"ok":"warn";
+  if(!S.roster.length)return'<div class="card empty"><b>La plantilla está vacía</b><br>Importa la plantilla en Ajustes o añade los jugadores en Plantilla.</div>';
+  var h='<div class="card"><h2>Convocatoria</h2><div class="count"><b>'+n+'</b><span class="sub">de '+R.maxConv+' convocados</span><span class="pill '+cls+'" style="margin-left:auto">'+(n>R.maxConv?"Sobran "+(n-R.maxConv):n===R.maxConv?"Completa":n>=R.minConv?"Válida":"Mínimo "+R.minConv)+'</span></div>';
+  sortedRoster().forEach(function(p){
+    var on=!!m.conv[p.id];
+    h+='<div class="pl '+(on?"":"off")+'"><span class="num">'+p.num+'</span><div class="n"><span>'+esc(p.name)+'</span>'+(on||n===0?"":'<input class="inp" data-mot="'+p.id+'" value="'+esc(m.motivos[p.id]||"")+'" placeholder="Motivo de la desconvocatoria" autocomplete="off">')+'</div><button class="chk '+(on?"on":"")+'" data-a="conv" data-v="'+p.id+'" aria-pressed="'+on+'" aria-label="Convocar a '+esc(p.name)+'">✓</button></div>';
+  });
+  h+='</div><div class="row"><button class="btn ghost" data-a="convtodos" style="flex:1">'+(n?"Quitar todos":"Marcar los "+Math.min(R.maxConv,S.roster.length)+" primeros")+'</button><button class="btn dark" data-a="sec" data-v="sextos" style="flex:1">Ir a sextos</button></div>';
+  return h;
+}
+function vSextos(m){
+  var R=S.rules,c=check(m),C=convocados(m),h="";
+  var tit={ok:"Alineación válida",warn:"Alineación incompleta",bad:"Alineación no válida"}[c.nivel];
+  h+='<div class="estado '+c.nivel+'" role="status"><b>'+tit+'</b>';
+  var items=c.errs.concat(c.avisos);
+  if(items.length)h+='<ul>'+items.map(function(x){return"<li>"+esc(x)+"</li>";}).join("")+'</ul>';
+  else h+='Todos juegan al menos '+R.minJugar+' sextos y descansan '+R.minDescanso+' en los 5 primeros.';
+  h+='</div>';
+  if(!C.length)return h+'<button class="btn dark block" data-a="sec" data-v="conv">Ir a convocatoria</button>';
+  h+='<div class="card flush"><div class="sx-wrap"><table class="sx"><colgroup><col class="cw"><col><col><col><col><col><col><col><col></colgroup><thead><tr><th>Jugador</th><th>1º</th><th>2º</th><th>3º</th><th>4º</th><th>5º</th><th class="r">Tot</th><th class="g">6º</th><th>Flt</th></tr></thead><tbody>';
+  C.forEach(function(p){
+    var a=sxOf(m,p.id),st=c.pl[p.id],f=m.faltas[p.id]||0;
+    h+='<tr class="'+(st.out?"out":"")+'"><td class="who"><div><b>'+p.num+'</b><span>'+esc(p.name)+'</span></div></td>';
+    for(var s=0;s<5;s++)h+='<td><button class="cell '+(a[s]?"on":"")+'" data-a="sx" data-v="'+p.id+'" data-s="'+s+'" aria-pressed="'+!!a[s]+'" aria-label="'+esc(p.name)+', sexto '+(s+1)+'">'+(a[s]?"●":"")+'</button></td>';
+    h+='<td><span class="tot '+st.st+'">'+st.t+'</span></td>';
+    h+='<td><button class="cell six '+(a[5]?"on":"")+'" data-a="sx" data-v="'+p.id+'" data-s="5" aria-pressed="'+!!a[5]+'" aria-label="'+esc(p.name)+', sexto 6">'+(a[5]?"●":"")+'</button></td>';
+    h+='<td><button class="fal '+(f>=R.faltas?"f5":f===R.faltas-1?"f4":"")+'" data-a="falta" data-v="'+p.id+'" aria-label="Faltas de '+esc(p.name)+': '+f+'">'+f+'</button></td></tr>';
+  });
+  h+='</tbody><tfoot><tr><td class="who">En pista</td>';
+  for(var s=0;s<5;s++){var k=c.sext[s];h+='<td><span class="cnt '+(k===R.porSexto?"ok":k>R.porSexto?"bad":"warn")+'">'+k+'</span></td>';}
+  h+='<td></td><td><span class="cnt '+(c.sext[5]===R.porSexto?"ok":c.sext[5]>R.porSexto?"bad":"warn")+'">'+c.sext[5]+'</span></td><td></td></tr></tfoot></table></div>';
+  h+='<p class="hint">Toca una casilla para poner o quitar al jugador en ese sexto. Toca el número de faltas para sumar una; al pasar de '+R.faltas+' vuelve a 0.</p></div>';
+  h+='<div class="row">'+(ui.confirm==="clr"?'<button class="btn danger" data-a="limpiar" style="flex:1">¿Seguro? Vaciar sextos</button>':'<button class="btn ghost" data-a="asklimpiar" style="flex:1">Vaciar sextos</button>')+'</div>';
+  return h;
+}
+function evBtns(scope,id,val){
+  return'<div class="ev">'+[["s","SÍ"],["p","PARC"],["n","NO"]].map(function(x){return'<button class="'+x[0]+" "+(val===x[0]?"on":"")+'" data-a="ev" data-scope="'+scope+'" data-v="'+id+'" data-e="'+x[0]+'" aria-pressed="'+(val===x[0])+'">'+x[1]+'</button>';}).join("")+'</div>';
+}
+function vObj(m){
+  var h='<div class="card"><h2>Objetivos del partido</h2>';
+  [["ataque","Ataque"],["defensa","Defensa"],["actitud","Actitud / Comunicación"]].forEach(function(o){
+    var v=m.obj[o[0]];
+    h+='<div class="ob"><div class="hd"><span>'+o[1]+'</span>'+evBtns("obj",o[0],v.ev)+'</div><textarea rows="3" data-obj="'+o[0]+'" aria-label="Objetivo de '+o[1]+'">'+esc(v.t)+'</textarea></div>';
+  });
+  h+='</div><div class="card"><h2>Normas del partido</h2><textarea rows="3" data-k="normas" aria-label="Normas del partido">'+esc(m.normas)+'</textarea></div>';
+  h+='<div class="card"><h2>Objetivos individuales</h2>';
+  var C=convocados(m);if(!C.length)C=sortedRoster();
+  C.forEach(function(p){
+    var v=m.ind[p.id]||{t:"",ev:""};
+    h+='<div class="ind"><div class="top"><span class="num">'+p.num+'</span><span>'+esc(p.name)+'</span>'+evBtns("ind",p.id,v.ev)+'</div><input class="inp" data-ind="'+p.id+'" value="'+esc(v.t)+'" placeholder="Objetivo" autocomplete="off" aria-label="Objetivo de '+esc(p.name)+'"></div>';
+  });
+  return h+'</div>';
+}
+function vNotas(m){
+  var des=sortedRoster().filter(function(p){return!m.conv[p.id];}),n=convocados(m).length;
+  var h='<div class="card"><h2>Notas durante el partido</h2><textarea rows="12" data-k="notas" aria-label="Notas durante el partido">'+esc(m.notas)+'</textarea></div>';
+  h+='<div class="card"><h2>Desconvocados y motivos</h2>';
+  if(!n)h+='<p class="sub" style="margin:0">Marca la convocatoria para ver aquí los desconvocados.</p>';
+  else if(!des.length)h+='<p class="sub" style="margin:0">No hay desconvocados.</p>';
+  else des.forEach(function(p){h+='<div class="pl"><span class="num">'+p.num+'</span><div class="n"><span>'+esc(p.name)+'</span><div class="sub">'+esc(m.motivos[p.id]||"Sin motivo anotado")+'</div></div></div>';});
+  return h+'</div>';
+}
+function vRoster(){
+  var h='<div class="card"><h2>Plantilla ('+S.roster.length+')</h2>';
+  sortedRoster().forEach(function(p){
+    h+='<div class="pl"><input class="inp" style="width:64px;margin:0;text-align:center;font-weight:900" inputmode="numeric" data-pn="'+p.id+'" value="'+p.num+'" aria-label="Dorsal"><input class="inp" style="margin:0;flex:1;min-width:0" data-pp="'+p.id+'" value="'+esc(p.name)+'" autocomplete="off" aria-label="Nombre">'+(ui.confirm==="p"+p.id?'<button class="btn danger" style="padding:9px 10px" data-a="delp" data-v="'+p.id+'">¿Quitar?</button>':'<button class="btn ghost" style="padding:9px 12px" data-a="askdelp" data-v="'+p.id+'" aria-label="Quitar a '+esc(p.name)+'">✕</button>')+'</div>';
+  });
+  return h+'</div><button class="btn dark block" data-a="addp">Añadir jugador</button><p class="hint">Los cambios de dorsal se reordenan al salir de esta pantalla.</p>';
+}
+function vRules(){
+  var R=S.rules,maxJ=5-R.minDescanso;
+  var rs=[
+    ["Art. 8","Seis periodos (sextos) de 8 minutos. Descanso de 1 minuto entre sextos y de 5 minutos entre el 3º y el 4º."],
+    ["Art. 4","Entre "+R.minConv+" y "+R.maxConv+" jugadores en acta. Con 5 a 9 el partido se juega y el árbitro lo anota al dorso del acta."],
+    ["19.2.2","Cada jugador debe jugar al menos "+R.minJugar+" sextos completos de los 5 primeros."],
+    ["19.2.3","Cada jugador debe estar en el banquillo "+R.minDescanso+" sextos completos de los 5 primeros. Por tanto, nadie juega más de "+maxJ+"."],
+    ["19.2.1","Sin cambios en los 5 primeros sextos, salvo por lesión, descalificación, 5 faltas personales, 2 antideportivas o 2 técnicas."],
+    ["19.2.2","Excepciones: el lesionado que no puede seguir cuenta ese sexto como jugado; al eliminado o descalificado se le da la alineación por válida; al que entra a sustituirlos no le cuenta ese sexto como jugado."],
+    ["19.2.4","Si no hay jugadores suficientes para que todos descansen, el partido sigue con 5 en pista y el árbitro lo anota en el acta."],
+    ["19.2.5","En el 6º sexto y en las prórrogas, cambios libres con regla FIBA."],
+    ["Art. 18","Tiempos muertos: 2 en la primera mitad, 3 en la segunda y 1 por prórroga."],
+    ["Art. 8.7","Con 40 puntos de diferencia se cierra el marcador; el equipo que gana no puede presionar a toda pista ni pedir tiempo muerto."]
+  ];
+  var h='<div class="card"><h2>Reglas que comprueba la app</h2>'+rs.map(function(r){return'<div class="rule"><b>'+r[0]+'</b><p>'+esc(r[1])+'</p></div>';}).join("")+'</div>';
+  h+='<div class="card"><h2>Fuente</h2><p style="margin:0;font-size:14px">Reglas Oficiales de Minibasket de la Federación Andaluza de Baloncesto (edición de septiembre de 2015). La FAB publicó una edición nueva en octubre de 2024 que no se ha podido consultar: revisa en ella y en las bases de la Delegación de Granada 2026/27 si cambia algún valor y ajústalo abajo.</p></div>';
+  h+='<div class="card"><h2>Valores ajustables</h2>';
+  [["minJugar","Mínimo de sextos jugados (de los 5 primeros)",0,4],["minDescanso","Mínimo de sextos de descanso (de los 5 primeros)",0,4],["minConv","Mínimo de jugadores en acta",5,15],["maxConv","Máximo de jugadores en acta",5,15],["faltas","Faltas personales para la eliminación",4,6]].forEach(function(x){
+    h+='<div class="stp"><span>'+x[1]+'</span><div><button data-a="rule" data-v="'+x[0]+'" data-d="-1" data-min="'+x[2]+'" data-max="'+x[3]+'" aria-label="Menos">−</button><b>'+R[x[0]]+'</b><button data-a="rule" data-v="'+x[0]+'" data-d="1" data-min="'+x[2]+'" data-max="'+x[3]+'" aria-label="Más">+</button></div></div>';
+  });
+  return h+'</div><button class="btn ghost block" data-a="rulereset">Restablecer valores de la normativa</button>';
+}
+function vSettings(){
+  var h='<div class="card"><h2>Copia de seguridad</h2><p class="sub" style="margin:0 0 10px">Los datos se guardan solo en este dispositivo. Exporta una copia para llevarlos a otro o para no perderlos.</p><div class="row"><button class="btn dark" data-a="exportar" style="flex:1">Exportar copia</button><label class="btn ghost" style="flex:1;text-align:center">Importar copia<input type="file" id="imp" accept="application/json,.json" hidden></label></div></div>';
+  h+='<div class="card"><h2>Instalar en el móvil</h2><div class="rule"><b>iPhone</b><p>Abre la app en Safari, pulsa Compartir y elige «Añadir a pantalla de inicio».</p></div><div class="rule"><b>Android</b><p>Abre la app en Chrome, pulsa el menú y elige «Instalar aplicación».</p></div></div>';
+  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Partidos Alevín A · versión 1.0<br><span class="sub">'+S.matches.length+' partidos guardados · '+S.roster.length+' jugadores</span></p></div>';
+  return h;
+}
+
+/* ---- Eventos ---- */
+var toastT=null;
+function toast(t){var o=document.querySelector(".toast");if(o)o.remove();var d=document.createElement("div");d.className="toast";d.setAttribute("role","status");d.textContent=t;document.body.appendChild(d);clearTimeout(toastT);toastT=setTimeout(function(){d.remove();},2600);}
+function rerenderKeepScroll(){var y=window.scrollY;render();window.scrollTo(0,y);}
+
+document.addEventListener("click",function(e){
+  var b=e.target.closest("[data-a]");if(!b)return;
+  var a=b.dataset.a,v=b.dataset.v,m=match(),keep=true;
+  if(a!=="askdel"&&a!=="asklimpiar"&&a!=="askdelp")ui.confirm=null;
+  switch(a){
+    case"tab":if(ui.tab==="plantilla")save();ui.tab=v;if(v==="partidos")ui.mid=null;keep=false;break;
+    case"volver":ui.mid=null;keep=false;break;
+    case"nuevo":ui.mid=newMatch().id;ui.sec="datos";keep=false;break;
+    case"abrir":ui.mid=v;ui.sec=convocados(match()).length?"sextos":"datos";keep=false;break;
+    case"sec":ui.sec=v;keep=false;break;
+    case"cond":m.cond=v;break;
+    case"askdel":ui.confirm="del";break;
+    case"borrar":S.matches=S.matches.filter(function(x){return x.id!==m.id;});ui.mid=null;keep=false;toast("Partido eliminado");break;
+    case"conv":
+      if(m.conv[v])delete m.conv[v];
+      else{if(convocados(m).length>=S.rules.maxConv)toast("Ya hay "+S.rules.maxConv+" convocados, el máximo en acta");m.conv[v]=true;}
+      break;
+    case"convtodos":
+      if(convocados(m).length)m.conv={};
+      else sortedRoster().slice(0,S.rules.maxConv).forEach(function(p){m.conv[p.id]=true;});
+      break;
+    case"sx":var arr=sxOf(m,v),s=+b.dataset.s;arr[s]=arr[s]?0:1;save();$("sx").innerHTML=vSextos(m);return;
+    case"falta":var f=(m.faltas[v]||0)+1;if(f>S.rules.faltas)f=0;m.faltas[v]=f;save();$("sx").innerHTML=vSextos(m);return;
+    case"asklimpiar":ui.confirm="clr";break;
+    case"limpiar":m.sx={};m.faltas={};break;
+    case"ev":
+      if(b.dataset.scope==="obj"){var o=m.obj[v];o.ev=o.ev===b.dataset.e?"":b.dataset.e;}
+      else{if(!m.ind[v])m.ind[v]={t:"",ev:""};m.ind[v].ev=m.ind[v].ev===b.dataset.e?"":b.dataset.e;}
+      break;
+    case"addp":S.seq=(S.seq||S.roster.length)+1;var mx=0;S.roster.forEach(function(p){if(p.num>mx)mx=p.num;});S.roster.push({id:"p"+S.seq+"x"+Date.now(),num:mx+1,name:"Jugador nuevo"});break;
+    case"askdelp":ui.confirm="p"+v;break;
+    case"delp":S.roster=S.roster.filter(function(p){return p.id!==v;});break;
+    case"rule":var nv=S.rules[v]+(+b.dataset.d);if(nv<+b.dataset.min||nv>+b.dataset.max)return;S.rules[v]=nv;
+      if(S.rules.minConv>S.rules.maxConv){if(v==="minConv")S.rules.maxConv=nv;else S.rules.minConv=nv;}
+      if(S.rules.minJugar+S.rules.minDescanso>5){if(v==="minJugar")S.rules.minDescanso=5-nv;else S.rules.minJugar=5-nv;}
+      break;
+    case"rulereset":S.rules=Object.assign({},RULES);toast("Valores restablecidos");break;
+    case"exportar":exportar();return;
+    default:return;
+  }
+  save();
+  if(keep)rerenderKeepScroll();else{render();window.scrollTo(0,0);}
+});
+
+document.addEventListener("input",function(e){
+  var t=e.target,m=match(),d=t.dataset;
+  if(d.pn){var p=S.roster.filter(function(x){return x.id===d.pn;})[0];var n=parseInt(t.value,10);if(p&&!isNaN(n))p.num=n;save();return;}
+  if(d.pp){var q=S.roster.filter(function(x){return x.id===d.pp;})[0];if(q)q.name=t.value;save();return;}
+  if(!m)return;
+  if(d.k){
+    m[d.k]=t.value;
+    if(d.k==="llegada")m.llegadaManual=!!t.value;
+    if(d.k==="hora"&&!m.llegadaManual){m.llegada=menos45(t.value);var l=document.querySelector('[data-k="llegada"]');if(l)l.value=m.llegada;}
+  }else if(d.mot)m.motivos[d.mot]=t.value;
+  else if(d.obj)m.obj[d.obj].t=t.value;
+  else if(d.ind){if(!m.ind[d.ind])m.ind[d.ind]={t:"",ev:""};m.ind[d.ind].t=t.value;}
+  else return;
+  save();
+});
+document.addEventListener("change",function(e){
+  var t=e.target;
+  if(t.dataset.k==="rival"||t.dataset.k==="fecha"||t.dataset.k==="hora"||t.dataset.k==="jornada"){var a=document.activeElement;if(!a||a===document.body||a===t)rerenderHeader();}
+  if(t.id==="imp"&&t.files&&t.files[0]){
+    var r=new FileReader();
+    r.onload=function(){
+      try{var d=JSON.parse(r.result);if(!d||!Array.isArray(d.roster)||!Array.isArray(d.matches))throw 0;S=d;S.rules=Object.assign({},RULES,S.rules||{});save();ui.mid=null;render();toast("Copia importada: "+S.matches.length+" partidos");}
+      catch(x){toast("El archivo no es una copia válida");}
+    };
+    r.readAsText(t.files[0]);
+  }
+});
+function rerenderHeader(){var m=match();if(!m)return;var b=document.querySelector(".h-t");if(b)b.innerHTML='<b>'+esc(m.rival?"vs "+m.rival:"Partido nuevo")+'</b><span>'+esc(fechaLarga(m)||"Alevín A · Temporada 2026/27")+'</span>';}
+function exportar(){
+  try{
+    var blob=new Blob([JSON.stringify(S,null,1)],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a");
+    var d=new Date(),f=d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);
+    a.href=u;a.download="partidos-alevin-a-"+f+".json";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},1500);
+    toast("Copia exportada");
+  }catch(e){toast("No se ha podido exportar en este navegador");}
+}
+
+window.__app={check:check,state:function(){return S;},ui:ui,render:render};
+render();
+if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol)){try{navigator.serviceWorker.register("sw.js").catch(function(){});}catch(e){}}
+})();
+</script>
+</body>
+</html>

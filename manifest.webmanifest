@@ -1,0 +1,16 @@
+{
+  "name": "Partidos Alevín A",
+  "short_name": "Alevín A",
+  "description": "Convocatoria, sextos y objetivos de los partidos del Alevín A",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#111111",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
