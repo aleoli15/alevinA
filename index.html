@@ -141,6 +141,50 @@ table.sx{border-collapse:separate;border-spacing:0;width:100%;table-layout:fixed
 .cnt.ok{background:var(--ok-bg);color:var(--ok)} .cnt.warn{background:var(--warn-bg);color:var(--warn)} .cnt.bad{background:var(--bad-bg);color:var(--bad)}
 .hint{font-size:12.5px;color:var(--mute);margin-top:10px}
 
+.cell.must{border:2px dashed var(--red);color:var(--red);background:#fff6f7}
+.cell.no{background:repeating-linear-gradient(135deg,#e6e6e3 0 4px,#f3f3f1 4px 8px);border-color:#d2d3d1}
+.leg{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--mute);margin-top:10px;padding:0 6px}
+.leg i{display:inline-block;width:16px;height:16px;border-radius:4px;vertical-align:-3px;margin-right:5px;border:1.5px solid #b9bbbd;font-style:normal}
+.leg i.must{border:2px dashed var(--red)} .leg i.no{background:repeating-linear-gradient(135deg,#e6e6e3 0 4px,#f3f3f1 4px 8px)} .leg i.on{background:var(--ink);border-color:var(--ink)}
+/* directo */
+.sxsel{display:flex;gap:6px;margin-bottom:12px}
+.sxsel button{flex:1;border:1.5px solid var(--ink);background:#fff;border-radius:8px;height:44px;font-weight:900;font-size:16px}
+.sxsel button.on{background:var(--ink);color:#fff}
+.score{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;text-align:center}
+.score .tm{font-size:11px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.score .n{font-size:52px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums}
+.score .sep{font-size:30px;font-weight:900;color:var(--mute)}
+.pts{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px}
+.pts button{border:1.5px solid var(--ink);background:#fff;border-radius:8px;height:44px;font-weight:900;font-size:15px;padding:0}
+.pts button.m{border-color:var(--line);color:var(--mute)}
+.parc{font-size:12.5px;color:var(--mute);text-align:center;margin-top:10px;font-variant-numeric:tabular-nums}
+.lp{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line)}
+.lp:first-of-type{border-top:0}
+.lp .n{flex:1;min-width:0;font-weight:700;line-height:1.2}
+.lp .n small{display:block;font-weight:800;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase}
+.lp .n small.must{color:var(--red)} .lp .n small.no{color:var(--mute)}
+.lp.out .n{text-decoration:line-through;color:var(--mute)}
+.fb{flex:none;display:flex;align-items:center;gap:4px}
+.fb button{width:40px;height:40px;border-radius:8px;border:1.5px solid #b9bbbd;background:#fff;font-weight:900;font-size:17px;padding:0}
+.fb b{min-width:34px;height:40px;line-height:40px;text-align:center;border-radius:8px;background:#f1f1ef;font-size:17px;font-variant-numeric:tabular-nums}
+.fb b.f4{background:var(--warn-bg);color:var(--warn)} .fb b.f5{background:var(--bad);color:#fff}
+.sw{flex:none;border:0;border-radius:8px;height:40px;padding:0 12px;font-weight:800;font-size:13px;background:var(--ink);color:#fff}
+.sw.in{background:var(--red)}
+.h2r{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.h2r h2{margin:0}
+/* temporada */
+table.tp{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.tp th{font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:6px 4px;text-align:center;border-bottom:2px solid var(--ink)}
+.tp th:first-child,.tp td:first-child{text-align:left}
+.tp td{padding:8px 4px;text-align:center;border-bottom:1px solid var(--line);font-weight:700}
+.tp td:first-child{font-weight:700}
+.tp td b{display:inline-block;width:28px;font-weight:900}
+.tp td.hi{color:var(--bad);font-weight:900}
+.kp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.kp div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.kp b{display:block;font-size:24px;font-weight:900;font-variant-numeric:tabular-nums}
+.kp span{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.estado.off{background:#ececea;color:#44464a;border-color:#d6d6d3}
 /* objetivos */
 .ev{display:flex;gap:6px}
 .ev button{width:38px;height:38px;border-radius:50%;border:2.5px solid;background:#fff;font-size:10px;font-weight:900;padding:0}
@@ -207,11 +251,88 @@ function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){retur
 function $(id){return document.getElementById(id);}
 function match(){for(var i=0;i<S.matches.length;i++)if(S.matches[i].id===ui.mid)return S.matches[i];return null;}
 function sortedRoster(){return S.roster.slice().sort(function(a,b){return a.num-b.num;});}
-function newMatch(){
-  var m={id:"m"+Date.now(),fecha:"",jornada:"",rival:"",cond:"L",comp:"",hora:"",llegada:"",llegadaManual:false,lugar:"",
-    conv:{},motivos:{},sx:{},faltas:{},obj:{ataque:{t:"",ev:""},defensa:{t:"",ev:""},actitud:{t:"",ev:""}},normas:"",ind:{},notas:""};
-  if(S.matches.length){var l=S.matches[S.matches.length-1];m.comp=l.comp||"";}
-  S.matches.push(m);save();return m;
+var idSeq=0;
+function blank(){
+  return{id:"m"+Date.now()+Math.random().toString(36).slice(2,5)+(idSeq++),fecha:"",jornada:"",rival:"",cond:"L",comp:"",hora:"",llegada:"",llegadaManual:false,lugar:"",norma:true,
+    conv:{},motivos:{},sx:{},faltas:{},obj:{ataque:{t:"",ev:""},defensa:{t:"",ev:""},actitud:{t:"",ev:""}},normas:"",ind:{},notas:"",score:{},tm:{},liveSx:0};
+}
+function newMatch(){var m=blank();S.matches.push(m);save();return m;}
+function hoy(){var d=new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);}
+function equipo(){return S.nombre||"Alevín A Masc";}
+function conNorma(m){return m.norma!==false;}
+function pts(m,s){var x=(m.score||{})["s"+s];return x?[x.n||0,x.r||0]:[0,0];}
+function total(m){var a=0,b=0;for(var s=0;s<6;s++){var x=pts(m,s);a+=x[0];b+=x[1];}return[a,b];}
+function jugado(m){return!!m.fecha&&m.fecha<=hoy()&&convocados(m).length>0;}
+/* Acumulado de la temporada: convocatorias, desconvocatorias y sextos por jugador (partidos ya jugados). */
+function acumulado(excluir){
+  var out={n:0,g:0,p:0,pl:{}};
+  S.roster.forEach(function(p){out.pl[p.id]={conv:0,desc:0,sx:0};});
+  S.matches.forEach(function(m){
+    if(m===excluir||!jugado(m))return;
+    out.n++;var t=total(m);if(t[0]+t[1]>0){if(t[0]>t[1])out.g++;else if(t[0]<t[1])out.p++;}
+    S.roster.forEach(function(p){
+      var o=out.pl[p.id];
+      if(m.conv[p.id]){o.conv++;var a=sxOf(m,p.id);for(var s=0;s<6;s++)if(a[s])o.sx++;}else o.desc++;
+    });
+  });
+  return out;
+}
+/* Estado de cada casilla libre: "must" si el jugador ya solo puede cumplir el mínimo jugando ahí, "no" si no debe jugar. */
+function pistas(m,c){
+  var R=S.rules,maxJ=5-R.minDescanso,out={};
+  if(!conNorma(m))return out;
+  convocados(m).forEach(function(p){
+    var a=sxOf(m,p.id),t=c.pl[p.id]?c.pl[p.id].t:0,need=R.minJugar-t,ab=0,o=["","","","",""],s;
+    for(s=0;s<5;s++)if(!a[s]&&c.sext[s]<R.porSexto)ab++;
+    for(s=0;s<5;s++){
+      if(a[s])continue;
+      if(c.sext[s]>=R.porSexto||(!c.imposible&&t>=maxJ))o[s]="no";
+      else if(need>0&&ab<=need)o[s]="must";
+    }
+    out[p.id]=o;
+  });
+  return out;
+}
+/* Propone un reparto válido de los 5 primeros sextos. Da los sextos extra a quien menos ha jugado en la temporada. */
+function proponer(m){
+  var R=S.rules,C=convocados(m),n=C.length,T=5*R.porSexto,maxJ=5-R.minDescanso;
+  if(n<R.porSexto)return false;
+  var ok=n*R.minJugar<=T&&n*maxJ>=T,lo=ok?R.minJugar:Math.min(5,Math.floor(T/n)),hi=ok?maxJ:5;
+  var ac=acumulado(m),q={},rnd={};
+  C.forEach(function(p){q[p.id]=lo;rnd[p.id]=Math.random();});
+  var orden=C.slice().sort(function(a,b){return(ac.pl[a.id].sx-ac.pl[b.id].sx)||(rnd[a.id]-rnd[b.id]);});
+  var rem=T-lo*n,i=0,guard=0;
+  while(rem>0&&guard++<500){var p=orden[i%n];if(q[p.id]<hi){q[p.id]++;rem--;}i++;}
+  var plan={};C.forEach(function(p){plan[p.id]=[0,0,0,0,0];});
+  for(var s=0;s<5;s++){
+    var left=5-s;
+    var cand=C.filter(function(p){return q[p.id]>0;}).map(function(p){return{p:p,k:Math.random()};});
+    cand.sort(function(a,b){
+      var ma=q[a.p.id]>=left?1:0,mb=q[b.p.id]>=left?1:0;
+      return(mb-ma)||(q[b.p.id]-q[a.p.id])||(a.k-b.k);
+    });
+    cand.slice(0,R.porSexto).forEach(function(x){plan[x.p.id][s]=1;q[x.p.id]--;});
+  }
+  C.forEach(function(p){var old=sxOf(m,p.id);m.sx[p.id]=plan[p.id].concat([old[5]?1:0]);});
+  return true;
+}
+var DIAS=["DOMINGO","LUNES","MARTES","MIÉRCOLES","JUEVES","VIERNES","SÁBADO"];
+/* Mensaje de convocatoria para el grupo de familias. */
+function waText(m){
+  var L=[],p=/^(\d{4})-(\d{2})-(\d{2})$/.exec(m.fecha||"");
+  L.push((new Date().getHours()<14?"Buenos días":"Buenas tardes")+", os dejo la convocatoria del partido.","");
+  var cab=p?DIAS[new Date(+p[1],+p[2]-1,+p[3]).getDay()]+" "+p[3]+"/"+p[2]+" – PARTIDO":"PARTIDO";
+  L.push("*"+cab+"* "+(m.cond==="V"?"✈":"🏠"));
+  if(m.comp)L.push("Competición: "+m.comp+(m.jornada?" – Jornada "+m.jornada:""));
+  var riv=m.rival||"Rival por confirmar";
+  L.push("Partido: "+(m.cond==="V"?riv+" – "+equipo():equipo()+" – "+riv));
+  if(m.hora)L.push("Hora: "+m.hora);
+  if(m.lugar)L.push("Lugar: "+m.lugar);
+  if(m.llegada)L.push("Llegada: "+m.llegada);
+  L.push("","*CONVOCADOS*");
+  convocados(m).forEach(function(x){L.push(x.num+" "+x.name);});
+  L.push("","Si algún jugador no puede asistir, por favor avisadme por privado.");
+  return L.join("\n");
 }
 function menos45(h){
   var p=/^(\d{1,2}):(\d{2})$/.exec(h||"");if(!p)return"";
@@ -227,10 +348,15 @@ function totalDe(m,pid){var a=sxOf(m,pid),t=0;for(var i=0;i<5;i++)t+=a[i]?1:0;re
 function check(m){
   var R=S.rules,C=convocados(m),n=C.length,maxJ=5-R.minDescanso,out={errs:[],avisos:[],sext:[],pl:{},n:n,nivel:"ok"};
   if(n===0){out.nivel="warn";out.avisos.push("Marca primero la convocatoria.");return out;}
+  if(!conNorma(m)){
+    for(var z=0;z<6;z++){var cz=0;C.forEach(function(p){if(sxOf(m,p.id)[z])cz++;});out.sext[z]=cz;}
+    C.forEach(function(p){out.pl[p.id]={t:totalDe(m,p.id),st:"ok",out:(m.faltas[p.id]||0)>=R.faltas};});
+    out.nivel="off";return out;
+  }
   if(n>R.maxConv)out.errs.push("Hay "+n+" convocados: el máximo en acta es "+R.maxConv+".");
   if(n<5)out.errs.push("Con menos de 5 jugadores no se puede empezar el partido.");
   else if(n<R.minConv)out.avisos.push("Con "+n+" jugadores (menos de "+R.minConv+") el partido se juega y el árbitro lo anota al dorso del acta.");
-  var imposible=n>=5&&n*maxJ<5*R.porSexto;
+  var imposible=n>=5&&n*maxJ<5*R.porSexto;out.imposible=imposible;
   if(imposible)out.avisos.push("Con "+n+" jugadores no es posible que todos descansen "+R.minDescanso+" sextos: se hacen los cambios necesarios para tener 5 en pista y el árbitro lo anota en el acta.");
   for(var s=0;s<6;s++){var c=0;C.forEach(function(p){if(sxOf(m,p.id)[s])c++;});out.sext[s]=c;}
   var faltan=[],sobran=[];
@@ -275,15 +401,16 @@ function render(){
   if(m){
     hd+='<div class="h-t"><b>'+esc(m.rival?"vs "+m.rival:"Partido nuevo")+'</b><span>'+esc(fechaLarga(m)||"Alevín A · Temporada 2026/27")+'</span></div>'+dot()+'<button class="back" data-a="volver">Partidos</button>';
   }else{
-    var t={partidos:"Partidos",plantilla:"Plantilla",normativa:"Normativa",ajustes:"Ajustes"}[ui.tab];
+    var t={partidos:"Partidos",temporada:"Temporada",plantilla:"Plantilla",normativa:"Normativa",ajustes:"Ajustes"}[ui.tab];
     hd+='<div class="h-t"><b>'+t+'</b><span>Alevín A · Temporada 2026/27</span></div>'+dot();
   }
   $("hd").innerHTML=hd;
-  $("nav").innerHTML=[["partidos","Partidos"],["plantilla","Plantilla"],["normativa","Normativa"],["ajustes","Ajustes"]].map(function(x){
-    return'<button data-a="tab" data-v="'+x[0]+'" class="'+(ui.tab===x[0]?"on":"")+'">'+x[1]+'</button>';}).join("");
+  $("nav").innerHTML=[["partidos","Partidos"],["temporada","Temporada"],["plantilla","Plantilla"],["ajustes","Ajustes"]].map(function(x){
+    return'<button data-a="tab" data-v="'+x[0]+'" class="'+(ui.tab===x[0]||(x[0]==="ajustes"&&ui.tab==="normativa")?"on":"")+'">'+x[1]+'</button>';}).join("");
   var h="";
   if(saveFail)h+='<div class="estado bad"><b>No se pueden guardar los datos</b>Este navegador no permite almacenamiento. Los cambios se perderán al cerrar.</div>';
   if(ui.tab==="partidos")h+=m?vMatch(m):vList();
+  else if(ui.tab==="temporada")h+=vTemporada();
   else if(ui.tab==="plantilla")h+=vRoster();
   else if(ui.tab==="normativa")h+=vRules();
   else h+=vSettings();
@@ -317,11 +444,12 @@ function vList(){
   return h;
 }
 function vMatch(m){
-  var secs=[["datos","Datos"],["conv","Convocatoria"],["sextos","Sextos"],["obj","Objetivos"],["notas","Notas"]];
+  var secs=[["datos","Datos"],["conv","Convocatoria"],["sextos","Sextos"],["directo","Directo"],["obj","Objetivos"],["notas","Notas"]];
   var h='<div class="seg">'+secs.map(function(s){return'<button data-a="sec" data-v="'+s[0]+'" class="'+(ui.sec===s[0]?"on":"")+'">'+s[1]+'</button>';}).join("")+'</div>';
   if(ui.sec==="datos")h+=vDatos(m);
   else if(ui.sec==="conv")h+=vConv(m);
   else if(ui.sec==="sextos")h+='<div id="sx">'+vSextos(m)+'</div>';
+  else if(ui.sec==="directo")h+=vDirecto(m);
   else if(ui.sec==="obj")h+=vObj(m);
   else h+=vNotas(m);
   return h;
@@ -334,7 +462,8 @@ function vDatos(m){
   h+=fld("Fecha","fecha","date",m.fecha)+fld("Jornada","jornada","text",m.jornada,"",'inputmode="numeric" autocomplete="off"');
   h+=fld("Hora","hora","time",m.hora)+fld("Llegada","llegada","time",m.llegada);
   h+=fld("Competición","comp","text",m.comp,"w2",'autocomplete="off"')+fld("Lugar","lugar","text",m.lugar,"w2",'autocomplete="off"');
-  h+='</div><p class="hint">La llegada se calcula 45 minutos antes de la hora; puedes cambiarla a mano.</p></div>';
+  h+='<div class="w2"><label class="f">Normativa de minibasket (sextos)</label><div class="lv"><button data-a="norma" data-v="1" class="'+(conNorma(m)?"on":"")+'">COMPROBAR</button><button data-a="norma" data-v="0" class="'+(conNorma(m)?"":"on")+'">NO APLICAR</button></div></div>';
+  h+='</div><p class="hint">La llegada se calcula 45 minutos antes de la hora; puedes cambiarla a mano. Usa «No aplicar» en los partidos que no se juegan con las reglas de sextos de minibasket.</p></div>';
   h+='<div class="row"><button class="btn dark" data-a="sec" data-v="conv" style="flex:1">Ir a convocatoria</button>';
   h+=ui.confirm==="del"?'<button class="btn danger" data-a="borrar">¿Seguro? Eliminar</button>':'<button class="btn danger" data-a="askdel">Eliminar partido</button>';
   return h+'</div>';
@@ -348,23 +477,26 @@ function vConv(m){
     var on=!!m.conv[p.id];
     h+='<div class="pl '+(on?"":"off")+'"><span class="num">'+p.num+'</span><div class="n"><span>'+esc(p.name)+'</span>'+(on||n===0?"":'<input class="inp" data-mot="'+p.id+'" value="'+esc(m.motivos[p.id]||"")+'" placeholder="Motivo de la desconvocatoria" autocomplete="off">')+'</div><button class="chk '+(on?"on":"")+'" data-a="conv" data-v="'+p.id+'" aria-pressed="'+on+'" aria-label="Convocar a '+esc(p.name)+'">✓</button></div>';
   });
-  h+='</div><div class="row"><button class="btn ghost" data-a="convtodos" style="flex:1">'+(n?"Quitar todos":"Marcar los "+Math.min(R.maxConv,S.roster.length)+" primeros")+'</button><button class="btn dark" data-a="sec" data-v="sextos" style="flex:1">Ir a sextos</button></div>';
+  h+='</div>';
+  if(n)h+='<div class="card"><h2>Mensaje para las familias</h2><textarea id="wa" rows="9" readonly aria-label="Mensaje de convocatoria">'+esc(waText(m))+'</textarea><button class="btn dark block" data-a="copiar" style="margin-top:10px">Copiar mensaje</button></div>';
+  h+='<div class="row"><button class="btn ghost" data-a="convtodos" style="flex:1">'+(n?"Quitar todos":"Marcar los "+Math.min(R.maxConv,S.roster.length)+" primeros")+'</button><button class="btn dark" data-a="sec" data-v="sextos" style="flex:1">Ir a sextos</button></div>';
   return h;
 }
 function vSextos(m){
-  var R=S.rules,c=check(m),C=convocados(m),h="";
-  var tit={ok:"Alineación válida",warn:"Alineación incompleta",bad:"Alineación no válida"}[c.nivel];
+  var R=S.rules,c=check(m),C=convocados(m),P=pistas(m,c),h="";
+  var tit={ok:"Alineación válida",warn:"Alineación incompleta",bad:"Alineación no válida",off:"Normativa de sextos no aplicada"}[c.nivel];
   h+='<div class="estado '+c.nivel+'" role="status"><b>'+tit+'</b>';
   var items=c.errs.concat(c.avisos);
-  if(items.length)h+='<ul>'+items.map(function(x){return"<li>"+esc(x)+"</li>";}).join("")+'</ul>';
+  if(c.nivel==="off")h+='En este partido no se comprueban los mínimos de juego y descanso. Se cambia en Datos.';
+  else if(items.length)h+='<ul>'+items.map(function(x){return"<li>"+esc(x)+"</li>";}).join("")+'</ul>';
   else h+='Todos juegan al menos '+R.minJugar+' sextos y descansan '+R.minDescanso+' en los 5 primeros.';
   h+='</div>';
   if(!C.length)return h+'<button class="btn dark block" data-a="sec" data-v="conv">Ir a convocatoria</button>';
   h+='<div class="card flush"><div class="sx-wrap"><table class="sx"><colgroup><col class="cw"><col><col><col><col><col><col><col><col></colgroup><thead><tr><th>Jugador</th><th>1º</th><th>2º</th><th>3º</th><th>4º</th><th>5º</th><th class="r">Tot</th><th class="g">6º</th><th>Flt</th></tr></thead><tbody>';
   C.forEach(function(p){
-    var a=sxOf(m,p.id),st=c.pl[p.id],f=m.faltas[p.id]||0;
+    var a=sxOf(m,p.id),st=c.pl[p.id],f=m.faltas[p.id]||0,hp=P[p.id]||[];
     h+='<tr class="'+(st.out?"out":"")+'"><td class="who"><div><b>'+p.num+'</b><span>'+esc(p.name)+'</span></div></td>';
-    for(var s=0;s<5;s++)h+='<td><button class="cell '+(a[s]?"on":"")+'" data-a="sx" data-v="'+p.id+'" data-s="'+s+'" aria-pressed="'+!!a[s]+'" aria-label="'+esc(p.name)+', sexto '+(s+1)+'">'+(a[s]?"●":"")+'</button></td>';
+    for(var s=0;s<5;s++)h+='<td><button class="cell '+(a[s]?"on":(hp[s]||""))+'" data-a="sx" data-v="'+p.id+'" data-s="'+s+'" aria-pressed="'+!!a[s]+'" aria-label="'+esc(p.name)+', sexto '+(s+1)+(hp[s]==="must"?", obligado":hp[s]==="no"?", no disponible":"")+'">'+(a[s]?"●":hp[s]==="must"?"!":"")+'</button></td>';
     h+='<td><span class="tot '+st.st+'">'+st.t+'</span></td>';
     h+='<td><button class="cell six '+(a[5]?"on":"")+'" data-a="sx" data-v="'+p.id+'" data-s="5" aria-pressed="'+!!a[5]+'" aria-label="'+esc(p.name)+', sexto 6">'+(a[5]?"●":"")+'</button></td>';
     h+='<td><button class="fal '+(f>=R.faltas?"f5":f===R.faltas-1?"f4":"")+'" data-a="falta" data-v="'+p.id+'" aria-label="Faltas de '+esc(p.name)+': '+f+'">'+f+'</button></td></tr>';
@@ -372,8 +504,47 @@ function vSextos(m){
   h+='</tbody><tfoot><tr><td class="who">En pista</td>';
   for(var s=0;s<5;s++){var k=c.sext[s];h+='<td><span class="cnt '+(k===R.porSexto?"ok":k>R.porSexto?"bad":"warn")+'">'+k+'</span></td>';}
   h+='<td></td><td><span class="cnt '+(c.sext[5]===R.porSexto?"ok":c.sext[5]>R.porSexto?"bad":"warn")+'">'+c.sext[5]+'</span></td><td></td></tr></tfoot></table></div>';
+  if(conNorma(m))h+='<div class="leg"><span><i class="on"></i>Juega</span><span><i class="must"></i>Tiene que jugar aquí</span><span><i class="no"></i>No disponible</span></div>';
   h+='<p class="hint">Toca una casilla para poner o quitar al jugador en ese sexto. Toca el número de faltas para sumar una; al pasar de '+R.faltas+' vuelve a 0.</p></div>';
-  h+='<div class="row">'+(ui.confirm==="clr"?'<button class="btn danger" data-a="limpiar" style="flex:1">¿Seguro? Vaciar sextos</button>':'<button class="btn ghost" data-a="asklimpiar" style="flex:1">Vaciar sextos</button>')+'</div>';
+  var hay=C.some(function(p){var a=sxOf(m,p.id);return a[0]||a[1]||a[2]||a[3]||a[4];});
+  h+='<div class="row">'+(conNorma(m)?(ui.confirm==="prop"?'<button class="btn danger" data-a="proponer" style="flex:1">¿Sustituir el reparto actual?</button>':'<button class="btn dark" data-a="'+(hay?"askproponer":"proponer")+'" style="flex:1">'+(hay?"Proponer otro reparto":"Proponer reparto")+'</button>'):"")+(ui.confirm==="clr"?'<button class="btn danger" data-a="limpiar" style="flex:1">¿Seguro? Vaciar sextos</button>':'<button class="btn ghost" data-a="asklimpiar" style="flex:1">Vaciar sextos</button>')+'</div>';
+  return h;
+}
+function vDirecto(m){
+  var R=S.rules,C=convocados(m),cur=m.liveSx||0,c=check(m),P=pistas(m,c),h="";
+  if(!C.length)return'<div class="card empty"><b>Sin convocatoria</b><br>Marca primero los convocados.</div><button class="btn dark block" data-a="sec" data-v="conv">Ir a convocatoria</button>';
+  h+='<div class="sxsel" role="group" aria-label="Sexto en juego">';
+  for(var s=0;s<6;s++)h+='<button data-a="lsx" data-v="'+s+'" class="'+(cur===s?"on":"")+'" aria-pressed="'+(cur===s)+'">'+(s+1)+'º</button>';
+  h+='</div>';
+  var t=total(m),x=pts(m,cur),parc=[];
+  for(s=0;s<6;s++){var y=pts(m,s);if(y[0]+y[1]>0||s===cur)parc.push((s+1)+"º "+y[0]+"-"+y[1]);}
+  h+='<div class="card"><div class="score"><div><div class="tm">'+esc(equipo())+'</div><div class="n">'+t[0]+'</div></div><div class="sep">–</div><div><div class="tm">'+esc(m.rival||"Rival")+'</div><div class="n">'+t[1]+'</div></div></div>';
+  h+='<div class="score" style="align-items:start"><div class="pts">'+ptBtns("n")+'</div><div></div><div class="pts">'+ptBtns("r")+'</div></div>';
+  h+='<div class="parc">Sexto '+(cur+1)+'º: '+x[0]+'-'+x[1]+(parc.length>1?' · '+parc.join(' · '):'')+'</div></div>';
+  var half=cur<3?"h1":"h2",mx=half==="h1"?2:3,us=(m.tm||{})[half]||0;
+  h+='<div class="card"><div class="h2r"><h2>Tiempos muertos · '+(half==="h1"?"1ª":"2ª")+' parte</h2><span class="pill '+(us>=mx?"bad":"ok")+'">Quedan '+(mx-us)+' de '+mx+'</span></div><div class="row"><button class="btn dark" data-a="tm" data-d="1" style="flex:2" '+(us>=mx?"disabled":"")+'>Pedir tiempo muerto</button><button class="btn ghost" data-a="tm" data-d="-1" style="flex:1" '+(us<=0?"disabled":"")+'>Deshacer</button></div></div>';
+  var en=C.filter(function(p){return sxOf(m,p.id)[cur];}),ba=C.filter(function(p){return!sxOf(m,p.id)[cur];});
+  h+='<div class="card"><div class="h2r"><h2>En pista</h2><span class="pill '+(en.length===R.porSexto?"ok":en.length>R.porSexto?"bad":"warn")+'">'+en.length+' de '+R.porSexto+'</span></div>';
+  h+=en.length?en.map(function(p){return lpRow(m,p,cur,true,P);}).join(""):'<p class="sub" style="margin:0">Nadie marcado en este sexto.</p>';
+  h+='</div><div class="card"><h2>Banquillo</h2>'+(ba.length?ba.map(function(p){return lpRow(m,p,cur,false,P);}).join(""):'<p class="sub" style="margin:0">Sin jugadores en el banquillo.</p>')+'</div>';
+  h+='<p class="hint">Los cambios de «Entra» y «Sale» modifican el sexto seleccionado, igual que en la pestaña Sextos.</p>';
+  return h;
+}
+function ptBtns(w){return[["-1","−1","m"],["1","+1",""],["2","+2",""],["3","+3",""]].map(function(b){return'<button class="'+b[2]+'" data-a="pt" data-w="'+w+'" data-d="'+b[0]+'" aria-label="'+(w==="n"?"Nosotros":"Rival")+' '+b[1]+'">'+b[1]+'</button>';}).join("");}
+function lpRow(m,p,cur,dentro,P){
+  var R=S.rules,f=m.faltas[p.id]||0,hp=cur<5&&P[p.id]?P[p.id][cur]:"",fuera=f>=R.faltas;
+  var tag=fuera?'<small class="no">Eliminado por faltas</small>':(!dentro&&hp==="must"?'<small class="must">Tiene que jugar este sexto</small>':!dentro&&hp==="no"&&(m.liveSx||0)<5&&A.check(m).sext[m.liveSx||0]<S.rules.porSexto?'<small class="no">Ya ha jugado el máximo</small>':'');
+  return'<div class="lp '+(fuera?"out":"")+'"><span class="num">'+p.num+'</span><div class="n">'+esc(p.name)+tag+'</div><div class="fb"><button data-a="lfal" data-v="'+p.id+'" data-d="-1" aria-label="Quitar falta a '+esc(p.name)+'">−</button><b class="'+(f>=R.faltas?"f5":f===R.faltas-1?"f4":"")+'" aria-label="'+f+' faltas">'+f+'</b><button data-a="lfal" data-v="'+p.id+'" data-d="1" aria-label="Falta de '+esc(p.name)+'">+</button></div><button class="sw '+(dentro?"":"in")+'" data-a="lsw" data-v="'+p.id+'">'+(dentro?"Sale":"Entra")+'</button></div>';
+}
+function vTemporada(){
+  var ac=acumulado(),h="",R=sortedRoster();
+  h+='<div class="kp"><div><b>'+ac.n+'</b><span>Partidos jugados</span></div><div><b>'+ac.g+'</b><span>Ganados</span></div><div><b>'+ac.p+'</b><span>Perdidos</span></div></div>';
+  if(!ac.n)return h+'<div class="card empty"><b>Aún no hay partidos jugados</b><br>Aquí verás las convocatorias y los sextos de cada jugador en cuanto haya partidos con fecha pasada y convocatoria.</div>';
+  var mxD=0;R.forEach(function(p){if(ac.pl[p.id].desc>mxD)mxD=ac.pl[p.id].desc;});
+  h+='<div class="card"><h2>Reparto por jugador</h2><table class="tp"><thead><tr><th>Jugador</th><th>Conv.</th><th>Desc.</th><th>Sextos</th><th>Media</th></tr></thead><tbody>';
+  R.forEach(function(p){var o=ac.pl[p.id];
+    h+='<tr><td><b>'+p.num+'</b>'+esc(p.name)+'</td><td>'+o.conv+'</td><td class="'+(mxD>0&&o.desc===mxD?"hi":"")+'">'+o.desc+'</td><td>'+o.sx+'</td><td>'+(o.conv?(o.sx/o.conv).toFixed(1).replace(".",","):"–")+'</td></tr>';});
+  h+='</tbody></table><p class="hint">Cuenta los partidos con fecha de hoy o anterior y convocatoria marcada. Sextos incluye el 6º. En rojo, quienes más veces se han quedado sin convocar. Ganados y perdidos salen del marcador de la pestaña Directo.</p></div>';
   return h;
 }
 function evBtns(scope,id,val){
@@ -435,8 +606,10 @@ function vRules(){
 function vSettings(){
   var h='<div class="card"><h2>Cuenta y sincronización</h2><div class="rule"><b>Usuario</b><p>'+esc(ui.user)+'</p></div><div class="rule"><b>Estado</b><p id="synctxt">'+esc(ui.syncTxt)+'</p></div><div class="row" style="margin-top:10px">'+(ui.confirm==="out"?'<button class="btn danger" data-a="salir" style="flex:1">¿Seguro? Cerrar sesión</button>':'<button class="btn ghost" data-a="asksalir" style="flex:1">Cerrar sesión</button>')+'</div></div>';
   h+='<div class="card"><h2>Copia de seguridad</h2><p class="sub" style="margin:0 0 10px">Los datos se sincronizan entre los dispositivos del equipo. Importar una copia sustituye los datos de todos.</p><div class="row"><button class="btn dark" data-a="exportar" style="flex:1">Exportar copia</button><label class="btn ghost" style="flex:1;text-align:center">Importar copia<input type="file" id="imp" accept="application/json,.json" hidden></label></div></div>';
+  h+='<div class="card"><h2>Partidos del calendario</h2><p class="sub" style="margin:0 0 10px">Añade los partidos de un archivo de calendario. Los que ya existan (misma fecha y rival) no se duplican.</p><label class="btn ghost block" style="text-align:center">Importar partidos<input type="file" id="impm" accept="application/json,.json" hidden></label></div>';
+  h+='<div class="card"><h2>Equipo y normativa</h2><label class="f" style="margin-bottom:12px">Nombre del equipo en marcador y mensajes<input type="text" data-team="nombre" value="'+esc(equipo())+'" autocomplete="off"></label><button class="btn ghost block" data-a="tab" data-v="normativa">Ver normativa y valores</button></div>';
   h+='<div class="card"><h2>Instalar en el móvil</h2><div class="rule"><b>iPhone</b><p>Abre la app en Safari, pulsa Compartir y elige «Añadir a pantalla de inicio».</p></div><div class="rule"><b>Android</b><p>Abre la app en Chrome, pulsa el menú y elige «Instalar aplicación».</p></div></div>';
-  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Partidos Alevín A · versión 1.1<br><span class="sub">'+S.matches.length+' partidos guardados · '+S.roster.length+' jugadores</span></p></div>';
+  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Partidos Alevín A · versión 1.2<br><span class="sub">'+S.matches.length+' partidos guardados · '+S.roster.length+' jugadores</span></p></div>';
   return h;
 }
 
@@ -448,7 +621,7 @@ function rerenderKeepScroll(){var y=window.scrollY;render();window.scrollTo(0,y)
 document.addEventListener("click",function(e){
   var b=e.target.closest("[data-a]");if(!b)return;
   var a=b.dataset.a,v=b.dataset.v,m=match(),keep=true;
-  if(a!=="askdel"&&a!=="asklimpiar"&&a!=="askdelp"&&a!=="asksalir")ui.confirm=null;
+  if(a!=="askdel"&&a!=="asklimpiar"&&a!=="askdelp"&&a!=="asksalir"&&a!=="askproponer")ui.confirm=null;
   switch(a){
     case"tab":if(ui.tab==="plantilla")save();ui.tab=v;if(v==="partidos")ui.mid=null;keep=false;break;
     case"volver":ui.mid=null;keep=false;break;
@@ -470,6 +643,15 @@ document.addEventListener("click",function(e){
     case"falta":var f=(m.faltas[v]||0)+1;if(f>S.rules.faltas)f=0;m.faltas[v]=f;save();$("sx").innerHTML=vSextos(m);return;
     case"asklimpiar":ui.confirm="clr";break;
     case"limpiar":m.sx={};m.faltas={};break;
+    case"askproponer":ui.confirm="prop";break;
+    case"proponer":if(!proponer(m))toast("Hacen falta al menos "+S.rules.porSexto+" convocados");break;
+    case"norma":m.norma=v==="1";break;
+    case"lsx":m.liveSx=+v;break;
+    case"pt":if(!m.score)m.score={};var ks="s"+(m.liveSx||0),sc=m.score[ks]||{n:0,r:0},w=b.dataset.w;sc[w]=Math.max(0,(sc[w]||0)+(+b.dataset.d));m.score[ks]=sc;break;
+    case"tm":if(!m.tm)m.tm={};var hf=(m.liveSx||0)<3?"h1":"h2",mxt=hf==="h1"?2:3;m.tm[hf]=Math.max(0,Math.min(mxt,(m.tm[hf]||0)+(+b.dataset.d)));break;
+    case"lfal":m.faltas[v]=Math.max(0,Math.min(S.rules.faltas,(m.faltas[v]||0)+(+b.dataset.d)));break;
+    case"lsw":var la=sxOf(m,v,true),ls=m.liveSx||0;la[ls]=la[ls]?0:1;break;
+    case"copiar":copiar(waText(m));return;
     case"ev":
       if(b.dataset.scope==="obj"){var o=m.obj[v];o.ev=o.ev===b.dataset.e?"":b.dataset.e;}
       else{if(!m.ind[v])m.ind[v]={t:"",ev:""};m.ind[v].ev=m.ind[v].ev===b.dataset.e?"":b.dataset.e;}
@@ -495,6 +677,7 @@ document.addEventListener("input",function(e){
   var t=e.target,m=match(),d=t.dataset;
   if(d.pn){var p=S.roster.filter(function(x){return x.id===d.pn;})[0];var n=parseInt(t.value,10);if(p&&!isNaN(n))p.num=n;save();return;}
   if(d.pp){var q=S.roster.filter(function(x){return x.id===d.pp;})[0];if(q)q.name=t.value;save();return;}
+  if(d.team){S[d.team]=t.value;save();return;}
   if(!m)return;
   if(d.k){
     m[d.k]=t.value;
@@ -509,6 +692,14 @@ document.addEventListener("input",function(e){
 document.addEventListener("change",function(e){
   var t=e.target;
   if(t.dataset.k==="rival"||t.dataset.k==="fecha"||t.dataset.k==="hora"||t.dataset.k==="jornada"){var a=document.activeElement;if(!a||a===document.body||a===t)rerenderHeader();}
+  if(t.id==="impm"&&t.files&&t.files[0]){
+    var rm=new FileReader();
+    rm.onload=function(){
+      try{var dm=JSON.parse(rm.result),li=Array.isArray(dm)?dm:dm.partidos;if(!Array.isArray(li))throw 0;importarPartidos(li);}
+      catch(x){toast("El archivo no es una lista de partidos válida");}
+    };
+    rm.readAsText(t.files[0]);
+  }
   if(t.id==="imp"&&t.files&&t.files[0]){
     var r=new FileReader();
     r.onload=function(){
@@ -519,6 +710,21 @@ document.addEventListener("change",function(e){
   }
 });
 function rerenderHeader(){var m=match();if(!m)return;var b=document.querySelector(".h-t");if(b)b.innerHTML='<b>'+esc(m.rival?"vs "+m.rival:"Partido nuevo")+'</b><span>'+esc(fechaLarga(m)||"Alevín A · Temporada 2026/27")+'</span>';}
+function copiar(txt){
+  var ok=function(){toast("Mensaje copiado");},ko=function(){var t=$("wa");if(t){t.focus();t.select();}toast("Selecciona el texto y cópialo");};
+  try{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(ok,ko);else ko();}catch(e){ko();}
+}
+function importarPartidos(lista){
+  var n=0,ya=0;
+  lista.forEach(function(x){
+    if(!x||!x.fecha||!x.rival)return;
+    var dup=S.matches.some(function(m){return m.fecha===x.fecha&&String(m.rival).toLowerCase()===String(x.rival).toLowerCase();});
+    if(dup){ya++;return;}
+    var m=blank();m.fecha=x.fecha;m.rival=String(x.rival);m.cond=x.cond==="V"?"V":"L";m.comp=x.comp||"";m.jornada=x.jornada?String(x.jornada):"";m.hora=x.hora||"";m.llegada=menos45(m.hora);m.lugar=x.lugar||"";m.norma=x.norma!==false;
+    S.matches.push(m);n++;
+  });
+  save();render();toast(n+" partidos añadidos"+(ya?" · "+ya+" ya existían":""));
+}
 function exportar(){
   try{
     var blob=new Blob([JSON.stringify(S,null,1)],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a");
@@ -535,13 +741,13 @@ document.addEventListener("submit",function(e){
 });
 function typing(){var a=document.activeElement;return!!a&&(a.tagName==="TEXTAREA"||(a.tagName==="INPUT"&&a.type!=="file"));}
 document.addEventListener("focusout",function(){if(pendingRender)setTimeout(function(){if(pendingRender&&!typing())rerenderKeepScroll();},60);});
-A.check=check;A.ui=ui;A.render=render;
+A.check=check;A.proponer=proponer;A.acumulado=acumulado;A.waText=waText;A.ui=ui;A.render=render;
 A.getState=function(){return S;};
 A.setAuth=function(st,email){ui.auth=st;ui.user=email||"";ui.loginBusy=false;if(st!=="in"){ui.mid=null;ui.tab="partidos";}render();};
 A.loginResult=function(err){ui.loginBusy=false;ui.loginErr=err||"";if(err)render();};
 A.setSync=function(code,txt){ui.sync=code;ui.syncTxt=txt;var d=$("dot");if(d){d.className="dot "+code;d.title=txt;d.setAttribute("aria-label",txt);}var t=$("synctxt");if(t)t.textContent=txt;};
 A.applyRemote=function(team,matches){
-  S.roster=team.roster||[];S.rules=Object.assign({},RULES,team.rules||{});S.seq=team.seq||S.roster.length;S.matches=matches||[];
+  S.roster=team.roster||[];S.rules=Object.assign({},RULES,team.rules||{});S.seq=team.seq||S.roster.length;S.nombre=team.nombre||"";S.matches=matches||[];
   store();
   if(ui.mid&&!match()){ui.mid=null;}
   if(typing())pendingRender=true;else rerenderKeepScroll();
