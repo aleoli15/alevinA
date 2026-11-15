@@ -1,5 +1,5 @@
 // Partidos Alevín A — funcionamiento sin conexión
-var CACHE = "alevin-a-v7";
+var CACHE = "alevin-a-v8";
 var FILES = ["./", "index.html", "sync.js", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"];
 
 self.addEventListener("install", function (e) {
@@ -18,7 +18,7 @@ self.addEventListener("activate", function (e) {
 self.addEventListener("fetch", function (e) {
   if (e.request.method !== "GET") return;
   e.respondWith(
-    fetch(e.request).then(function (r) {
+    fetch(e.request, new URL(e.request.url).origin === location.origin ? { cache: "no-cache" } : {}).then(function (r) {
       if (r && r.ok && new URL(e.request.url).origin === location.origin) {
         var copy = r.clone();
         caches.open(CACHE).then(function (c) { c.put(e.request, copy); });
