@@ -506,14 +506,24 @@ function fechaLarga(m){
   if(m.jornada)s+=" · J"+m.jornada;
   return s;
 }
+/* Finalizado: marcado a mano o con fecha anterior a hoy. */
+function esFin(m){return!!m.fin||(!!m.fecha&&m.fecha<hoy());}
+function finBtn(m){
+  if(m.fin)return'<button class="btn ghost block" data-a="fin" data-v="0" style="margin-top:12px">Reabrir partido</button>';
+  return ui.confirm==="fin"?'<button class="btn danger block" data-a="fin" data-v="1" style="margin-top:12px">¿Seguro? Pasar a finalizados</button>':'<button class="btn dark block" data-a="askfin" style="margin-top:12px">Finalizar partido</button>';
+}
 function vList(){
-  var h='<button class="btn block" data-a="nuevo" style="margin-bottom:14px">Nuevo partido</button>';
-  if(!S.matches.length)return h+'<div class="card empty"><b>Aún no hay partidos</b><br>Crea el primero para preparar la convocatoria y los sextos.</div>';
-  var ms=S.matches.slice().sort(function(a,b){return(b.fecha||"9999").localeCompare(a.fecha||"9999");});
+  var prox=S.matches.filter(function(m){return!esFin(m);}),fin=S.matches.filter(esFin),lt=ui.lt==="fin"?"fin":"prox";
+  var h='<button class="btn block" data-a="nuevo" style="margin-bottom:12px">Nuevo partido</button>';
+  h+='<div class="seg"><button data-a="lt" data-v="prox" class="'+(lt==="prox"?"on":"")+'">Próximos · '+prox.length+'</button><button data-a="lt" data-v="fin" class="'+(lt==="fin"?"on":"")+'">Finalizados · '+fin.length+'</button></div>';
+  var ms=lt==="prox"?prox:fin;
+  if(!ms.length)return h+'<div class="card empty">'+(lt==="prox"?'<b>No hay partidos próximos</b><br>Crea uno para preparar la convocatoria y los periodos.':'<b>Aún no hay partidos finalizados</b><br>Un partido pasa aquí al pulsar «Finalizar partido» o al día siguiente de jugarse.')+'</div>';
+  ms=ms.slice().sort(function(a,b){var x=(a.fecha||"9999")+(a.hora||""),y=(b.fecha||"9999")+(b.hora||"");return lt==="prox"?x.localeCompare(y):y.localeCompare(x);});
   ms.forEach(function(m){
-    var p=/^(\d{4})-(\d{2})-(\d{2})$/.exec(m.fecha||""),c=check(m);
-    var pill=c.n===0?'<span class="pill warn">Sin convocar</span>':c.nivel==="off"?'<span class="pill warn">Libre</span>':c.nivel==="ok"?'<span class="pill ok">Alineación OK</span>':c.nivel==="bad"?'<span class="pill bad">Revisar</span>':'<span class="pill warn">Incompleto</span>';
-    h+='<button class="m" data-a="abrir" data-v="'+m.id+'"><span class="d">'+(p?'<b>'+(+p[3])+'</b><i>'+MESES[+p[2]-1]+'</i>':'<b>–</b><i>fecha</i>')+'</span><span class="t"><b>'+esc(m.rival||"Rival por definir")+'</b><span>'+(m.comp?esc(m.comp)+" · ":"")+(m.cond==="V"?"Visitante":"Local")+(m.hora?" · "+esc(m.hora):"")+(m.lugar?" · "+esc(m.lugar):"")+'</span></span>'+pill+'</button>';
+    var p=/^(\d{4})-(\d{2})-(\d{2})$/.exec(m.fecha||""),c=check(m),t=total(m),pill;
+    if(lt==="fin"&&t[0]+t[1]>0)pill='<span class="pill '+(t[0]>t[1]?"ok":t[0]<t[1]?"bad":"warn")+'">'+t[0]+'-'+t[1]+'</span>';
+    else pill=c.n===0?'<span class="pill warn">Sin convocar</span>':c.nivel==="off"?'<span class="pill warn">Libre</span>':c.nivel==="ok"?'<span class="pill ok">Alineación OK</span>':c.nivel==="bad"?'<span class="pill bad">Revisar</span>':'<span class="pill warn">Incompleto</span>';
+    h+='<button class="m" data-a="abrir" data-v="'+m.id+'"><span class="d">'+(p?'<b>'+(+p[3])+'</b><i>'+MESES[+p[2]-1]+'</i>':'<b>–</b><i>fecha</i>')+'</span><span class="t"><b>'+esc(m.rival||"Rival por definir")+'</b><span>'+(m.comp?esc(m.comp)+" · ":"")+(m.cond==="V"?"Visitante":"Local")+(m.hora?" · "+esc(m.hora):"")+(lt==="prox"&&m.fecha===hoy()?" · HOY":"")+'</span></span>'+pill+'</button>';
   });
   return h;
 }
@@ -612,7 +622,7 @@ function vDirecto(m){
   h+=en.length?en.map(function(p){return lpRow(m,p,cur,true,P);}).join(""):'<p class="sub" style="margin:0">Nadie marcado en este '+X.u+'.</p>';
   h+='</div><div class="card"><h2>Banquillo</h2>'+(ba.length?ba.map(function(p){return lpRow(m,p,cur,false,P);}).join(""):'<p class="sub" style="margin:0">Sin jugadores en el banquillo.</p>')+'</div>';
   h+='<p class="hint">Los cambios de «Entra» y «Sale» modifican el '+X.u+' seleccionado, igual que en la pestaña '+(X.n===4?"Periodos":"Sextos")+'.</p>';
-  return h;
+  return h+finBtn(m);
 }
 function ptBtns(w){return[["-1","−1","m"],["1","+1",""],["2","+2",""],["3","+3",""]].map(function(b){return'<button class="'+b[2]+'" data-a="pt" data-w="'+w+'" data-d="'+b[0]+'" aria-label="'+(w==="n"?"Nosotros":"Rival")+' '+b[1]+'">'+b[1]+'</button>';}).join("");}
 function lpRow(m,p,cur,dentro,P){
@@ -746,7 +756,7 @@ function vSettings(){
   h+='<div class="card"><h2>Partidos del calendario</h2><p class="sub" style="margin:0 0 10px">Añade los partidos de un archivo de calendario. Los que ya existan (misma fecha y rival) no se duplican.</p><label class="btn ghost block" style="text-align:center">Importar partidos<input type="file" id="impm" accept="application/json,.json" hidden></label></div>';
   h+='<div class="card"><h2>Equipo y normativa</h2><label class="f" style="margin-bottom:12px">Nombre del equipo en marcador y mensajes<input type="text" data-team="nombre" value="'+esc(equipo())+'" autocomplete="off"></label><button class="btn ghost block" data-a="tab" data-v="normativa">Ver normativa y valores</button></div>';
   h+='<div class="card"><h2>Instalar en el móvil</h2><div class="rule"><b>iPhone</b><p>Abre la app en Safari, pulsa Compartir y elige «Añadir a pantalla de inicio».</p></div><div class="rule"><b>Android</b><p>Abre la app en Chrome, pulsa el menú y elige «Instalar aplicación».</p></div></div>';
-  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Partidos Alevín A · versión 1.4<br><span class="sub">'+S.matches.length+' partidos guardados · '+S.roster.length+' jugadores</span></p></div>';
+  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Partidos Alevín A · versión 1.5<br><span class="sub">'+S.matches.length+' partidos guardados · '+S.roster.length+' jugadores</span></p></div>';
   return h;
 }
 
@@ -758,7 +768,7 @@ function rerenderKeepScroll(){var y=window.scrollY;render();window.scrollTo(0,y)
 document.addEventListener("click",function(e){
   var b=e.target.closest("[data-a]");if(!b)return;
   var a=b.dataset.a,v=b.dataset.v,m=match(),keep=true;
-  if(a!=="askdel"&&a!=="asklimpiar"&&a!=="askdelp"&&a!=="asksalir"&&a!=="askproponer")ui.confirm=null;
+  if(a!=="askdel"&&a!=="asklimpiar"&&a!=="askdelp"&&a!=="asksalir"&&a!=="askproponer"&&a!=="askfin")ui.confirm=null;
   switch(a){
     case"tab":if(ui.tab==="plantilla")save();ui.pid=null;ui.tab=v;if(v==="partidos")ui.mid=null;keep=false;break;
     case"volver":ui.mid=null;keep=false;break;
@@ -766,6 +776,9 @@ document.addEventListener("click",function(e){
     case"abrir":ui.mid=v;ui.sec=convocados(match()).length?"sextos":"datos";keep=false;break;
     case"sec":ui.sec=v;keep=false;break;
     case"cond":m.cond=v;break;
+    case"lt":ui.lt=v;render();return;
+    case"askfin":ui.confirm="fin";break;
+    case"fin":m.fin=v==="1";if(m.fin){toast("Partido finalizado");ui.mid=null;ui.lt="fin";keep=false;}break;
     case"askdel":ui.confirm="del";break;
     case"borrar":S.matches=S.matches.filter(function(x){return x.id!==m.id;});ui.mid=null;keep=false;toast("Partido eliminado");break;
     case"conv":
