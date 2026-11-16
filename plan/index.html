@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Planificación Alevín A</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Plan Alevín">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/plan-touch-180.png">
+<link rel="icon" href="icons/plan-192.png">
+<style>
+:root{
+  --ink:#111214; --red:#c8102e; --red-d:#9d0c24; --paper:#f4f4f2; --card:#fff;
+  --line:#dcdcd8; --mute:#6b6d70; --ok:#1e7a3c; --ok-bg:#e3f3e8; --warn:#a86a00; --warn-bg:#fdf1d6;
+  --bad:#b3122b; --bad-bg:#fbe3e7;
+  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--ink);background:var(--paper);overscroll-behavior-y:none}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+.app{max-width:820px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
+
+/* cabecera */
+header{position:sticky;top:0;z-index:20;background:#fff;padding:calc(8px + var(--sat)) 14px 8px;display:flex;align-items:center;gap:10px;border-bottom:4px solid var(--ink);box-shadow:0 3px 0 var(--red)}
+header img{height:44px;width:auto;flex:none}
+.h-t{flex:1;min-width:0}
+.h-t b{display:block;font-size:19px;font-weight:900;letter-spacing:.02em;text-transform:uppercase;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-t span{display:block;font-size:11px;font-weight:800;color:var(--red);letter-spacing:.06em;text-transform:uppercase;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.back{flex:none;border:0;background:var(--ink);color:#fff;border-radius:8px;height:36px;padding:0 12px;font-weight:800;font-size:13px}
+
+main{flex:1;padding:14px 12px calc(84px + var(--sab))}
+
+/* pestañas del partido */
+.seg{display:flex;gap:6px;margin:0 0 12px;overflow-x:auto;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.seg button{flex:1 0 auto;border:0;border-radius:8px;background:var(--ink);color:#fff;font-weight:800;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;padding:10px 12px}
+.seg button.on{background:var(--red)}
+
+/* barra inferior */
+nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--ink);padding-bottom:var(--sab)}
+nav div{max-width:820px;margin:0 auto;display:flex}
+nav button{flex:1;border:0;background:none;color:#a9abae;font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:15px 4px 14px;border-top:3px solid transparent}
+nav button.on{color:#fff;border-top-color:var(--red)}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+h2{font-size:13px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;margin:0 0 10px;padding-left:9px;border-left:5px solid var(--red);line-height:1.2}
+.sub{color:var(--mute);font-size:13px}
+
+/* formulario */
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.grid .w2{grid-column:1/-1}
+label.f{display:block;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+label.f input,label.f select,textarea,.inp{display:block;width:100%;margin-top:4px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:9px 10px;font-size:16px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ink);min-height:42px}
+textarea{resize:vertical;font-weight:500;line-height:1.4}
+input:focus,textarea:focus,select:focus,button:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+.lv{display:flex;gap:6px;margin-top:4px}
+.lv button{flex:1;border:1px solid var(--line);background:#fff;border-radius:8px;min-height:42px;font-weight:800;font-size:13px;letter-spacing:.04em}
+.lv button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+.btn{border:0;border-radius:10px;background:var(--red);color:#fff;font-weight:800;padding:12px 16px;font-size:14px;letter-spacing:.03em}
+.btn.dark{background:var(--ink)}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn.danger{background:#fff;color:var(--bad);border:1px solid var(--bad)}
+.btn.block{display:block;width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+
+.dot{flex:none;width:11px;height:11px;border-radius:50%;background:#b9bbbd}
+.dot.ok{background:var(--ok)} .dot.pend{background:#d99a00} .dot.bad{background:var(--bad)}
+.login{max-width:420px;margin:28px auto 0}
+.login label.f{margin-bottom:12px}
+.err{background:var(--bad-bg);color:var(--bad);border-radius:8px;padding:9px 11px;font-weight:700;font-size:14px;margin-bottom:12px}
+/* lista de partidos */
+.m{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}
+.m .d{flex:none;width:52px;text-align:center;background:var(--ink);color:#fff;border-radius:8px;padding:6px 0;line-height:1.1}
+.m .d b{display:block;font-size:19px;font-weight:900}
+.m .d i{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.m .t{flex:1;min-width:0}
+.m .t b{display:block;font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m .t span{display:block;font-size:12.5px;color:var(--mute)}
+.pill{flex:none;font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:4px 9px}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.bad{background:var(--bad-bg);color:var(--bad)}
+.empty{text-align:center;padding:34px 16px;color:var(--mute)}
+
+/* convocatoria */
+.pl{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.pl:first-of-type{border-top:0}
+.num{flex:none;width:34px;text-align:center;font-weight:900;font-size:17px;font-variant-numeric:tabular-nums}
+.pl .n{flex:1;min-width:0;font-weight:700}
+.pl .n input{margin-top:5px;font-size:14px;min-height:36px;padding:6px 9px;font-weight:500}
+.chk{flex:none;width:46px;height:38px;border-radius:8px;border:2px solid var(--ink);background:#fff;font-weight:900;font-size:17px;color:#fff}
+.chk.on{background:var(--ink)}
+.pl.off .n>span,.pl.off .num{color:var(--mute)}
+.count{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.count b{font-size:26px;font-weight:900;font-variant-numeric:tabular-nums}
+
+/* sextos */
+.estado{border-radius:12px;padding:11px 12px;margin-bottom:12px;font-weight:700;border:1px solid}
+.estado.ok{background:var(--ok-bg);color:var(--ok);border-color:#b9dfc5}
+.estado.warn{background:var(--warn-bg);color:var(--warn);border-color:#f0d79a}
+.estado.bad{background:var(--bad-bg);color:var(--bad);border-color:#f1b9c2}
+.estado b{display:block;font-size:13px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
+.estado ul{margin:6px 0 0;padding-left:18px;font-weight:600;font-size:13.5px}
+.sx-wrap{overflow-x:auto}
+table.sx{border-collapse:separate;border-spacing:0;width:100%;table-layout:fixed;font-variant-numeric:tabular-nums}
+.sx col.cw{width:29%}
+.card.flush{margin-left:-12px;margin-right:-12px;border-radius:0;border-left:0;border-right:0;padding:8px 6px 12px}
+.card.flush .hint{padding:0 6px}
+.sx th{background:var(--ink);color:#fff;font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;padding:7px 2px;text-align:center}
+.sx th.r{background:var(--red)}
+.sx th.g{background:#3a3c40}
+.sx th:first-child{border-radius:8px 0 0 0;text-align:left;padding-left:8px}
+.sx th:last-child{border-radius:0 8px 0 0}
+.sx td{border-bottom:1px solid var(--line);padding:3px 2px;text-align:center;background:#fff}
+.sx tr:nth-child(even) td{background:#f1f1ef}
+.sx td.who{text-align:left;padding:4px 4px 4px 2px}
+.sx td.who div{display:flex;align-items:center;gap:6px}
+.sx td.who b{flex:none;width:26px;text-align:center;font-weight:900;font-size:15px}
+.sx td.who span{font-weight:700;font-size:13px;line-height:1.15;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.sx tr.out td.who span{text-decoration:line-through;color:var(--mute)}
+.cell{width:100%;height:38px;border-radius:7px;border:1.5px solid #b9bbbd;background:#fff;font-weight:900;font-size:15px;color:#fff;padding:0}
+.cell.on{background:var(--ink);border-color:var(--ink)}
+.cell.six.on{background:#3a3c40;border-color:#3a3c40}
+.tot{display:block;border-radius:7px;padding:8px 0;font-weight:900;font-size:15px}
+.tot.ok{background:var(--ok-bg);color:var(--ok)}
+.tot.warn{background:var(--warn-bg);color:var(--warn)}
+.tot.bad{background:var(--bad-bg);color:var(--bad)}
+.fal{width:100%;height:38px;border-radius:7px;border:1.5px solid #b9bbbd;background:#fff;font-weight:900;font-size:15px;padding:0}
+.fal.f4{background:var(--warn-bg);border-color:var(--warn);color:var(--warn)}
+.fal.f5{background:var(--bad);border-color:var(--bad);color:#fff}
+.sx tfoot td{background:#fff!important;border-bottom:0;padding-top:7px;font-weight:900;font-size:13px}
+.sx tfoot td.who{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding-left:8px}
+.cnt{display:block;border-radius:999px;padding:3px 0}
+.cnt.ok{background:var(--ok-bg);color:var(--ok)} .cnt.warn{background:var(--warn-bg);color:var(--warn)} .cnt.bad{background:var(--bad-bg);color:var(--bad)}
+.hint{font-size:12.5px;color:var(--mute);margin-top:10px}
+
+.cell.must{border:2px dashed var(--red);color:var(--red);background:#fff6f7}
+.cell.no{background:repeating-linear-gradient(135deg,#e6e6e3 0 4px,#f3f3f1 4px 8px);border-color:#d2d3d1}
+.leg{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--mute);margin-top:10px;padding:0 6px}
+.leg i{display:inline-block;width:16px;height:16px;border-radius:4px;vertical-align:-3px;margin-right:5px;border:1.5px solid #b9bbbd;font-style:normal}
+.leg i.must{border:2px dashed var(--red)} .leg i.no{background:repeating-linear-gradient(135deg,#e6e6e3 0 4px,#f3f3f1 4px 8px)} .leg i.on{background:var(--ink);border-color:var(--ink)}
+/* directo */
+.sxsel{display:flex;gap:6px;margin-bottom:12px}
+.sxsel button{flex:1;border:1.5px solid var(--ink);background:#fff;border-radius:8px;height:44px;font-weight:900;font-size:16px}
+.sxsel button.on{background:var(--ink);color:#fff}
+.score{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;text-align:center}
+.score .tm{font-size:11px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.score .n{font-size:52px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums}
+.score .sep{font-size:30px;font-weight:900;color:var(--mute)}
+.pts{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px}
+.pts button{border:1.5px solid var(--ink);background:#fff;border-radius:8px;height:44px;font-weight:900;font-size:15px;padding:0}
+.pts button.m{border-color:var(--line);color:var(--mute)}
+.parc{font-size:12.5px;color:var(--mute);text-align:center;margin-top:10px;font-variant-numeric:tabular-nums}
+.lp{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line)}
+.lp:first-of-type{border-top:0}
+.lp .n{flex:1;min-width:0;font-weight:700;line-height:1.2}
+.lp .n small{display:block;font-weight:800;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase}
+.lp .n small.must{color:var(--red)} .lp .n small.no{color:var(--mute)}
+.lp.out .n{text-decoration:line-through;color:var(--mute)}
+.fb{flex:none;display:flex;align-items:center;gap:4px}
+.fb button{width:40px;height:40px;border-radius:8px;border:1.5px solid #b9bbbd;background:#fff;font-weight:900;font-size:17px;padding:0}
+.fb b{min-width:34px;height:40px;line-height:40px;text-align:center;border-radius:8px;background:#f1f1ef;font-size:17px;font-variant-numeric:tabular-nums}
+.fb b.f4{background:var(--warn-bg);color:var(--warn)} .fb b.f5{background:var(--bad);color:#fff}
+.sw{flex:none;border:0;border-radius:8px;height:40px;padding:0 12px;font-weight:800;font-size:13px;background:var(--ink);color:#fff}
+.sw.in{background:var(--red)}
+.h2r{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.h2r h2{margin:0}
+/* temporada */
+.tp tr.pr{cursor:pointer}
+.tp .nm{display:block;font-weight:700;line-height:1.2}
+.tp .bar{display:block;height:5px;border-radius:3px;background:#e4e4e1;margin-top:5px;overflow:hidden}
+.tp .bar i{display:block;height:100%;background:var(--ink);border-radius:3px}
+.tp td.lo{color:var(--warn);font-weight:900} .tp td.up{color:var(--ok);font-weight:900}
+.tp td small{display:block;font-size:10.5px;font-weight:800;color:var(--bad);letter-spacing:.02em}
+.kp.k4{grid-template-columns:repeat(2,1fr)}
+.dist{display:flex;gap:6px;align-items:flex-end;height:96px;margin-top:4px}
+.dist div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
+.dist i{display:block;width:100%;background:var(--ink);border-radius:5px 5px 0 0;min-height:2px}
+.dist i.l{background:#3a3c40}
+.dist b{font-size:13px;font-weight:900;margin-bottom:3px}
+.dist span{font-size:11px;font-weight:800;color:var(--mute);margin-top:4px}
+.hm{padding:9px 0;border-top:1px solid var(--line)}
+.hm:first-of-type{border-top:0}
+.hm .t{display:flex;justify-content:space-between;gap:8px;font-weight:800}
+.hm .t span{font-weight:700;color:var(--mute);font-size:12.5px;flex:none}
+.hm .d{font-size:13.5px;margin-top:2px}
+.hm.no .t b,.hm.no .d{color:var(--mute)}
+.si{display:block;font-size:11.5px;font-weight:700;color:var(--mute);margin-top:1px}
+.si b{color:var(--bad);font-weight:900}
+table.tp{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.tp th{font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:6px 4px;text-align:center;border-bottom:2px solid var(--ink)}
+.tp th:first-child,.tp td:first-child{text-align:left}
+.tp td{padding:8px 4px;text-align:center;border-bottom:1px solid var(--line);font-weight:700}
+.tp td:first-child{font-weight:700}
+.tp td b{display:inline-block;width:28px;font-weight:900}
+.tp td.hi{color:var(--bad);font-weight:900}
+.kp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.kp div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.kp b{display:block;font-size:24px;font-weight:900;font-variant-numeric:tabular-nums}
+.kp span{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.estado.off{background:#ececea;color:#44464a;border-color:#d6d6d3}
+/* objetivos */
+.ev{display:flex;gap:6px}
+.ev button{width:38px;height:38px;border-radius:50%;border:2.5px solid;background:#fff;font-size:10px;font-weight:900;padding:0}
+.ev .s{border-color:var(--ok);color:var(--ok)} .ev .p{border-color:#d99a00;color:#a86a00} .ev .n{border-color:var(--bad);color:var(--bad)}
+.ev .s.on{background:var(--ok);color:#fff} .ev .p.on{background:#d99a00;color:#fff} .ev .n.on{background:var(--bad);color:#fff}
+.ob{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:10px}
+.ob .hd{background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:6px 8px 6px 12px;font-weight:900;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase}
+.ob .hd .ev button{width:32px;height:32px;background:transparent}
+.ob .hd .ev .s.on{background:var(--ok)} .ob .hd .ev .p.on{background:#d99a00} .ob .hd .ev .n.on{background:var(--bad)}
+.ob textarea{border:0;border-radius:0;margin:0}
+.ind{padding:9px 0;border-top:1px solid var(--line)}
+.ind:first-of-type{border-top:0}
+.ind .top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.ind .top span{flex:1;min-width:0;font-weight:700}
+
+/* normativa */
+.rule{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.rule:first-of-type{border-top:0}
+.rule b{flex:none;width:74px;font-size:11px;font-weight:900;letter-spacing:.05em;color:var(--red);padding-top:2px}
+.rule p{margin:0;font-size:14px}
+.stp{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.stp:first-of-type{border-top:0}
+.stp span{font-weight:600;font-size:14px}
+.stp div{display:flex;align-items:center;gap:8px;flex:none}
+.stp button{width:38px;height:38px;border-radius:8px;border:1px solid var(--line);background:#fff;font-weight:900;font-size:18px}
+.stp b{min-width:24px;text-align:center;font-size:17px;font-variant-numeric:tabular-nums}
+
+.toast{position:fixed;left:50%;bottom:calc(74px + var(--sab));transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:10px;padding:10px 16px;font-weight:700;font-size:14px;z-index:40;max-width:90%;text-align:center}
+@media (min-width:600px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.cell,.fal{height:42px}.sx col.cw{width:34%}.sx td.who span{font-size:15px}.card.flush{margin-left:0;margin-right:0;border-radius:12px;border:1px solid var(--line);padding:10px 12px}}
+@media (prefers-reduced-motion:no-preference){.cell,.chk,.ev button{transition:background .12s}}
+
+.app{max-width:1180px}nav div{max-width:1180px}
+.btn.sm{padding:8px 12px;font-size:13px;border-radius:8px}
+.cardh{display:flex;align-items:center;gap:8px;margin-bottom:8px}.cardh h2{margin:0;flex:1}
+.lv button.on.bad{background:var(--bad);border-color:var(--bad)}
+.hero{display:block;width:100%;text-align:left;border:0;border-radius:14px;background:var(--ink);color:#fff;padding:16px;margin-bottom:12px;box-shadow:inset 0 -5px 0 var(--red)}
+.hero span{display:block;font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#ff9fb0}
+.hero b{display:block;font-size:24px;font-weight:900;margin:2px 0}
+.hero i{font-style:normal;font-size:13px;color:#c9cbce;font-weight:700}
+.card.mini{font-size:14px}
+.obj{margin:0;font-size:16px;font-weight:700;line-height:1.35}
+.term{padding:7px 0;border-top:1px solid var(--line)}.term:first-of-type{border-top:0}
+.term b{display:block;font-weight:900}.term span{display:block;font-size:13px;color:var(--mute)}
+.asis{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:6px}
+.ap{display:flex;align-items:center;gap:6px;border:1.5px solid #b9bbbd;background:#fff;border-radius:9px;min-height:44px;padding:4px 8px;text-align:left}
+.ap b{font-weight:900;font-size:15px;min-width:20px;text-align:center}.ap span{font-size:13px;font-weight:700;line-height:1.1;overflow:hidden}
+.ap.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.blk-t{font-size:10.5px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--red);margin:12px 0 4px}
+.blk-t:first-child{margin-top:2px}
+.ck{display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;border:0;border-top:1px solid var(--line);background:none;padding:9px 2px}
+.ck i{flex:none;width:24px;height:24px;border-radius:6px;border:2px solid var(--ink);margin-top:1px;position:relative}
+.ck.on i{background:var(--ink)}.ck.on i:after{content:"";position:absolute;left:6px;top:1px;width:7px;height:13px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg)}
+.ck span{flex:1;font-weight:600;font-size:14.5px;line-height:1.3}
+.ck small,.it small{display:block;font-size:12px;color:var(--mute);font-weight:600;margin-top:2px}
+.wbar{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px;margin-bottom:12px}
+.wbar div{flex:1;text-align:center;min-width:0}.wbar b{display:block;font-size:17px;font-weight:900}.wbar span{font-size:12.5px;color:var(--mute)}
+.wbar em{font-style:normal;color:var(--red);font-weight:800}
+.nb{flex:none;width:46px;height:46px;border-radius:10px;border:0;background:var(--ink);color:#fff;font-size:26px;font-weight:900;line-height:1}
+.nb:disabled{opacity:.25}
+.it{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-top:1px solid var(--line)}
+.it:first-of-type,.cardh+.it{border-top:0}
+.it>span{flex:1;font-size:14.5px;font-weight:600;line-height:1.3;min-width:0}
+.x{flex:none;width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:20px;font-weight:700;color:var(--mute);line-height:1}
+.ses{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px;margin-bottom:6px}
+.ses .d{flex:none;width:46px;text-align:center;background:var(--ink);color:#fff;border-radius:8px;padding:5px 0;line-height:1.1}
+.ses .d b{display:block;font-size:18px;font-weight:900}.ses .d i{font-style:normal;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.ses .t{flex:1;min-width:0}.ses .t b{display:block;font-weight:800}.ses .t span{display:block;font-size:12.5px;color:var(--mute)}
+.pill{background:#ececea;color:var(--mute)}
+.addx{display:flex;gap:8px;margin-top:10px;align-items:stretch}.addx input{flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:16px;min-height:42px;background:#fff}
+#tsel{margin-top:8px}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:6px}
+.kpis div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.kpis b{display:block;font-size:26px;font-weight:900;font-variant-numeric:tabular-nums}.kpis b small{font-size:14px;color:var(--mute)}
+.kpis span{font-size:12px;color:var(--mute);font-weight:700}
+h3.tri{font-size:13px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin:18px 2px 8px}
+.wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.wc{display:flex;flex-direction:column;gap:4px;text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;min-height:118px}
+.wc.cur{border:2px solid var(--red);box-shadow:0 0 0 3px #fbe3e7}
+.wc.past{background:#f8f8f6}.wc.vacia .wo{color:var(--mute)}
+.wn{font-weight:900;font-size:16px}.wn i{font-style:normal;font-weight:700;font-size:12px;color:var(--mute);margin-left:6px}
+.wo{font-size:13.5px;font-weight:600;line-height:1.3;flex:1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.wo em{font-style:normal}
+.wf{font-size:11.5px;font-weight:800;color:var(--mute);letter-spacing:.02em}
+.filt{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}.filt #bq{grid-column:1/-1}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40}
+.sheet{position:fixed;z-index:41;left:0;right:0;bottom:0;max-height:88vh;display:flex;flex-direction:column;background:#fff;border-radius:16px 16px 0 0;padding:14px 14px calc(14px + var(--sab))}
+.sheet .plist{overflow-y:auto;flex:1;margin-top:8px;-webkit-overflow-scrolling:touch}
+body.modal{overflow:hidden}
+#toast{position:fixed;left:50%;bottom:calc(76px + var(--sab));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-weight:700;font-size:14px;opacity:0;pointer-events:none;transition:.2s;z-index:60}
+#toast.show{opacity:1;transform:translateX(-50%)}
+a.gn{text-align:center;text-decoration:none}a.gn[hidden]{display:none}
+@media (min-width:700px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}.blocks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}.sheet{left:50%;right:auto;bottom:auto;top:6vh;transform:translateX(-50%);width:min(640px,94vw);max-height:86vh;border-radius:16px}}
+@media (min-width:1000px){.wk{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:12px;align-items:start}.wk-side{position:sticky;top:84px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header id="hd"></header>
+  <main id="main"></main>
+</div>
+<nav><div id="nav"></div></nav>
+<script>window.LOGO="data:image/png;base64,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";window.SEED={"weeks": [{"id": "w01", "k": "w", "n": 1, "tri": 1, "mes": "Septiembre", "sem": 1, "lunes": "2026-09-07", "obj": "Construccion normas de la temporada + adaptacion fisica con busqueda de ritmos altos", "b": {"ti": ["Bote de velocidad", "Bote para cambio de ritmo.", "1 apoyo (variedad: floater, aro pasado, misma mano/pie, apoyo cruzado, por línea de fondo mano interior, etc).", "Con contacto"], "tai": ["Buscar una calle para correr (calle del 3), ligeramente lateralizada.", "Ser agresivos en 1x1 al aro.", "Uso útil del bote, generar sin usarlo en exceso."], "tc": ["Ocupacion espacios: cabeza, brazos y codos.", "Amplitud espacios: jugar fuera del triple grande", "Todos cargan rebote ofensivo."], "d1": ["Actividad y agresividad (defender con ½ falta)", "Colocación-postura-equilibrio corporal defensivo.", "Aguantar/buscar contactos defensivos"], "dc": ["Balance tras pérdida, concepto de \"CASA\"", "En el balance, concepto de \"balon\" para comunicar que paro a jugador con balon.", "Trabajo de rebote defensivo colectivo"], "nh": ["Hay que generar con el menor numero de botes posibles", "No mas de 3 segundos para sacar desde cualquier posición"]}, "terms": ["Casa", "Balon", "Volar", "Pescar"]}, {"id": "w02", "k": "w", "n": 2, "tri": 1, "mes": "Septiembre", "sem": 2, "lunes": "2026-09-14", "obj": "Construccion normas de la temporada + adaptacion fisica con busqueda de ritmos altos", "b": {"ti": ["Con contacto", "Bote de velocidad", "Entre piernas", "Arranques con cambio de mano."], "tai": ["Buscar una calle para correr (calle del 3), ligeramente lateralizada.", "Constante utilización del pase para generar una ventaja.", "Ser agresivos en 1x1 al aro."], "tc": ["Ocupacion espacios: cabeza, brazos y codos.", "Amplitud espacios: jugar fuera del triple grande", "Apoyos desde esquina contraria a penetraciones"], "d1": ["Actividad de pies constante \"pies queman\"", "Actividad y agresividad (defender con ½ falta)", "Colocación-postura-equilibrio corporal defensivo."], "dc": ["Balance tras pérdida, concepto de \"CASA\"", "En el balance, concepto de \"balon\" para comunicar que paro a jugador con balon.", "Trabajo de rebote defensivo colectivo"], "nh": ["Hay que generar con el menor numero de botes posibles", "No mas de 3 segundos para sacar desde cualquier posición"]}, "terms": ["Casa", "Balon", "Volar", "Pescar"]}, {"id": "w03", "k": "w", "n": 3, "tri": 1, "mes": "Septiembre", "sem": 3, "lunes": "2026-09-21", "obj": "Construccion normas de la temporada + adaptacion fisica con busqueda de ritmos altos", "b": {"ti": ["Con contacto", "1 apoyo (variedad: floater, aro pasado, misma mano/pie, apoyo cruzado, por línea de fondo mano interior, etc).", "Pase sobre bote 1 mano", "Bote para cambio de ritmo."], "tai": ["Buscar una calle para correr (calle del 3), ligeramente lateralizada.", "Uso útil del bote, generar sin usarlo en exceso.", "Jugar desde posiciones exteriores establecidas, no moverme por moverme"], "tc": ["Ocupacion espacios: cabeza, brazos y codos.", "Amplitud espacios: jugar fuera del triple grande", "Puerta atrás.", "Apoyos desde esquina contraria a penetraciones"], "d1": ["Colocación-postura-equilibrio corporal defensivo.", "Negar el centro y llevarle a la banda."], "dc": ["Balance tras pérdida, concepto de \"CASA\"", "Comunicación: \"Balón\", \"ultimo\",\"Rebote\", \"cerca\", \"linea\""], "nh": ["Hay que generar con el menor numero de botes posibles", "No mas de 3 segundos para sacar desde cualquier posición"]}, "terms": ["Balon", "Cerca", "Manos (provisional)", "Linea"]}, {"id": "w04", "k": "w", "n": 4, "tri": 1, "mes": "Septiembre", "sem": 4, "lunes": "2026-09-28", "obj": "Construccion normas de la temporada + adaptacion fisica con busqueda de ritmos altos", "b": {"ti": ["Con contacto", "1 apoyo (variedad: floater, aro pasado, misma mano/pie, apoyo cruzado, por línea de fondo mano interior, etc).", "Pase sobre bote 1 mano", "Bote para cambio de ritmo."], "tai": ["Pasar y moverse.", "Buscar una calle para correr (calle del 3), ligeramente lateralizada.", "Uso útil del bote, generar sin usarlo en exceso.", "Jugar desde posiciones exteriores establecidas, no moverme por moverme"], "tc": ["Ocupacion espacios: cabeza, brazos y codos.", "Amplitud espacios: jugar fuera del triple grande", "Puerta atrás.", "Apoyos desde esquina contraria a penetraciones"], "d1": ["Colocación-postura-equilibrio corporal defensivo.", "Negar el centro y llevarle a la banda."], "dc": ["Balance tras pérdida, concepto de \"CASA\"", "Comunicación: \"Balón\", \"ultimo\",\"Rebote\", \"cerca\", \"linea\""], "nh": ["No mas de 3 segundos para sacar desde cualquier posición", "Rebote constante en cualquier situacion de juego"]}, "terms": ["Balon", "Cerca", "Manos (provisional)", "Linea"]}, {"id": "w05", "k": "w", "n": 5, "tri": 1, "mes": "Octubre", "sem": 1, "lunes": "2026-10-05", "obj": "", "b": {"ti": ["Eurostep (variedad)", "1 apoyo (variedad: floater, aro pasado, misma mano/pie, apoyo cruzado, por línea de fondo mano interior, etc).", "Pase sobre bote 1 mano", "Bote para cambio de ritmo."], "tai": ["Pasar y moverse.", "Buscar una calle para correr (calle del 3), ligeramente lateralizada.", "Uso útil del bote, generar sin usarlo en exceso.", "Jugar desde posiciones exteriores establecidas, no moverme por moverme"], "tc": ["Ocupacion espacios: cabeza, brazos y codos.", "Amplitud espacios: jugar fuera del triple grande", "Puerta atrás.", "Apoyos desde esquina contraria a penetraciones"], "d1": ["Colocación-postura-equilibrio corporal defensivo.", "Negar el centro y llevarle a la banda."], "dc": ["Balance tras pérdida, concepto de \"CASA\"", "Comunicación: \"Balón\", \"ultimo\",\"Rebote\", \"cerca\", \"linea\""], "nh": ["No mas de 3 segundos para sacar desde cualquier posición", "Rebote constante en cualquier situacion de juego"]}, "terms": ["Balon", "Cerca", "Manos (provisional)", "Linea"]}, {"id": "w06", "k": "w", "n": 6, "tri": 1, "mes": "Octubre", "sem": 2, "lunes": "2026-10-12", "obj": "", "b": {"ti": ["Con contacto", "Espalda", "Eurostep (variedad)", "Bote para cambio de ritmo."], "tai": ["Pasar y moverse.", "Cortes o reemplazos entre posiciones en forma de V.", "Movimiento constante de todos los jugadores ocupando espacios según situación del balón, del resto de los compañeros y de los rivales."], "tc": ["Amplitud espacios: jugar fuera del triple grande", "Apoyos desde esquina contraria a penetraciones", "Ofrecer líneas de pase.", "Puerta atrás."], "d1": ["Actividad y agresividad (defender con ½ falta)", "Utilizacion de manos (concepto \"picar\" jugador)", "Colocación-postura-equilibrio corporal defensivo."], "dc": ["Comunicación: \"Balón\", \"ultimo\",\"Rebote\", \"cerca\", \"linea\"", "Proteger triple pequeño como equipo. Salto a balón.", "En el balance, concepto de \"balon\" para comunicar que paro a jugador con balon."], "nh": ["No mas de 3 segundos para sacar desde cualquier posición", "Rebote constante en cualquier situacion de juego", "Si mi compañero ha botado, no boto", "Atacar lado contrario del que recibo"]}, "terms": ["Manos (provisional)", "Limpia", "Pescar"]}, {"id": "w07", "k": "w", "n": 7, "tri": 1, "mes": "Octubre", "sem": 3, "lunes": "2026-10-19", "obj": "", "b": {"ti": ["Con contacto", "Coger aire - \"Aguilucho\" + cambio ritmo", "Espalda", "Pase sobre bote 1 mano"], "tai": ["Constante utilización del pase para generar una ventaja.", "Pasar y moverse.", "Movimiento constante de todos los jugadores ocupando espacios según situación del balón, del resto de los compañeros y de los rivales.", "Cortes o reemplazos entre posiciones en forma de V."], "tc": ["Amplitud espacios: jugar fuera del triple grande", "Reemplazo al lado contrario al que paso.", "Desocupar una posicion si viene mi compañero, sobretodo corte fondo pierna"], "d1": ["Actividad y agresividad (defender con ½ falta)", "Negar el centro y llevarle a la banda.", "Cuanto más lejos está mi hombre del balón más me separo de él.", "Estar listo siempre para ayudar evitando así canastas fáciles."], "dc": ["Comunicación: \"Balón\", \"ultimo\",\"Rebote\", \"cerca\", \"linea\"", "Movimientos en funcion de donde está balón", "Proteger triple pequeño como equipo. Salto a balón."], "nh": ["Mientras se está en la pista, no se descansa", "Si mi compañero ha botado, no boto", "Atacar lado contrario del que recibo", "Rebote constante en cualquier situacion de juego"]}, "terms": ["Muro", "Balon", "Cerca", "Linea"]}, {"id": "w08", "k": "w", "n": 8, "tri": 1, "mes": "Octubre", "sem": 4, "lunes": "2026-10-26", "obj": "", "b": {"ti": ["Eurostep (variedad)", "Coger aire - \"Aguilucho\" + cambio ritmo", "In and out + cambio (variedad)", "Bote para retroceder."], "tai": ["Constante utilización del pase para generar una ventaja.", "Pasar y moverse.", "Movimiento constante de todos los jugadores ocupando espacios según situación del balón, del resto de los compañeros y de los rivales.", "Cortes o reemplazos entre posiciones en forma de V."], "tc": ["Amplitud espacios: jugar fuera del triple grande", "Reemplazo al lado contrario al que paso.", "Desocupar una posicion si viene mi compañero, sobretodo corte fondo pierna"], "d1": ["Actividad y agresividad (defender con ½ falta)", "Negar el centro y llevarle a la banda.", "Cuanto más lejos está mi hombre del balón más me separo de él.", "Estar listo siempre para ayudar evitando así canastas fáciles."], "dc": ["Comunicación: \"Balón\", \"ultimo\",\"Rebote\", \"cerca\", \"linea\"", "Movimientos en funcion de donde está balón", "Proteger triple pequeño como equipo. Salto a balón."], "nh": ["Mientras se está en la pista, no se descansa", "Si mi compañero ha botado, no boto", "Atacar lado contrario del que recibo", "Rebote constante en cualquier situacion de juego"]}, "terms": ["Linea", "Manos (provisional)", "Cerca"]}, {"id": "w09", "k": "w", "n": 9, "tri": 1, "mes": "Noviembre", "sem": 1, "lunes": "2026-11-02", "obj": "", "b": {"ti": ["1 apoyo (variedad: floater, aro pasado, misma mano/pie, apoyo cruzado, por línea de fondo mano interior, etc).", "Coger aire - \"Aguilucho\" + cambio ritmo", "In and out + cambio (variedad)", "Bote para retroceder."], "tai": ["Pasar y moverse.", "Mirar siempre balón, extender la mano enseñando la palma para pedir balón, palmear manos para recibir pase, etc.", "Leer constantemente posición de la defensa. Cabeza arriba."], "tc": ["Amplitud espacios: jugar fuera del triple grande", "Reemplazo al lado contrario al que paso."], "d1": ["Actividad de pies constante \"pies queman\"", "Aguantar/buscar contactos defensivos", "Orientación a balón, pecho balón"], "dc": ["Comunicación: \"Balón\", \"ultimo\",\"Rebote\", \"cerca\", \"linea\"", "En el balance, concepto de \"balon\" para comunicar que paro a jugador con balon.", "Movimientos en funcion de donde está balón"], "nh": ["Mientras se está en la pista, no se descansa", "Si mi compañero ha botado, no boto", "Atacar lado contrario del que recibo", "Rebote constante en cualquier situacion de juego"]}, "terms": ["Balon", "Volar", "Linea"]}, {"id": "w10", "k": "w", "n": 10, "tri": 1, "mes": "Noviembre", "sem": 2, "lunes": "2026-11-09", "obj": "", "b": {"ti": ["Escondiendo balón", "Bote para retroceder.", "Entre piernas", "Arranques con cambio de mano."], "tai": ["Pasar y moverse.", "Mirar siempre balón, extender la mano enseñando la palma para pedir balón, palmear manos para recibir pase, etc.", "Leer constantemente posición de la defensa. Cabeza arriba."], "tc": ["Amplitud espacios: jugar fuera del triple grande", "Reemplazo al lado contrario al que paso.", "Todos cargan rebote ofensivo."], "d1": ["Cuanto más lejos está mi hombre del balón más me separo de él.", "Impedir o dificultar ganar la posición cerca de canasta (contacto dentro de triple para sacar de \"casa\")"], "dc": ["Comunicación: \"Balón\", \"ultimo\",\"Rebote\", \"cerca\", \"linea\"", "En el balance, concepto de \"balon\" para comunicar que paro a jugador con balon.", "Movimientos en funcion de donde está balón"], "nh": ["Si mi compañero ha botado, no boto", "Atacar lado contrario del que recibo"]}, "terms": ["Balon", "Volar", "Linea"]}, {"id": "w11", "k": "w", "n": 11, "tri": 1, "mes": "Noviembre", "sem": 3, "lunes": "2026-11-16", "obj": "", "b": {"ti": ["Eurostep (variedad)", "Bote para retroceder.", "Espalda", "Arranques con cambio de mano."], "tai": ["Ser agresivos en 1x1 al aro.", "Movimiento constante de todos los jugadores ocupando espacios según situación del balón, del resto de los compañeros y de los rivales.", "Leer constantemente posición de la defensa. Cabeza arriba.", "Subir posiciones en busca de balón, sobretodo \"pierna\""], "tc": ["Puerta atrás.", "Desocupar una posicion si viene mi compañero, sobretodo corte fondo pierna", "Todos cargan rebote ofensivo.", "Alejar/subir todas posiciones buscando fluidez, paso hacia el balón para atacar"], "d1": ["Cuanto más lejos está mi hombre del balón más me separo de él.", "Trabajo de lineas de pase (abierta). Control distancias y anticipacion a pase", "Defensa de close-out. Llegar equilibrado y preparado segundo esfuerzo", "Orientación y colocación (triangulo defensivo) IMPORTANTISIMO"], "dc": ["Proteger triple pequeño como equipo. Salto a balón.", "Comunicación: \"Balón\", \"ultimo\",\"Rebote\", \"cerca\", \"linea\"", "Movimientos en funcion de donde está balón"], "nh": ["Si mi compañero ha botado, no boto", "Atacar lado contrario del que recibo"]}, "terms": ["Muro", "Linea", "Limpia"]}, {"id": "w12", "k": "w", "n": 12, "tri": 1, "mes": "Noviembre", "sem": 4, "lunes": "2026-11-23", "obj": "", "b": {"ti": ["Reverso", "In and out + cambio (variedad)", "Pivotes", "Bote previo a encarar 1x1."], "tai": ["Ser agresivos en 1x1 al aro.", "Movimiento constante de todos los jugadores ocupando espacios según situación del balón, del resto de los compañeros y de los rivales.", "Leer constantemente posición de la defensa. Cabeza arriba.", "Subir posiciones en busca de balón, sobretodo \"pierna\""], "tc": ["Puerta atrás.", "Desocupar una posicion si viene mi compañero, sobretodo corte fondo pierna", "Todos cargan rebote ofensivo.", "Alejar/subir todas posiciones buscando fluidez, paso hacia el balón para atacar"], "d1": ["Cuanto más lejos está mi hombre del balón más me separo de él.", "Defensa de close-out. Llegar equilibrado y preparado segundo esfuerzo", "Orientación y colocación (triangulo defensivo) IMPORTANTISIMO", "Impedir o dificultar la recepción del balón."], "dc": ["Proteger triple pequeño como equipo. Salto a balón.", "Comunicación: \"Balón\", \"ultimo\",\"Rebote\", \"cerca\", \"linea\"", "Movimientos en funcion de donde está balón"], "nh": ["Si mi compañero ha botado, no boto", "Atacar lado contrario del que recibo"]}, "terms": ["Muro", "Linea", "Limpia"]}, {"id": "w13", "k": "w", "n": 13, "tri": 2, "mes": "Diciembre", "sem": 1, "lunes": "2026-12-07", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w14", "k": "w", "n": 14, "tri": 2, "mes": "Diciembre", "sem": 2, "lunes": "2026-12-14", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w15", "k": "w", "n": 15, "tri": 2, "mes": "Diciembre", "sem": 3, "lunes": "2026-12-21", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w16", "k": "w", "n": 16, "tri": 2, "mes": "Diciembre", "sem": 4, "lunes": "2026-12-28", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w17", "k": "w", "n": 17, "tri": 2, "mes": "Enero", "sem": 1, "lunes": "2027-01-04", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w18", "k": "w", "n": 18, "tri": 2, "mes": "Enero", "sem": 2, "lunes": "2027-01-11", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w19", "k": "w", "n": 19, "tri": 2, "mes": "Enero", "sem": 3, "lunes": "2027-01-18", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w20", "k": "w", "n": 20, "tri": 2, "mes": "Enero", "sem": 4, "lunes": "2027-01-25", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w21", "k": "w", "n": 21, "tri": 2, "mes": "Febrero", "sem": 1, "lunes": "2027-02-01", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w22", "k": "w", "n": 22, "tri": 2, "mes": "Febrero", "sem": 2, "lunes": "2027-02-08", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w23", "k": "w", "n": 23, "tri": 2, "mes": "Febrero", "sem": 3, "lunes": "2027-02-15", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w24", "k": "w", "n": 24, "tri": 2, "mes": "Febrero", "sem": 4, "lunes": "2027-02-22", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w25", "k": "w", "n": 25, "tri": 3, "mes": "Marzo", "sem": 1, "lunes": "2027-03-01", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w26", "k": "w", "n": 26, "tri": 3, "mes": "Marzo", "sem": 2, "lunes": "2027-03-08", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w27", "k": "w", "n": 27, "tri": 3, "mes": "Marzo", "sem": 3, "lunes": "2027-03-15", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w28", "k": "w", "n": 28, "tri": 3, "mes": "Marzo", "sem": 4, "lunes": "2027-03-22", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w29", "k": "w", "n": 29, "tri": 3, "mes": "Abril", "sem": 1, "lunes": "2027-04-05", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w30", "k": "w", "n": 30, "tri": 3, "mes": "Abril", "sem": 2, "lunes": "2027-04-12", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w31", "k": "w", "n": 31, "tri": 3, "mes": "Abril", "sem": 3, "lunes": "2027-04-19", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w32", "k": "w", "n": 32, "tri": 3, "mes": "Abril", "sem": 4, "lunes": "2027-04-26", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w33", "k": "w", "n": 33, "tri": 3, "mes": "Mayo", "sem": 1, "lunes": "2027-05-03", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w34", "k": "w", "n": 34, "tri": 3, "mes": "Mayo", "sem": 2, "lunes": "2027-05-10", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w35", "k": "w", "n": 35, "tri": 3, "mes": "Mayo", "sem": 3, "lunes": "2027-05-17", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w36", "k": "w", "n": 36, "tri": 3, "mes": "Mayo", "sem": 4, "lunes": "2027-05-24", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w37", "k": "w", "n": 37, "tri": 4, "mes": "Junio", "sem": 1, "lunes": "2027-06-07", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w38", "k": "w", "n": 38, "tri": 4, "mes": "Junio", "sem": 2, "lunes": "2027-06-14", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w39", "k": "w", "n": 39, "tri": 4, "mes": "Junio", "sem": 3, "lunes": "2027-06-21", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}, {"id": "w40", "k": "w", "n": 40, "tri": 4, "mes": "Junio", "sem": 4, "lunes": "2027-06-28", "obj": "", "b": {"ti": [], "tai": [], "tc": [], "d1": [], "dc": [], "nh": []}, "terms": []}], "banco": [{"id": "c1", "b": "ti", "g": "Finalizaciones", "t": "1 apoyo (variedad: floater, aro pasado, misma mano/pie, apoyo cruzado, por línea de fondo mano interior, etc)."}, {"id": "c2", "b": "ti", "g": "Finalizaciones", "t": "Aro pasado (variedad)."}, {"id": "c3", "b": "ti", "g": "Finalizaciones", "t": "Con contacto"}, {"id": "c4", "b": "ti", "g": "Finalizaciones", "t": "Dos apoyos mano exterior/interior"}, {"id": "c5", "b": "ti", "g": "Finalizaciones", "t": "Escondiendo balón"}, {"id": "c6", "b": "ti", "g": "Finalizaciones", "t": "Eurostep (variedad)"}, {"id": "c7", "b": "ti", "g": "Finalizaciones", "t": "Mano opuesta al lado de finalizacion"}, {"id": "c8", "b": "ti", "g": "Finalizaciones", "t": "Paradas + pivotes (variedad)"}, {"id": "c9", "b": "ti", "g": "Finalizaciones", "t": "Reverso"}, {"id": "c10", "b": "ti", "g": "Finalizaciones", "t": "Traspies"}, {"id": "c11", "b": "ti", "g": "Manejo de balon", "t": "Bote de finalización."}, {"id": "c12", "b": "ti", "g": "Manejo de balon", "t": "Bote de velocidad"}, {"id": "c13", "b": "ti", "g": "Manejo de balon", "t": "Bote para cambio de ritmo."}, {"id": "c14", "b": "ti", "g": "Manejo de balon", "t": "Bote para retroceder."}, {"id": "c15", "b": "ti", "g": "Manejo de balon", "t": "Bote previo a encarar 1x1."}, {"id": "c16", "b": "ti", "g": "Manejo de balon", "t": "Coger aire - \"Aguilucho\" + cambio ritmo"}, {"id": "c17", "b": "ti", "g": "Manejo de balon", "t": "Crossover simple (por delante). Atencion a amplitud, intensidad y distancia al suelo"}, {"id": "c18", "b": "ti", "g": "Manejo de balon", "t": "Doble Crossover (combinar cambios)."}, {"id": "c19", "b": "ti", "g": "Manejo de balon", "t": "Entre piernas"}, {"id": "c20", "b": "ti", "g": "Manejo de balon", "t": "Espalda"}, {"id": "c21", "b": "ti", "g": "Manejo de balon", "t": "In and out"}, {"id": "c22", "b": "ti", "g": "Manejo de balon", "t": "In and out + cambio (variedad)"}, {"id": "c23", "b": "ti", "g": "Manejo de balon", "t": "Stop & Go (parar en seco sin agotar el bote para que el defensor siga corriendo)."}, {"id": "c24", "b": "ti", "g": "Paradas / Arrancadas", "t": "Abierta"}, {"id": "c25", "b": "ti", "g": "Paradas / Arrancadas", "t": "Arranques con cambio de mano."}, {"id": "c26", "b": "ti", "g": "Paradas / Arrancadas", "t": "Bote agotado (protección)."}, {"id": "c27", "b": "ti", "g": "Paradas / Arrancadas", "t": "Bote permitido (fintas)."}, {"id": "c28", "b": "ti", "g": "Paradas / Arrancadas", "t": "Cruzada"}, {"id": "c29", "b": "ti", "g": "Paradas / Arrancadas", "t": "Directas."}, {"id": "c30", "b": "ti", "g": "Paradas / Arrancadas", "t": "Dos tiempos."}, {"id": "c31", "b": "ti", "g": "Paradas / Arrancadas", "t": "Paso 0 en carrera"}, {"id": "c32", "b": "ti", "g": "Paradas / Arrancadas", "t": "Pivotes"}, {"id": "c33", "b": "ti", "g": "Paradas / Arrancadas", "t": "Recepción utilizando paso cero."}, {"id": "c34", "b": "ti", "g": "Paradas / Arrancadas", "t": "Un tiempo."}, {"id": "c35", "b": "ti", "g": "Pase", "t": "A una mano sobre triple amenaza (extensión del brazo)"}, {"id": "c36", "b": "ti", "g": "Pase", "t": "Pase baseball"}, {"id": "c37", "b": "ti", "g": "Pase", "t": "Pase contraataque a una mano"}, {"id": "c38", "b": "ti", "g": "Pase", "t": "Pase de pecho"}, {"id": "c39", "b": "ti", "g": "Pase", "t": "Pase desde saque rapido"}, {"id": "c40", "b": "ti", "g": "Pase", "t": "Pase sobre bote 1 mano"}, {"id": "c41", "b": "ti", "g": "Pase", "t": "Pase sobre cabeza"}, {"id": "c42", "b": "ti", "g": "Rebote", "t": "Contacto."}, {"id": "c43", "b": "ti", "g": "Rebote", "t": "Instinto."}, {"id": "c44", "b": "ti", "g": "Rebote", "t": "Posicionamiento"}, {"id": "c45", "b": "ti", "g": "Tiro", "t": "Apuntar con los dedos hacia la dirección del aro."}, {"id": "c46", "b": "ti", "g": "Tiro", "t": "Atacar pase para tiro"}, {"id": "c47", "b": "ti", "g": "Tiro", "t": "Equilibrio de fuerza tronco superior e inferior: las piernas son el motor del coche y los brazos el volante para dirigirlo."}, {"id": "c48", "b": "ti", "g": "Tiro", "t": "Golpe de muñeca: La fuerza comienza en el dedo gordo del pie y termina en el dedo índice de la mano"}, {"id": "c49", "b": "ti", "g": "Tiro", "t": "Para 1t o 2t para tiro"}, {"id": "c50", "b": "ti", "g": "Tiro", "t": "Parada con paso 0 para tiro"}, {"id": "c51", "b": "ti", "g": "Tiro", "t": "Posicion corporal: esperar balon abajo, \"saludar al balón\""}, {"id": "c52", "b": "ti", "g": "Tiro", "t": "Progresión: 3 dedos, 5 dedos, mano entera sin sujeción mano de apoyo, carga normal."}, {"id": "c53", "b": "ti", "g": "Tiro", "t": "Recepcion en parada 1t o 2 t"}, {"id": "c54", "b": "ti", "g": "Tiro", "t": "Side step y Stepback"}, {"id": "c55", "b": "tai", "g": "1X1 Con Balon", "t": "Amenaza constante. Botar, pasar, agresividad, observar."}, {"id": "c56", "b": "tai", "g": "1X1 Con Balon", "t": "Buscar una calle para correr (calle del 3), ligeramente lateralizada."}, {"id": "c57", "b": "tai", "g": "1X1 Con Balon", "t": "Constante utilización del pase para generar una ventaja."}, {"id": "c58", "b": "tai", "g": "1X1 Con Balon", "t": "Hacer uso de la visión periférica mientras se tiene el control del balón."}, {"id": "c59", "b": "tai", "g": "1X1 Con Balon", "t": "Jugar siempre de cara al aro. Utilizar la triple amenaza."}, {"id": "c60", "b": "tai", "g": "1X1 Con Balon", "t": "Jugar siempre en la línea más corta desde mi posición al aro."}, {"id": "c61", "b": "tai", "g": "1X1 Con Balon", "t": "Lanzar contraataque con bote."}, {"id": "c62", "b": "tai", "g": "1X1 Con Balon", "t": "Leer constantemente posición de la defensa. Cabeza arriba."}, {"id": "c63", "b": "tai", "g": "1X1 Con Balon", "t": "Pasar y moverse."}, {"id": "c64", "b": "tai", "g": "1X1 Con Balon", "t": "Ser agresivos en 1x1 al aro."}, {"id": "c65", "b": "tai", "g": "1X1 Con Balon", "t": "Ser vertical al atacar la canasta, Importancia conservar balón."}, {"id": "c66", "b": "tai", "g": "1X1 Con Balon", "t": "Uso útil del bote, generar sin usarlo en exceso."}, {"id": "c67", "b": "tai", "g": "1X1 Sin Balon", "t": "Cortes o reemplazos entre posiciones en forma de V."}, {"id": "c68", "b": "tai", "g": "1X1 Sin Balon", "t": "Fijar al par para recibir (anclar pie, pasar pie por delante, empujar en dirección contraria a la línea de su pecho, meter dentro de zona y salir, etc."}, {"id": "c69", "b": "tai", "g": "1X1 Sin Balon", "t": "Jugar desde posiciones exteriores establecidas, no moverme por moverme"}, {"id": "c70", "b": "tai", "g": "1X1 Sin Balon", "t": "Mirar siempre balón, extender la mano enseñando la palma para pedir balón, palmear manos para recibir pase, etc."}, {"id": "c71", "b": "tai", "g": "1X1 Sin Balon", "t": "Movimiento constante de todos los jugadores ocupando espacios según situación del balón, del resto de los compañeros y de los rivales."}, {"id": "c72", "b": "tc", "g": "5X5 Estático", "t": "Amplitud espacios: jugar fuera del triple grande"}, {"id": "c73", "b": "tc", "g": "5X5 Estático", "t": "Apoyos desde esquina contraria a penetraciones"}, {"id": "c74", "b": "tc", "g": "5X5 Estático", "t": "Corte central viene de contraataque (sacador)"}, {"id": "c75", "b": "tc", "g": "5X5 Estático", "t": "Ocupacion espacios: cabeza, brazos y codos."}, {"id": "c76", "b": "tc", "g": "5X5 Estático", "t": "Puerta atrás."}, {"id": "c77", "b": "tc", "g": "5X5 Estático", "t": "Reemplazar mirando balón (corriente espalda)."}, {"id": "c78", "b": "tc", "g": "5X5 Estático", "t": "Reemplazo al lado contrario al que paso."}, {"id": "c79", "b": "tc", "g": "5X5 Estático", "t": "Respeto iniciativa compañero con balón."}, {"id": "c80", "b": "tc", "g": "5X5 Estático", "t": "Todos cargan rebote ofensivo."}, {"id": "c81", "b": "tc", "g": "5X5 Transicion", "t": "Correr por calles laterales."}, {"id": "c82", "b": "tc", "g": "5X5 Transicion", "t": "Correr siempre por delante de balón."}, {"id": "c83", "b": "tc", "g": "5X5 Transicion", "t": "Cuando se nos acabe la pista, ocupar un lugar en la esquina."}, {"id": "c84", "b": "tc", "g": "5X5 Transicion", "t": "Llegar hasta la esquina para buscar amplitud"}, {"id": "c85", "b": "tc", "g": "5X5 Transicion", "t": "Ocupacion de calle semilateral para jugar con balón (codos)(calles rapidas)"}, {"id": "c86", "b": "tc", "g": "5X5 Transicion", "t": "Ocupacion de calles laterales jugadores sin balon (piernas)"}, {"id": "c87", "b": "tc", "g": "5X5 Transicion", "t": "Ofrecer cortes diagonales a jugador con balón."}, {"id": "c88", "b": "tc", "g": "5X5 Transicion", "t": "Ofrecer líneas de pase."}, {"id": "c89", "b": "tc", "g": "5X5 Transicion", "t": "Trabajo de recepcionamiento previo."}, {"id": "c90", "b": "d1", "g": "Hombre Con Balon", "t": "Actividad de pies constante \"pies queman\""}, {"id": "c91", "b": "d1", "g": "Hombre Con Balon", "t": "Actividad y agresividad (defender con ½ falta)"}, {"id": "c92", "b": "d1", "g": "Hombre Con Balon", "t": "Aguantar/buscar contactos defensivos"}, {"id": "c93", "b": "d1", "g": "Hombre Con Balon", "t": "Colocación-postura-equilibrio corporal defensivo."}, {"id": "c94", "b": "d1", "g": "Hombre Con Balon", "t": "En carrera, contacto para parar y concepto \"barrer\" balon en el cambio."}, {"id": "c95", "b": "d1", "g": "Hombre Con Balon", "t": "Esfuerzos multiples"}, {"id": "c96", "b": "d1", "g": "Hombre Con Balon", "t": "Inicio a saber defender con dos intensidades, acelerando y desacelerando (alevín de 2)"}, {"id": "c97", "b": "d1", "g": "Hombre Con Balon", "t": "Inicio a utilizar los espacios para defender, meterlos en trampa (alevín de 2)"}, {"id": "c98", "b": "d1", "g": "Hombre Con Balon", "t": "Negar el centro y llevarle a la banda."}, {"id": "c99", "b": "d1", "g": "Hombre Con Balon", "t": "No hay paso de caída, trabajo de defensa muro"}, {"id": "c100", "b": "d1", "g": "Hombre Con Balon", "t": "Orientación a balón, pecho balón"}, {"id": "c101", "b": "d1", "g": "Hombre Con Balon", "t": "Si me supera correr hasta ponerme delante, no desplazamiento lateral"}, {"id": "c102", "b": "d1", "g": "Hombre Con Balon", "t": "Utilizacion de manos (concepto \"picar\" jugador)"}, {"id": "c103", "b": "d1", "g": "Hombre Sin Balon", "t": "Cuanto más lejos está mi hombre del balón más me separo de él."}, {"id": "c104", "b": "d1", "g": "Hombre Sin Balon", "t": "Defensa de close-out. Llegar equilibrado y preparado segundo esfuerzo"}, {"id": "c105", "b": "d1", "g": "Hombre Sin Balon", "t": "Estar listo siempre para ayudar evitando así canastas fáciles."}, {"id": "c106", "b": "d1", "g": "Hombre Sin Balon", "t": "Impedir o dificultar ganar la posición cerca de canasta (contacto dentro de triple para sacar de \"casa\")"}, {"id": "c107", "b": "d1", "g": "Hombre Sin Balon", "t": "Impedir o dificultar la recepción del balón."}, {"id": "c108", "b": "d1", "g": "Hombre Sin Balon", "t": "Impedir o dificultar los cortes a canasta (meter cuerpo entre jugador y aro)"}, {"id": "c109", "b": "d1", "g": "Hombre Sin Balon", "t": "Nunca perder de vista ni al balón ni al hombre que defiendo."}, {"id": "c110", "b": "d1", "g": "Hombre Sin Balon", "t": "Orientación y colocación (triangulo defensivo) IMPORTANTISIMO"}, {"id": "c111", "b": "d1", "g": "Hombre Sin Balon", "t": "Rebote del jugador sin balón"}, {"id": "c112", "b": "d1", "g": "Hombre Sin Balon", "t": "Tocar espalda/numero en saques."}, {"id": "c113", "b": "d1", "g": "Hombre Sin Balon", "t": "Trabajo de lineas de pase (abierta). Control distancias y anticipacion a pase"}, {"id": "c114", "b": "dc", "g": "Defensa colectiva", "t": "Ayudas de lado debil; concepto de \"ultimo\""}, {"id": "c115", "b": "dc", "g": "Defensa colectiva", "t": "Balance tras pérdida, concepto de \"CASA\""}, {"id": "c116", "b": "dc", "g": "Defensa colectiva", "t": "Comunicación: \"Balón\", \"ultimo\",\"Rebote\", \"cerca\", \"linea\""}, {"id": "c117", "b": "dc", "g": "Defensa colectiva", "t": "En el balance, concepto de \"balon\" para comunicar que paro a jugador con balon."}, {"id": "c118", "b": "dc", "g": "Defensa colectiva", "t": "Movimientos en funcion de donde está balón"}, {"id": "c119", "b": "dc", "g": "Defensa colectiva", "t": "Proteger triple pequeño como equipo. Salto a balón."}, {"id": "c120", "b": "dc", "g": "Defensa colectiva", "t": "Trabajo de rebote defensivo colectivo"}, {"id": "c121", "b": "dc", "g": "Defensa colectiva", "t": "Visualizar el balón en todo momento."}, {"id": "c122", "b": "nh", "g": "Normas de juego", "t": "Hay que generar con el menor numero de botes posibles"}, {"id": "c123", "b": "nh", "g": "Normas de juego", "t": "Mientras se está en la pista, no se descansa"}, {"id": "c124", "b": "nh", "g": "Normas de juego", "t": "No mas de 3 segundos para sacar desde cualquier posición"}, {"id": "c125", "b": "nh", "g": "Añadido desde la planificación", "t": "Rebote constante en cualquier situacion de juego"}, {"id": "c126", "b": "nh", "g": "Añadido desde la planificación", "t": "Si mi compañero ha botado, no boto"}, {"id": "c127", "b": "nh", "g": "Añadido desde la planificación", "t": "Atacar lado contrario del que recibo"}, {"id": "c128", "b": "tc", "g": "Añadido desde la planificación", "t": "Desocupar una posicion si viene mi compañero, sobretodo corte fondo pierna"}, {"id": "c129", "b": "tai", "g": "Añadido desde la planificación", "t": "Subir posiciones en busca de balón, sobretodo \"pierna\""}, {"id": "c130", "b": "tc", "g": "Añadido desde la planificación", "t": "Alejar/subir todas posiciones buscando fluidez, paso hacia el balón para atacar"}], "codigos": [{"t": "Muro", "s": "Defensa estando delante, busqueda de posicion defensiva para parar con el cuerpo."}, {"t": "Barrer", "s": "En defensas en desplazamientos, buscar meter la mano muy baja cuando se busca un cambio de mano por parte del rival."}, {"t": "Casa", "s": "Sinonimo de balance."}, {"t": "Balon", "s": "Accion de ir hacia el balon para que este no avance, o emparejarse con el manejador."}, {"t": "Picar", "s": "Tocar al par defensivo de manera constante: tocar cuerpo, meter mano al balon y separarse. El uso de mano conlleva uso de pies para acercar/alejar."}, {"t": "Limpia", "s": "Dejar espacios para jugar 1x1 fuera del triple grande."}, {"t": "Baila", "s": "Concepto para que los jugadores se muevan sin balon, ya sean cortes o apoyos a penetraciones."}, {"t": "Rueda", "s": "Concepto de cambiar el balon de lado."}, {"t": "Cerca", "s": "Comunicar que estoy situado en el lado de ayudas."}, {"t": "Pescar", "s": "Concepto de rebote: me pego y voy siempre hacia el."}, {"t": "Verde", "s": "Concepto de atacar 1x1."}, {"t": "Rojo", "s": "Concepto de que hay que compartir la pelota."}, {"t": "Hielo", "s": "Defensa 1x1 a toda pista, fomentando que no me superen sin dejar de ser agresivo."}, {"t": "Fuego", "s": "Defensa de saltar al balon e ir rotando."}, {"t": "Volar", "s": "Salida al contraataque"}, {"t": "Linea", "s": "Estar en linea de pase"}, {"t": "Manos (provisional)", "s": "Enseñar las manos, una arriba otra cadera"}]};</script>
+<script>(function(){
+"use strict";
+var LOGO=window.LOGO,SEED=window.SEED;
+var KEY="alevinA.plan.v1",CKEY="alevinA.plan.cache";
+var VERSION="1.0";
+var BLK=[["ti","Técnica individual"],["tai","Táctica individual"],["tc","Táctica colectiva"],["d1","Defensa 1x1"],["dc","Defensa colectiva"],["nh","Normas / hábitos"]];
+var BN={};BLK.forEach(function(b){BN[b[0]]=b[1];});
+var TRI=["","1º trimestre","2º trimestre","3º trimestre","Postemporada"];
+var MESES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+var MESL=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+var DIAS=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+var DIAC=["dom","lun","mar","mié","jue","vie","sáb"];
+var ENTRENO=[1,3,4]; // martes, jueves y viernes (desplazamiento desde el lunes)
+
+var A=window.__app={onSave:null,login:null,logout:null};
+function seedDocs(){
+  var d=SEED.weeks.map(function(w){return JSON.parse(JSON.stringify(w));});
+  d.push({id:"config",k:"c",banco:SEED.banco,codigos:SEED.codigos,seq:SEED.banco.length});
+  return d;
+}
+function load(){
+  var s=null;try{s=JSON.parse(localStorage.getItem(KEY));}catch(e){}
+  if(!s||!Array.isArray(s.docs)||!s.docs.length)s={docs:seedDocs()};
+  return s;
+}
+function loadCache(){var c=null;try{c=JSON.parse(localStorage.getItem(CKEY));}catch(e){}return c||{roster:[],matches:[]};}
+var S=load(),C=loadCache(),saveFail=false;
+function store(){try{localStorage.setItem(KEY,JSON.stringify(S));saveFail=false;}catch(e){saveFail=true;}}
+function storeCache(){try{localStorage.setItem(CKEY,JSON.stringify(C));}catch(e){}}
+function save(){store();if(A.onSave)A.onSave();}
+var ui={tab:"hoy",wn:null,sid:null,pick:null,q:"",bf:"todos",bb:"",bseg:"banco",confirm:null,auth:"loading",user:"",sync:"pend",syncTxt:"Conectando con la nube…",loginErr:"",loginBusy:false};
+var pendingRender=false;
+
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function $(id){return document.getElementById(id);}
+function norm(t){return String(t||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9ñ]+/g," ").trim();}
+
+/* ---------- fechas ---------- */
+function pd(s){var p=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||"");return p?new Date(+p[1],+p[2]-1,+p[3],12):null;}
+function iso(d){return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);}
+function add(s,n){var d=pd(s);d.setDate(d.getDate()+n);return iso(d);}
+function hoy(){return window.__hoy||iso(new Date());}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+function corta(s){var d=pd(s);return d?DIAC[d.getDay()]+" "+d.getDate()+"/"+(d.getMonth()+1):"";}
+function larga(s){var d=pd(s);return d?DIAS[d.getDay()]+" "+d.getDate()+" de "+MESL[d.getMonth()]:"";}
+function rango(w){var a=pd(w.lunes),b=pd(add(w.lunes,6));return a.getMonth()===b.getMonth()?a.getDate()+"–"+b.getDate()+" "+MESES[a.getMonth()]:a.getDate()+" "+MESES[a.getMonth()]+" – "+b.getDate()+" "+MESES[b.getMonth()];}
+
+/* ---------- datos ---------- */
+function weeks(){return S.docs.filter(function(d){return d.k==="w";}).sort(function(a,b){return a.n-b.n;});}
+function week(n){for(var i=0;i<S.docs.length;i++)if(S.docs[i].k==="w"&&S.docs[i].n===n)return S.docs[i];return null;}
+function cfg(){for(var i=0;i<S.docs.length;i++)if(S.docs[i].id==="config")return S.docs[i];var c={id:"config",k:"c",banco:[],codigos:[],seq:0};S.docs.push(c);return c;}
+function weekOf(f){var ws=weeks();for(var i=0;i<ws.length;i++)if(ws[i].lunes<=f&&f<=add(ws[i].lunes,6))return ws[i];return null;}
+function curWeek(){var t=hoy(),ws=weeks(),w=weekOf(t);if(w)return w;for(var i=0;i<ws.length;i++)if(ws[i].lunes>t)return ws[i];return ws[ws.length-1];}
+function getDoc(id){for(var i=0;i<S.docs.length;i++)if(S.docs[i].id===id)return S.docs[i];return null;}
+function sesOf(f,x){var id="s_"+f+(x?"_"+x:"");return getDoc(id)||{id:id,k:"s",fecha:f,extra:!!x,v:1};}
+function persist(s){if(s.v){delete s.v;S.docs.push(s);}return s;}
+function sesionesSemana(w){
+  var out=ENTRENO.map(function(o){return sesOf(add(w.lunes,o));}),fin=add(w.lunes,6),ids={};
+  out.forEach(function(s){ids[s.id]=1;});
+  S.docs.forEach(function(d){if(d.k==="s"&&!ids[d.id]&&d.fecha>=w.lunes&&d.fecha<=fin)out.push(d);});
+  return out.sort(function(a,b){return a.fecha<b.fecha?-1:a.fecha>b.fecha?1:a.id<b.id?-1:1;});
+}
+function sesiones(){return S.docs.filter(function(d){return d.k==="s";});}
+function nAsis(s){return Object.keys(s.asis||{}).length;}
+function nHecho(s){var n=0;Object.keys(s.hecho||{}).forEach(function(k){n+=(s.hecho[k]||[]).length;});return n;}
+function hecha(s){return s.estado==="hecho";}
+function estadoSes(s){
+  if(s.estado==="no")return["bad","No hubo"];
+  if(hecha(s))return["ok","Hecho"];
+  if(s.fecha<hoy())return["warn","Sin registrar"];
+  if(s.fecha===hoy())return["warn","Hoy"];
+  return["","Previsto"];
+}
+function proxima(){
+  var t=hoy(),best=null;
+  sesiones().forEach(function(s){if(s.fecha>=t&&s.estado!=="no"&&(!best||s.fecha<best.fecha))best=s;});
+  for(var i=0;i<21;i++){var f=add(t,i),d=pd(f).getDay();if(d===2||d===4||d===5){var s=sesOf(f);if(s.estado==="no")continue;if(!best||f<best.fecha)best=s;break;}}
+  return best;
+}
+function roster(){return(C.roster||[]).slice().sort(function(a,b){return(parseInt(a.num,10)||0)-(parseInt(b.num,10)||0);});}
+function corto(p){var n=String(p.name||"").trim().split(/\s+/);return n.length>1?n[0]+" "+n[1].charAt(0)+".":n[0]||"";}
+function partidosEntre(a,b){return(C.matches||[]).filter(function(m){return m.fecha&&m.fecha>=a&&m.fecha<=b;}).sort(function(x,y){return x.fecha<y.fecha?-1:1;});}
+
+/* Recuento por contenido: semanas en que está planificado y sesiones en que se ha trabajado. */
+function recuento(){
+  var r={};
+  function g(t){var k=norm(t);if(!r[k])r[k]={plan:0,trab:0,ult:0,ultT:""};return r[k];}
+  weeks().forEach(function(w){BLK.forEach(function(b){(w.b[b[0]]||[]).forEach(function(t){var o=g(t);o.plan++;if(w.n>o.ult)o.ult=w.n;});});});
+  sesiones().forEach(function(s){if(!hecha(s))return;Object.keys(s.hecho||{}).forEach(function(k){(s.hecho[k]||[]).forEach(function(t){var o=g(t);o.trab++;if(s.fecha>o.ultT)o.ultT=s.fecha;});});});
+  return r;
+}
+function planHasta(){var n=0;weeks().forEach(function(w){if(BLK.some(function(b){return(w.b[b[0]]||[]).length;}))n=w.n;});return n;}
+
+/* ---------- render ---------- */
+function render(){
+  pendingRender=false;
+  var hd='<img src="'+LOGO+'" alt="Fundación CB Granada">';
+  if(ui.auth!=="in"){
+    $("hd").innerHTML=hd+'<div class="h-t"><b>Planificación</b><span>Alevín A · Temporada 2026/27</span></div>';
+    $("nav").innerHTML="";document.querySelector("nav").style.display="none";
+    $("main").innerHTML=ui.auth==="loading"?'<div class="card empty">Cargando…</div>':vLogin();
+    return;
+  }
+  document.querySelector("nav").style.display="";
+  var s=ui.sid?sesOf.apply(null,splitSid(ui.sid)):null;
+  if(s)hd+='<div class="h-t"><b>'+esc(cap(larga(s.fecha)))+'</b><span>'+(s.extra?"Entrenamiento extra":"Entrenamiento")+(weekOf(s.fecha)?" · Semana "+weekOf(s.fecha).n:"")+'</span></div>'+dot()+'<button class="back" data-a="cerrar">Volver</button>';
+  else hd+='<div class="h-t"><b>'+{hoy:"Hoy",semana:"Semana",temporada:"Temporada",banco:"Contenidos",ajustes:"Ajustes"}[ui.tab]+'</b><span>Planificación · Alevín A 2026/27</span></div>'+dot();
+  $("hd").innerHTML=hd;
+  $("nav").innerHTML=[["hoy","Hoy"],["semana","Semana"],["temporada","Temporada"],["banco","Contenidos"],["ajustes","Ajustes"]].map(function(x){
+    return'<button data-a="tab" data-v="'+x[0]+'" class="'+(ui.tab===x[0]?"on":"")+'">'+x[1]+'</button>';}).join("");
+  var h="";
+  if(saveFail)h+='<div class="estado bad"><b>No se pueden guardar los datos</b>Este navegador no permite almacenamiento.</div>';
+  if(s)h+=vSesion(s,false);
+  else if(ui.tab==="hoy")h+=vHoy();
+  else if(ui.tab==="semana")h+=vSemana();
+  else if(ui.tab==="temporada")h+=vTemporada();
+  else if(ui.tab==="banco")h+=vBanco();
+  else h+=vAjustes();
+  if(ui.pick)h+=vPicker();
+  $("main").innerHTML=h;
+  document.body.classList.toggle("modal",!!ui.pick);
+}
+function splitSid(id){var p=id.replace(/^s_/,"").split("_");return[p[0],p[1]];}
+function dot(){return'<span id="dot" class="dot '+ui.sync+'" role="img" aria-label="'+esc(ui.syncTxt)+'" title="'+esc(ui.syncTxt)+'"></span>';}
+function vLogin(){
+  var h='<form id="lf" class="card login"><h2>Iniciar sesión</h2>';
+  if(ui.loginErr)h+='<div class="err" role="alert">'+esc(ui.loginErr)+'</div>';
+  h+='<label class="f">Correo<input type="email" id="le" autocomplete="username" autocapitalize="none" required></label>';
+  h+='<label class="f">Contraseña<input type="password" id="lp" autocomplete="current-password" required></label>';
+  h+='<button class="btn block" type="submit" '+(ui.loginBusy?"disabled":"")+'>'+(ui.loginBusy?"Entrando…":"Entrar")+'</button>';
+  return h+'<p class="hint">Es el mismo usuario y contraseña que en la app de partidos.</p></form>';
+}
+function chips(arr){return(arr||[]).map(function(t){return'<span class="chip">'+esc(t)+'</span>';}).join("");}
+function cod(t){var c=cfg().codigos||[];for(var i=0;i<c.length;i++)if(norm(c[i].t)===norm(t))return c[i].s;return"";}
+
+/* HOY: el próximo entrenamiento, pensado para el móvil */
+function vHoy(){
+  var s=proxima(),h="";
+  if(!s)return'<div class="card empty"><b>No hay entrenamientos próximos</b></div>';
+  var w=weekOf(s.fecha),t=hoy();
+  h+='<button class="hero" data-a="ses" data-v="'+s.id+'"><span>'+(s.fecha===t?"Hoy":"Próximo entrenamiento")+'</span><b>'+esc(cap(larga(s.fecha)))+'</b>'+(w?'<i>Semana '+w.n+' · '+esc(w.mes)+' '+w.sem+'</i>':'<i>Semana sin planificar</i>')+'</button>';
+  var ps=partidosEntre(t,add(t,7));
+  if(ps.length)h+='<div class="card mini"><h2>Próximo partido</h2>'+ps.slice(0,1).map(function(m){return'<b>'+esc(corta(m.fecha))+(m.hora?" · "+esc(m.hora):"")+'</b> · '+(m.cond==="V"?"en casa de ":"vs ")+esc(m.rival||"Rival por definir");}).join("")+'</div>';
+  if(w){
+    if(w.obj)h+='<div class="card"><h2>Objetivo de la semana</h2><p class="obj">'+esc(w.obj)+'</p></div>';
+    if((w.terms||[]).length)h+='<div class="card"><h2>Términos de la semana</h2>'+w.terms.map(function(t){var d=cod(t);return'<div class="term"><b>'+esc(t)+'</b>'+(d?'<span>'+esc(d)+'</span>':'')+'</div>';}).join("")+'</div>';
+  }
+  return h+vSesion(s,true);
+}
+
+/* Ficha de una sesión: estado, GoodNotes, asistencia y contenidos trabajados */
+function vSesion(s,compacta){
+  var w=weekOf(s.fecha),h="",es=estadoSes(s);
+  h+='<div class="card"><h2>Estado</h2><div class="lv"><button data-a="estado" data-v="hecho" data-s="'+s.id+'" class="'+(s.estado==="hecho"?"on":"")+'">Hecho</button><button data-a="estado" data-v="no" data-s="'+s.id+'" class="'+(s.estado==="no"?"on bad":"")+'">No hubo</button><button data-a="estado" data-v="" data-s="'+s.id+'" class="'+(!s.estado?"on":"")+'">'+(s.fecha<hoy()?"Sin registrar":"Previsto")+'</button></div></div>';
+  h+='<div class="card"><h2>Sesión en GoodNotes</h2>';
+  h+='<a id="gnbtn" class="btn dark block gn" href="'+esc(s.gn||"#")+'" target="_blank" rel="noopener"'+(s.gn?'':' hidden')+'>Abrir la sesión</a>';
+  h+='<label class="f" style="margin-top:10px">Enlace del documento<input data-k="gn" data-s="'+s.id+'" value="'+esc(s.gn||"")+'" placeholder="Pega aquí el enlace" autocapitalize="none" autocorrect="off" inputmode="url"></label>';
+  h+='<p class="hint">El documento se llama con la fecha ('+esc(s.fecha.split("-").reverse().join("/"))+'). Pega su enlace de GoodNotes o de Drive para abrirlo desde aquí.</p></div>';
+  // asistencia
+  var R=roster(),n=nAsis(s);
+  h+='<div class="card"><div class="cardh"><h2>Asistencia</h2><span class="sub"><b>'+n+'</b> de '+R.length+'</span><button class="btn ghost sm" data-a="asistodos" data-s="'+s.id+'">'+(n?"Quitar todos":"Todos")+'</button></div>';
+  if(!R.length)h+='<p class="sub">La plantilla se carga de la app de partidos al sincronizar.</p>';
+  else h+='<div class="asis">'+R.map(function(p){var on=!!(s.asis||{})[p.id];return'<button class="ap'+(on?" on":"")+'" data-a="asis" data-v="'+p.id+'" data-s="'+s.id+'" aria-pressed="'+on+'"><b>'+esc(p.num)+'</b><span>'+esc(corto(p))+'</span></button>';}).join("")+'</div>';
+  h+='</div>';
+  // contenidos
+  h+='<div class="card"><div class="cardh"><h2>Contenidos trabajados</h2><span class="sub">'+nHecho(s)+' marcados</span></div>';
+  if(!w)h+='<p class="sub">Esta fecha no pertenece a ninguna semana planificada.</p>';
+  else{
+    var any=false;
+    BLK.forEach(function(b){
+      var l=w.b[b[0]]||[];if(!l.length)return;any=true;
+      var hc=(s.hecho||{})[b[0]]||[];
+      h+='<div class="blk-t">'+b[1]+'</div>';
+      l.forEach(function(t,i){var on=hc.indexOf(t)>=0;h+='<button class="ck'+(on?" on":"")+'" data-a="hecho" data-b="'+b[0]+'" data-i="'+i+'" data-s="'+s.id+'" aria-pressed="'+on+'"><i></i><span>'+esc(t)+'</span></button>';});
+    });
+    if(!any)h+='<p class="sub">La semana '+w.n+' aún no tiene contenidos. Añádelos en la pestaña Semana.</p>';
+  }
+  h+='</div>';
+  h+='<div class="card"><h2>Notas</h2><textarea rows="'+(compacta?3:5)+'" data-k="notas" data-s="'+s.id+'" placeholder="Cómo ha ido, qué repetir, incidencias…">'+esc(s.notas||"")+'</textarea></div>';
+  if(!compacta&&s.extra)h+=ui.confirm==="dels"?'<button class="btn danger block" data-a="dels" data-s="'+s.id+'">¿Seguro? Eliminar este entrenamiento</button>':'<button class="btn ghost block" data-a="askdels">Eliminar entrenamiento extra</button>';
+  return h;
+}
+
+/* SEMANA: planificación de contenidos y entrenamientos */
+function vSemana(){
+  var ws=weeks();if(!ws.length)return'<div class="card empty">No hay semanas.</div>';
+  var w=week(ui.wn)||curWeek();ui.wn=w.n;
+  var h='<div class="wbar"><button class="nb" data-a="wn" data-v="'+(w.n-1)+'" '+(w.n<=ws[0].n?"disabled":"")+' aria-label="Semana anterior">‹</button><div><b>Semana '+w.n+' · '+esc(w.mes)+' '+w.sem+'</b><span>'+TRI[w.tri]+' · '+rango(w)+(weekOf(hoy())===w?' · <em>esta semana</em>':'')+'</span></div><button class="nb" data-a="wn" data-v="'+(w.n+1)+'" '+(w.n>=ws[ws.length-1].n?"disabled":"")+' aria-label="Semana siguiente">›</button></div>';
+  h+='<div class="wk"><div class="wk-main">';
+  h+='<div class="card"><h2>Objetivo de la semana</h2><textarea rows="2" data-k="obj" placeholder="Qué buscamos esta semana">'+esc(w.obj||"")+'</textarea></div>';
+  h+='<div class="blocks">';
+  var rc=recuento();
+  BLK.forEach(function(b){
+    var l=w.b[b[0]]||[];
+    h+='<div class="card blk"><div class="cardh"><h2>'+b[1]+'</h2><button class="btn ghost sm" data-a="pick" data-v="'+b[0]+'">Añadir</button></div>';
+    if(!l.length)h+='<p class="sub">Sin contenidos.</p>';
+    l.forEach(function(t,i){var o=rc[norm(t)]||{plan:0,trab:0};h+='<div class="it"><span>'+esc(t)+'<small>'+o.plan+(o.plan===1?" semana":" semanas")+' · trabajado '+o.trab+(o.trab===1?" vez":" veces")+'</small></span><button class="x" data-a="quitar" data-b="'+b[0]+'" data-i="'+i+'" aria-label="Quitar '+esc(t)+'">×</button></div>';});
+    h+='</div>';
+  });
+  h+='</div></div><div class="wk-side">';
+  // entrenamientos
+  h+='<div class="card"><h2>Entrenamientos</h2>';
+  sesionesSemana(w).forEach(function(s){var e=estadoSes(s);
+    h+='<button class="ses" data-a="ses" data-v="'+s.id+'"><span class="d"><b>'+pd(s.fecha).getDate()+'</b><i>'+DIAC[pd(s.fecha).getDay()]+'</i></span><span class="t"><b>'+(s.extra?"Extra":"Entrenamiento")+'</b><span>'+(nAsis(s)?nAsis(s)+" asisten · ":"")+(nHecho(s)?nHecho(s)+" contenidos":"Sin contenidos marcados")+(s.gn?" · GoodNotes":"")+'</span></span>'+(e[0]?'<span class="pill '+e[0]+'">'+e[1]+'</span>':'<span class="pill">'+e[1]+'</span>')+'</button>';});
+  h+='<div class="addx"><input type="date" id="xf" min="'+w.lunes+'" max="'+add(w.lunes,6)+'" value="'+add(w.lunes,5)+'" aria-label="Fecha del entrenamiento extra"><button class="btn dark sm" data-a="extra">Añadir extra</button></div></div>';
+  var ps=partidosEntre(w.lunes,add(w.lunes,6));
+  if(ps.length)h+='<div class="card"><h2>Partidos</h2>'+ps.map(function(m){return'<div class="it"><span><b>'+esc(corta(m.fecha))+(m.hora?" · "+esc(m.hora):"")+'</b> '+(m.cond==="V"?"en casa de ":"vs ")+esc(m.rival||"Rival por definir")+'<small>'+esc(m.comp||"")+'</small></span></div>';}).join("")+'</div>';
+  // términos
+  h+='<div class="card"><h2>Términos comunicativos</h2>';
+  (w.terms||[]).forEach(function(t,i){var d=cod(t);h+='<div class="it"><span><b>'+esc(t)+'</b>'+(d?'<small>'+esc(d)+'</small>':'')+'</span><button class="x" data-a="qterm" data-i="'+i+'" aria-label="Quitar '+esc(t)+'">×</button></div>';});
+  var libres=(cfg().codigos||[]).filter(function(c){return(w.terms||[]).map(norm).indexOf(norm(c.t))<0;});
+  if(libres.length)h+='<select id="tsel" class="inp" aria-label="Añadir término"><option value="">Añadir término…</option>'+libres.map(function(c){return'<option>'+esc(c.t)+'</option>';}).join("")+'</select>';
+  h+='</div></div></div>';
+  return h;
+}
+
+/* Selector de contenidos del banco para un bloque */
+function vPicker(){
+  var b=ui.pick,w=week(ui.wn),ya=(w.b[b]||[]).map(norm),rc=recuento(),q=norm(ui.q);
+  var items=(cfg().banco||[]).filter(function(c){return c.b===b&&(!q||norm(c.t+" "+c.g).indexOf(q)>=0);});
+  var h='<div class="ov" data-a="cpick"></div><div class="sheet" role="dialog" aria-label="Añadir contenido"><div class="cardh"><h2>'+BN[b]+'</h2><button class="btn dark sm" data-a="cpick">Hecho</button></div>';
+  h+='<input class="inp" id="pq" placeholder="Buscar contenido" value="'+esc(ui.q)+'" autocomplete="off">';
+  h+='<div class="plist">';
+  var g=null;
+  items.forEach(function(c){
+    if(c.g!==g){g=c.g;h+='<div class="blk-t">'+esc(g)+'</div>';}
+    var on=ya.indexOf(norm(c.t))>=0,o=rc[norm(c.t)]||{plan:0,trab:0};
+    h+='<button class="ck'+(on?" on":"")+'" data-a="ptog" data-v="'+c.id+'" aria-pressed="'+on+'"><i></i><span>'+esc(c.t)+'<small>'+(o.plan?o.plan+(o.plan===1?" semana":" semanas"):"Sin planificar")+'</small></span></button>';
+  });
+  if(!items.length)h+='<p class="sub">No hay contenidos que coincidan.</p>';
+  h+='</div><div class="addx"><input class="inp" id="pn" placeholder="Nuevo contenido para el banco"><button class="btn sm" data-a="pnuevo">Crear</button></div></div>';
+  return h;
+}
+
+/* TEMPORADA: vista de las 40 semanas */
+function vTemporada(){
+  var rc=recuento(),banco=cfg().banco||[],sinPlan=0,sinTrab=0,cw=weekOf(hoy()),t=hoy();
+  banco.forEach(function(c){var o=rc[norm(c.t)];if(!o||!o.plan)sinPlan++;if(!o||!o.trab)sinTrab++;});
+  var hechas=sesiones().filter(hecha).length;
+  var h='<div class="kpis"><div><b>'+planHasta()+'<small>/40</small></b><span>Planificado hasta la semana</span></div><div><b>'+hechas+'</b><span>Entrenamientos registrados</span></div><div><b>'+sinPlan+'</b><span>Contenidos sin planificar</span></div><div><b>'+sinTrab+'</b><span>Contenidos sin trabajar</span></div></div>';
+  var tri=0;
+  weeks().forEach(function(w){
+    if(w.tri!==tri){if(tri)h+='</div>';tri=w.tri;h+='<h3 class="tri">'+TRI[tri]+'</h3><div class="wgrid">';}
+    var nc=0;BLK.forEach(function(b){nc+=(w.b[b[0]]||[]).length;});
+    var ss=sesionesSemana(w),sh=ss.filter(hecha).length,pas=add(w.lunes,6)<t;
+    h+='<button class="wc'+(w===cw?" cur":"")+(pas?" past":"")+(nc?"":" vacia")+'" data-a="verw" data-v="'+w.n+'"><span class="wn">S'+w.n+'<i>'+esc(w.mes.slice(0,3))+' '+w.sem+' · '+rango(w)+'</i></span><span class="wo">'+(w.obj?esc(w.obj):'<em>Sin objetivo</em>')+'</span><span class="wf">'+(nc?nc+" contenidos":"Sin contenidos")+(pas||sh?' · '+sh+'/'+ss.filter(function(s){return s.estado!=="no";}).length+' entrenos':'')+'</span></button>';
+  });
+  return h+'</div>';
+}
+
+/* CONTENIDOS: banco con recuentos y códigos comunicativos */
+function vBanco(){
+  var h='<div class="seg"><button data-a="bseg" data-v="banco" class="'+(ui.bseg==="banco"?"on":"")+'">Banco de contenidos</button><button data-a="bseg" data-v="cod" class="'+(ui.bseg==="cod"?"on":"")+'">Códigos comunicativos</button></div>';
+  if(ui.bseg==="cod")return h+vCodigos();
+  var rc=recuento(),q=norm(ui.q);
+  h+='<div class="filt"><select class="inp" id="bb" aria-label="Bloque"><option value="">Todos los bloques</option>'+BLK.map(function(b){return'<option value="'+b[0]+'"'+(ui.bb===b[0]?" selected":"")+'>'+b[1]+'</option>';}).join("")+'</select>';
+  h+='<select class="inp" id="bf" aria-label="Filtro"><option value="todos">Todos</option><option value="sinplan"'+(ui.bf==="sinplan"?" selected":"")+'>Sin planificar</option><option value="sintrab"'+(ui.bf==="sintrab"?" selected":"")+'>Planificados sin trabajar</option></select>';
+  h+='<input class="inp" id="bq" placeholder="Buscar" value="'+esc(ui.q)+'" autocomplete="off"></div>';
+  var items=(cfg().banco||[]).filter(function(c){
+    var o=rc[norm(c.t)]||{plan:0,trab:0};
+    if(ui.bb&&c.b!==ui.bb)return false;
+    if(ui.bf==="sinplan"&&o.plan)return false;
+    if(ui.bf==="sintrab"&&(!o.plan||o.trab))return false;
+    return!q||norm(c.t+" "+c.g).indexOf(q)>=0;
+  });
+  h+='<p class="sub" style="margin:0 2px 8px">'+items.length+' contenidos</p>';
+  BLK.forEach(function(b){
+    var l=items.filter(function(c){return c.b===b[0];});if(!l.length)return;
+    h+='<div class="card"><h2>'+b[1]+'</h2>';var g=null;
+    l.forEach(function(c){
+      if(c.g!==g){g=c.g;h+='<div class="blk-t">'+esc(g)+'</div>';}
+      var o=rc[norm(c.t)]||{plan:0,trab:0,ult:0,ultT:""};
+      h+='<div class="it"><span>'+esc(c.t)+'<small>'+(o.plan?"Planificado "+o.plan+(o.plan===1?" semana":" semanas")+" (última S"+o.ult+")":"Sin planificar")+' · '+(o.trab?"Trabajado "+o.trab+(o.trab===1?" vez":" veces")+", último "+corta(o.ultT):"Sin trabajar")+'</small></span>'+(ui.confirm==="delc"+c.id?'<button class="btn danger sm" data-a="delc" data-v="'+c.id+'">Borrar</button>':'<button class="x" data-a="askdelc" data-v="'+c.id+'" aria-label="Borrar '+esc(c.t)+'">×</button>')+'</div>';
+    });
+    h+='</div>';
+  });
+  h+='<div class="card"><h2>Nuevo contenido</h2><div class="grid"><label class="f">Bloque<select id="nb">'+BLK.map(function(b){return'<option value="'+b[0]+'"'+(ui.bb===b[0]?" selected":"")+'>'+b[1]+'</option>';}).join("")+'</select></label><label class="f">Grupo<input id="ng" placeholder="Ej.: Finalizaciones"></label><label class="f w2">Contenido<input id="nt"></label></div><button class="btn block" data-a="nuevoc" style="margin-top:10px">Añadir al banco</button></div>';
+  return h;
+}
+function vCodigos(){
+  var h='<div class="card"><h2>Códigos comunicativos</h2>';
+  (cfg().codigos||[]).forEach(function(c,i){h+='<div class="it"><span><b>'+esc(c.t)+'</b><small>'+esc(c.s)+'</small></span>'+(ui.confirm==="delt"+i?'<button class="btn danger sm" data-a="delt" data-v="'+i+'">Borrar</button>':'<button class="x" data-a="askdelt" data-v="'+i+'" aria-label="Borrar '+esc(c.t)+'">×</button>')+'</div>';});
+  h+='</div><div class="card"><h2>Nuevo término</h2><label class="f">Término<input id="ct"></label><label class="f" style="margin-top:10px">Significado<textarea id="cs" rows="2"></textarea></label><button class="btn block" data-a="nuevot" style="margin-top:10px">Añadir</button></div>';
+  return h;
+}
+function vAjustes(){
+  var h='<div class="card"><h2>Cuenta</h2><p style="margin:0 0 6px"><b>'+esc(ui.user)+'</b></p><p class="sub" id="synctxt" style="margin:0 0 10px">'+esc(ui.syncTxt)+'</p>';
+  h+=ui.confirm==="salir"?'<button class="btn danger block" data-a="salir">¿Seguro? Cerrar sesión</button>':'<button class="btn ghost block" data-a="asksalir">Cerrar sesión</button>';
+  h+='</div><div class="card"><h2>GoodNotes</h2><p style="margin:0;font-size:14px">Cada entrenamiento tiene un campo para el enlace de su documento de GoodNotes. Al pegarlo, el botón «Abrir la sesión» lo abre directamente en el iPad o en el móvil.</p></div>';
+  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Planificación Alevín A · versión '+VERSION+'<br><span class="sub">'+weeks().length+' semanas · '+(cfg().banco||[]).length+' contenidos · '+sesiones().length+' entrenamientos guardados</span></p></div>';
+  return h;
+}
+
+/* ---------- acciones ---------- */
+function toast(t){var d=$("toast");if(!d){d=document.createElement("div");d.id="toast";d.setAttribute("role","status");document.body.appendChild(d);}d.textContent=t;d.className="show";clearTimeout(toast.t);toast.t=setTimeout(function(){d.className="";},2200);}
+function rerenderKeepScroll(){var y=window.scrollY,pl=document.querySelector(".plist"),py=pl?pl.scrollTop:0;render();window.scrollTo(0,y);var p2=document.querySelector(".plist");if(p2)p2.scrollTop=py;}
+function sesById(id){var p=splitSid(id);return persist(sesOf(p[0],p[1]));}
+document.addEventListener("click",function(e){
+  var b=e.target.closest("[data-a]");if(!b||b.disabled)return;
+  var a=b.dataset.a,v=b.dataset.v,keep=true,w=week(ui.wn);
+  if(a.indexOf("ask")!==0)ui.confirm=null;
+  switch(a){
+    case"tab":ui.tab=v;ui.sid=null;ui.pick=null;ui.q="";keep=false;break;
+    case"cerrar":ui.sid=null;keep=false;break;
+    case"ses":ui.sid=v;ui.pick=null;keep=false;break;
+    case"wn":ui.wn=+v;keep=false;break;
+    case"verw":ui.wn=+v;ui.tab="semana";keep=false;break;
+    case"estado":var s=sesById(b.dataset.s);s.estado=s.estado===v?"":v;if(!v)s.estado="";save();break;
+    case"asis":s=sesById(b.dataset.s);if(!s.asis)s.asis={};if(s.asis[v])delete s.asis[v];else s.asis[v]=1;if(!s.estado&&s.fecha<=hoy())s.estado="hecho";save();break;
+    case"asistodos":s=sesById(b.dataset.s);if(nAsis(s))s.asis={};else{s.asis={};roster().forEach(function(p){s.asis[p.id]=1;});if(!s.estado&&s.fecha<=hoy())s.estado="hecho";}save();break;
+    case"hecho":s=sesById(b.dataset.s);var ws=weekOf(s.fecha),t=ws.b[b.dataset.b][+b.dataset.i];if(!s.hecho)s.hecho={};var l=s.hecho[b.dataset.b]||(s.hecho[b.dataset.b]=[]),ix=l.indexOf(t);if(ix>=0)l.splice(ix,1);else l.push(t);if(!l.length)delete s.hecho[b.dataset.b];if(!s.estado&&s.fecha<=hoy())s.estado="hecho";save();break;
+    case"askdels":ui.confirm="dels";break;
+    case"dels":S.docs=S.docs.filter(function(d){return d.id!==b.dataset.s;});ui.sid=null;save();toast("Entrenamiento eliminado");keep=false;break;
+    case"extra":var f=($("xf")||{}).value;if(!f){toast("Elige la fecha");return;}var x=1;while(getDoc("s_"+f+"_x"+x))x++;var ns={id:"s_"+f+"_x"+x,k:"s",fecha:f,extra:true};S.docs.push(ns);save();ui.sid=ns.id;keep=false;toast("Entrenamiento extra añadido");break;
+    case"pick":ui.pick=v;ui.q="";keep=false;break;
+    case"cpick":ui.pick=null;ui.q="";keep=false;break;
+    case"ptog":var c=bancoItem(v);if(!c)return;var L=w.b[c.b]||(w.b[c.b]=[]),k=L.map(norm).indexOf(norm(c.t));if(k>=0)L.splice(k,1);else L.push(c.t);save();break;
+    case"pnuevo":var nt=($("pn").value||"").trim();if(!nt)return;var cf=cfg();cf.seq=(cf.seq||cf.banco.length)+1;var ni={id:"c"+cf.seq,b:ui.pick,g:"Nuevos",t:nt};cf.banco.push(ni);(w.b[ui.pick]||(w.b[ui.pick]=[])).push(nt);save();toast("Contenido creado y añadido");break;
+    case"quitar":w.b[b.dataset.b].splice(+b.dataset.i,1);save();break;
+    case"qterm":w.terms.splice(+b.dataset.i,1);save();break;
+    case"bseg":ui.bseg=v;ui.q="";keep=false;break;
+    case"askdelc":ui.confirm="delc"+v;break;
+    case"delc":cf=cfg();cf.banco=cf.banco.filter(function(x){return x.id!==v;});save();toast("Contenido borrado del banco");break;
+    case"nuevoc":var tt=($("nt").value||"").trim();if(!tt){toast("Escribe el contenido");return;}cf=cfg();cf.seq=(cf.seq||cf.banco.length)+1;cf.banco.push({id:"c"+cf.seq,b:$("nb").value,g:($("ng").value||"").trim()||"Nuevos",t:tt});save();toast("Contenido añadido");break;
+    case"askdelt":ui.confirm="delt"+v;break;
+    case"delt":cfg().codigos.splice(+v,1);save();break;
+    case"nuevot":var ct=($("ct").value||"").trim();if(!ct)return;cfg().codigos.push({t:ct,s:($("cs").value||"").trim()});save();toast("Término añadido");break;
+    case"asksalir":ui.confirm="salir";break;
+    case"salir":if(A.logout)A.logout();return;
+    default:return;
+  }
+  if(keep)rerenderKeepScroll();else{render();window.scrollTo(0,0);}
+});
+function bancoItem(id){var l=cfg().banco||[];for(var i=0;i<l.length;i++)if(l[i].id===id)return l[i];return null;}
+document.addEventListener("input",function(e){
+  var t=e.target,d=t.dataset;
+  if(t.id==="pq"||t.id==="bq"){ui.q=t.value;var pos=t.selectionStart;rerenderKeepScroll();var n=$(t.id);if(n){n.focus();try{n.setSelectionRange(pos,pos);}catch(x){}}return;}
+  if(d.k==="obj"){week(ui.wn).obj=t.value;}
+  else if(d.k==="gn"||d.k==="notas"){var s=sesById(d.s);s[d.k]=t.value.trim()?(d.k==="gn"?t.value.trim():t.value):"";if(!s[d.k])delete s[d.k];if(d.k==="gn"){var g=$("gnbtn");if(g){g.href=s.gn||"#";g.hidden=!s.gn;}}}
+  else return;
+  save();
+});
+document.addEventListener("change",function(e){
+  var t=e.target;
+  if(t.id==="tsel"&&t.value){var w=week(ui.wn);(w.terms||(w.terms=[])).push(t.value);save();rerenderKeepScroll();}
+  if(t.id==="bb"){ui.bb=t.value;rerenderKeepScroll();}
+  if(t.id==="bf"){ui.bf=t.value;rerenderKeepScroll();}
+});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&ui.pick){ui.pick=null;render();}});
+document.addEventListener("submit",function(e){
+  if(e.target.id!=="lf")return;e.preventDefault();
+  if(!A.login){ui.loginErr="La sincronización no se ha cargado. Recarga la página con conexión.";render();return;}
+  var em=$("le").value,pw=$("lp").value;ui.loginBusy=true;ui.loginErr="";render();$("le").value=em;A.login(em,pw);
+});
+function typing(){var a=document.activeElement;return!!a&&(a.tagName==="TEXTAREA"||(a.tagName==="INPUT"&&a.type!=="file"&&a.type!=="date"));}
+document.addEventListener("focusout",function(){if(pendingRender)setTimeout(function(){if(pendingRender&&!typing())rerenderKeepScroll();},60);});
+
+A.ui=ui;A.render=render;A.recuento=recuento;A.proxima=proxima;
+A.getState=function(){return S;};
+A.setAuth=function(st,email){ui.auth=st;ui.user=email||"";ui.loginBusy=false;if(st!=="in"){ui.sid=null;ui.tab="hoy";}render();};
+A.loginResult=function(err){ui.loginBusy=false;ui.loginErr=err||"";if(err)render();};
+A.setSync=function(code,txt){ui.sync=code;ui.syncTxt=txt;var d=$("dot");if(d){d.className="dot "+code;d.title=txt;d.setAttribute("aria-label",txt);}var t=$("synctxt");if(t)t.textContent=txt;};
+function soft(){if(ui.auth!=="in")return;if(typing())pendingRender=true;else rerenderKeepScroll();}
+A.applyRemote=function(docs){S.docs=docs||[];store();if(ui.sid&&ui.sid.indexOf("_x")>0&&!getDoc(ui.sid))ui.sid=null;soft();};
+A.setTeam=function(t){C.roster=(t&&t.roster)||[];storeCache();soft();};
+A.setMatches=function(l){C.matches=(l||[]).map(function(m){return{id:m.id,fecha:m.fecha,hora:m.hora,rival:m.rival,cond:m.cond,comp:m.comp};});storeCache();soft();};
+A.clearLocal=function(){try{localStorage.removeItem(KEY);localStorage.removeItem(CKEY);}catch(e){}S=load();C=loadCache();};
+render();
+if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol)){try{navigator.serviceWorker.register("sw.js").catch(function(){});}catch(e){}}
+})();
+</script>
+<script type="module" src="sync.js"></script>
+</body>
+</html>
