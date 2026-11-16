@@ -360,7 +360,7 @@ input::placeholder,textarea::placeholder{color:#7d8187}
 "use strict";
 var LOGO=window.LOGO,SEED=window.SEED;
 var KEY="alevinA.plan.v1",CKEY="alevinA.plan.cache";
-var VERSION="1.2";
+var VERSION="1.3";
 var BLK=[["ti","Técnica individual"],["tai","Táctica individual"],["tc","Táctica colectiva"],["d1","Defensa 1x1"],["dc","Defensa colectiva"],["nh","Normas / hábitos"]];
 var BN={};BLK.forEach(function(b){BN[b[0]]=b[1];});
 var BC={ti:"#ff5a6e",tai:"#4aa3ff",tc:"#f5a524",d1:"#b18cff",dc:"#2ec4a5",nh:"#f472b6"};
@@ -423,7 +423,9 @@ function sesionesSemana(w){
 function sesiones(){return S.docs.filter(function(d){return d.k==="s";});}
 function nAsis(s){return Object.keys(s.asis||{}).length;}
 function nHecho(s){var n=0;Object.keys(s.hecho||{}).forEach(function(k){n+=(s.hecho[k]||[]).length;});return n;}
-function hecha(s){return s.estado==="hecho";}
+/* Los entrenamientos habituales ya pasados cuentan como hechos salvo que se marquen «No hubo». */
+function hecha(s){return s.estado==="hecho"||(!s.estado&&!s.extra&&s.fecha<hoy()&&!!weekOf(s.fecha));}
+function todasSesiones(){var out=[];weeks().forEach(function(w){out=out.concat(sesionesSemana(w));});var ids={};out.forEach(function(x){ids[x.id]=1;});sesiones().forEach(function(x){if(!ids[x.id])out.push(x);});return out;}
 function estadoSes(s){
   if(s.estado==="no")return["bad","No hubo"];
   if(hecha(s))return["ok","Hecho"];
@@ -446,7 +448,7 @@ function recuento(){
   var r={};
   function g(t){var k=norm(t);if(!r[k])r[k]={plan:0,trab:0,ult:0,ultT:""};return r[k];}
   weeks().forEach(function(w){BLK.forEach(function(b){(w.b[b[0]]||[]).forEach(function(t){var o=g(t);o.plan++;if(w.n>o.ult)o.ult=w.n;});});});
-  sesiones().forEach(function(s){if(!hecha(s))return;Object.keys(s.hecho||{}).forEach(function(k){(s.hecho[k]||[]).forEach(function(t){var o=g(t);o.trab++;if(s.fecha>o.ultT)o.ultT=s.fecha;});});});
+  todasSesiones().forEach(function(s){if(!hecha(s))return;Object.keys(s.hecho||{}).forEach(function(k){(s.hecho[k]||[]).forEach(function(t){var o=g(t);o.trab++;if(s.fecha>o.ultT)o.ultT=s.fecha;});});});
   return r;
 }
 function planHasta(){var n=0;weeks().forEach(function(w){if(BLK.some(function(b){return(w.b[b[0]]||[]).length;}))n=w.n;});return n;}
@@ -511,7 +513,8 @@ function vHoy(){
 /* Ficha de una sesión: estado, GoodNotes, asistencia y contenidos trabajados */
 function vSesion(s,compacta){
   var w=weekOf(s.fecha),h="",es=estadoSes(s);
-  h+='<div class="card"><h2>Estado</h2><div class="lv"><button data-a="estado" data-v="hecho" data-s="'+s.id+'" class="'+(s.estado==="hecho"?"on":"")+'">Hecho</button><button data-a="estado" data-v="no" data-s="'+s.id+'" class="'+(s.estado==="no"?"on bad":"")+'">No hubo</button><button data-a="estado" data-v="" data-s="'+s.id+'" class="'+(!s.estado?"on":"")+'">'+(s.fecha<hoy()?"Sin registrar":"Previsto")+'</button></div></div>';
+  var pas=s.fecha<hoy();
+  h+='<div class="card"><h2>Estado</h2><div class="lv"><button data-a="estado" data-v="hecho" data-s="'+s.id+'" class="'+(hecha(s)?"on":"")+'">Hecho</button><button data-a="estado" data-v="no" data-s="'+s.id+'" class="'+(s.estado==="no"?"on bad":"")+'">No hubo</button>'+(pas&&!s.extra?'':'<button data-a="estado" data-v="" data-s="'+s.id+'" class="'+(!s.estado?"on":"")+'">Previsto</button>')+'</div></div>';
   h+='<div class="card"><h2>Sesión en GoodNotes</h2>';
   h+='<a id="gnbtn" class="btn dark block gn" href="'+esc(s.gn||"#")+'" target="_blank" rel="noopener"'+(s.gn?'':' hidden')+'>Abrir la sesión</a>';
   h+='<label class="f" style="margin-top:10px">Enlace del documento<input data-k="gn" data-s="'+s.id+'" value="'+esc(s.gn||"")+'" placeholder="Pega aquí el enlace" autocapitalize="none" autocorrect="off" inputmode="url"></label>';
@@ -605,7 +608,7 @@ function vPicker(){
 function vTemporada(){
   var rc=recuento(),banco=cfg().banco||[],sinPlan=0,sinTrab=0,cw=weekOf(hoy()),t=hoy();
   banco.forEach(function(c){var o=rc[norm(c.t)];if(!o||!o.plan)sinPlan++;if(!o||!o.trab)sinTrab++;});
-  var hechas=sesiones().filter(hecha).length;
+  var hechas=todasSesiones().filter(hecha).length;
   var h='<div class="leg">'+BLK.map(function(b){return'<span'+bc(b[0])+'>'+b[1]+'</span>';}).join("")+'</div><div class="kpis"><div><b>'+planHasta()+'<small>/40</small></b><span>Planificado hasta la semana</span></div><div><b>'+hechas+'</b><span>Entrenamientos registrados</span></div><div><b>'+sinPlan+'</b><span>Contenidos sin planificar</span></div><div><b>'+sinTrab+'</b><span>Contenidos sin trabajar</span></div></div>';
   var tri=0;
   weeks().forEach(function(w){
@@ -690,7 +693,7 @@ document.addEventListener("click",function(e){
     case"ses":ui.sid=v;ui.pick=null;keep=false;break;
     case"wn":ui.wn=+v;keep=false;break;
     case"verw":ui.wn=+v;ui.tab="semana";keep=false;break;
-    case"estado":var s=sesById(b.dataset.s);s.estado=s.estado===v?"":v;if(!v)s.estado="";save();break;
+    case"estado":var s=sesById(b.dataset.s);s.estado=v;if(!s.estado)delete s.estado;save();break;
     case"asis":s=sesById(b.dataset.s);if(!s.asis)s.asis={};if(s.asis[v])delete s.asis[v];else s.asis[v]=1;if(!s.estado&&s.fecha<=hoy())s.estado="hecho";save();break;
     case"asistodos":s=sesById(b.dataset.s);if(nAsis(s))s.asis={};else{s.asis={};roster().forEach(function(p){s.asis[p.id]=1;});if(!s.estado&&s.fecha<=hoy())s.estado="hecho";}save();break;
     case"hecho":s=sesById(b.dataset.s);var ws=weekOf(s.fecha),t=ws.b[b.dataset.b][+b.dataset.i];if(!s.hecho)s.hecho={};var l=s.hecho[b.dataset.b]||(s.hecho[b.dataset.b]=[]),ix=l.indexOf(t);if(ix>=0)l.splice(ix,1);else l.push(t);if(!l.length)delete s.hecho[b.dataset.b];if(!s.estado&&s.fecha<=hoy())s.estado="hecho";save();break;
