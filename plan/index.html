@@ -295,6 +295,12 @@ h3.tri{font-size:13px;font-weight:900;letter-spacing:.08em;text-transform:upperc
 body.modal{overflow:hidden}
 #toast{position:fixed;left:50%;bottom:calc(76px + var(--sab));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-weight:700;font-size:14px;opacity:0;pointer-events:none;transition:.2s;z-index:60}
 #toast.show{opacity:1;transform:translateX(-50%)}
+
+.itb{flex:1;min-width:0;text-align:left;border:0;background:none;padding:0;font-size:14.5px;font-weight:600;line-height:1.3;color:inherit}
+.it.ed{flex-direction:column;align-items:stretch;gap:8px;background:#fafaf8;margin:0 -12px;padding:10px 12px;border-top:1px solid var(--line)}
+.it.ed textarea{margin:0}.it.ed .row{align-items:center}
+.wtools{margin:-4px 0 12px}
+.x:disabled{opacity:.3}
 a.gn{text-align:center;text-decoration:none}a.gn[hidden]{display:none}
 @media (min-width:700px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}.blocks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}.sheet{left:50%;right:auto;bottom:auto;top:6vh;transform:translateX(-50%);width:min(640px,94vw);max-height:86vh;border-radius:16px}}
 @media (min-width:1000px){.wk{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:12px;align-items:start}.wk-side{position:sticky;top:84px}}
@@ -311,7 +317,7 @@ a.gn{text-align:center;text-decoration:none}a.gn[hidden]{display:none}
 "use strict";
 var LOGO=window.LOGO,SEED=window.SEED;
 var KEY="alevinA.plan.v1",CKEY="alevinA.plan.cache";
-var VERSION="1.0";
+var VERSION="1.1";
 var BLK=[["ti","Técnica individual"],["tai","Táctica individual"],["tc","Táctica colectiva"],["d1","Defensa 1x1"],["dc","Defensa colectiva"],["nh","Normas / hábitos"]];
 var BN={};BLK.forEach(function(b){BN[b[0]]=b[1];});
 var TRI=["","1º trimestre","2º trimestre","3º trimestre","Postemporada"];
@@ -337,7 +343,7 @@ var S=load(),C=loadCache(),saveFail=false;
 function store(){try{localStorage.setItem(KEY,JSON.stringify(S));saveFail=false;}catch(e){saveFail=true;}}
 function storeCache(){try{localStorage.setItem(CKEY,JSON.stringify(C));}catch(e){}}
 function save(){store();if(A.onSave)A.onSave();}
-var ui={tab:"hoy",wn:null,sid:null,pick:null,q:"",bf:"todos",bb:"",bseg:"banco",confirm:null,auth:"loading",user:"",sync:"pend",syncTxt:"Conectando con la nube…",loginErr:"",loginBusy:false};
+var ui={edit:null,tab:"hoy",wn:null,sid:null,pick:null,q:"",bf:"todos",bb:"",bseg:"banco",confirm:null,auth:"loading",user:"",sync:"pend",syncTxt:"Conectando con la nube…",loginErr:"",loginBusy:false};
 var pendingRender=false;
 
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
@@ -495,6 +501,8 @@ function vSemana(){
   var ws=weeks();if(!ws.length)return'<div class="card empty">No hay semanas.</div>';
   var w=week(ui.wn)||curWeek();ui.wn=w.n;
   var h='<div class="wbar"><button class="nb" data-a="wn" data-v="'+(w.n-1)+'" '+(w.n<=ws[0].n?"disabled":"")+' aria-label="Semana anterior">‹</button><div><b>Semana '+w.n+' · '+esc(w.mes)+' '+w.sem+'</b><span>'+TRI[w.tri]+' · '+rango(w)+(weekOf(hoy())===w?' · <em>esta semana</em>':'')+'</span></div><button class="nb" data-a="wn" data-v="'+(w.n+1)+'" '+(w.n>=ws[ws.length-1].n?"disabled":"")+' aria-label="Semana siguiente">›</button></div>';
+  if(ui.edit==="week")h+='<div class="card"><h2>Editar semana '+w.n+'</h2><div class="grid"><label class="f">Empieza el lunes<input type="date" id="ew_l" value="'+w.lunes+'"></label><label class="f">Mes<input id="ew_m" value="'+esc(w.mes)+'"></label><label class="f">Semana del mes<input id="ew_s" type="number" min="1" max="6" value="'+w.sem+'"></label><label class="f">Trimestre<select id="ew_t">'+[1,2,3,4].map(function(i){return'<option value="'+i+'"'+(w.tri===i?" selected":"")+'>'+TRI[i]+'</option>';}).join("")+'</select></label></div><div class="row" style="margin-top:10px"><button class="btn" data-a="ewsave" style="flex:1">Guardar</button><button class="btn ghost" data-a="ecancel">Cancelar</button></div>'+(ui.confirm==="delw"?'<button class="btn danger block" data-a="delw" style="margin-top:10px">¿Seguro? Borrar la semana '+w.n+' y su planificación</button>':'<button class="btn ghost block" data-a="askdelw" style="margin-top:10px">Borrar semana</button>')+'</div>';
+  else h+='<div class="row wtools"><button class="btn ghost sm" data-a="edit" data-v="week">Editar semana</button>'+(week(w.n-1)?(ui.confirm==="copiar"?'<button class="btn danger sm" data-a="copiar">¿Seguro? Sustituye los contenidos de esta semana</button>':'<button class="btn ghost sm" data-a="askcopiar">Copiar contenidos de la semana '+(w.n-1)+'</button>'):'')+'</div>';
   h+='<div class="wk"><div class="wk-main">';
   h+='<div class="card"><h2>Objetivo de la semana</h2><textarea rows="2" data-k="obj" placeholder="Qué buscamos esta semana">'+esc(w.obj||"")+'</textarea></div>';
   h+='<div class="blocks">';
@@ -503,7 +511,9 @@ function vSemana(){
     var l=w.b[b[0]]||[];
     h+='<div class="card blk"><div class="cardh"><h2>'+b[1]+'</h2><button class="btn ghost sm" data-a="pick" data-v="'+b[0]+'">Añadir</button></div>';
     if(!l.length)h+='<p class="sub">Sin contenidos.</p>';
-    l.forEach(function(t,i){var o=rc[norm(t)]||{plan:0,trab:0};h+='<div class="it"><span>'+esc(t)+'<small>'+o.plan+(o.plan===1?" semana":" semanas")+' · trabajado '+o.trab+(o.trab===1?" vez":" veces")+'</small></span><button class="x" data-a="quitar" data-b="'+b[0]+'" data-i="'+i+'" aria-label="Quitar '+esc(t)+'">×</button></div>';});
+    l.forEach(function(t,i){var o=rc[norm(t)]||{plan:0,trab:0},ek="wi:"+b[0]+":"+i;
+      if(ui.edit===ek){h+='<div class="it ed"><textarea id="ed_t" rows="2">'+esc(t)+'</textarea><div class="row"><button class="btn sm" data-a="wisave" data-b="'+b[0]+'" data-i="'+i+'">Guardar</button><button class="btn ghost sm" data-a="ecancel">Cancelar</button><span style="flex:1"></span><button class="x" data-a="mover" data-b="'+b[0]+'" data-i="'+i+'" data-v="-1" '+(i?"":"disabled")+' aria-label="Subir">↑</button><button class="x" data-a="mover" data-b="'+b[0]+'" data-i="'+i+'" data-v="1" '+(i<l.length-1?"":"disabled")+' aria-label="Bajar">↓</button><button class="x" data-a="quitar" data-b="'+b[0]+'" data-i="'+i+'" aria-label="Quitar">×</button></div><p class="hint" style="margin:6px 0 0">Cambia el texto solo en esta semana. Para cambiarlo en todo el plan, edítalo en Contenidos.</p></div>';return;}
+      h+='<div class="it"><button class="itb" data-a="edit" data-v="'+ek+'">'+esc(t)+'<small>'+o.plan+(o.plan===1?" semana":" semanas")+' · trabajado '+o.trab+(o.trab===1?" vez":" veces")+'</small></button><button class="x" data-a="quitar" data-b="'+b[0]+'" data-i="'+i+'" aria-label="Quitar '+esc(t)+'">×</button></div>';});
     h+='</div>';
   });
   h+='</div></div><div class="wk-side">';
@@ -554,7 +564,8 @@ function vTemporada(){
     var ss=sesionesSemana(w),sh=ss.filter(hecha).length,pas=add(w.lunes,6)<t;
     h+='<button class="wc'+(w===cw?" cur":"")+(pas?" past":"")+(nc?"":" vacia")+'" data-a="verw" data-v="'+w.n+'"><span class="wn">S'+w.n+'<i>'+esc(w.mes.slice(0,3))+' '+w.sem+' · '+rango(w)+'</i></span><span class="wo">'+(w.obj?esc(w.obj):'<em>Sin objetivo</em>')+'</span><span class="wf">'+(nc?nc+" contenidos":"Sin contenidos")+(pas||sh?' · '+sh+'/'+ss.filter(function(s){return s.estado!=="no";}).length+' entrenos':'')+'</span></button>';
   });
-  return h+'</div>';
+  h+='</div><button class="btn dark block" data-a="nuevaw" style="margin-top:14px">Añadir semana al final</button>';
+  return h;
 }
 
 /* CONTENIDOS: banco con recuentos y códigos comunicativos */
@@ -579,7 +590,8 @@ function vBanco(){
     l.forEach(function(c){
       if(c.g!==g){g=c.g;h+='<div class="blk-t">'+esc(g)+'</div>';}
       var o=rc[norm(c.t)]||{plan:0,trab:0,ult:0,ultT:""};
-      h+='<div class="it"><span>'+esc(c.t)+'<small>'+(o.plan?"Planificado "+o.plan+(o.plan===1?" semana":" semanas")+" (última S"+o.ult+")":"Sin planificar")+' · '+(o.trab?"Trabajado "+o.trab+(o.trab===1?" vez":" veces")+", último "+corta(o.ultT):"Sin trabajar")+'</small></span>'+(ui.confirm==="delc"+c.id?'<button class="btn danger sm" data-a="delc" data-v="'+c.id+'">Borrar</button>':'<button class="x" data-a="askdelc" data-v="'+c.id+'" aria-label="Borrar '+esc(c.t)+'">×</button>')+'</div>';
+      if(ui.edit==="bc:"+c.id){h+='<div class="it ed"><div class="grid" style="width:100%"><label class="f">Bloque<select id="eb_b">'+BLK.map(function(x){return'<option value="'+x[0]+'"'+(c.b===x[0]?" selected":"")+'>'+x[1]+'</option>';}).join("")+'</select></label><label class="f">Grupo<input id="eb_g" value="'+esc(c.g)+'"></label><label class="f w2">Contenido<textarea id="eb_t" rows="2">'+esc(c.t)+'</textarea></label></div><div class="row"><button class="btn sm" data-a="bcsave" data-v="'+c.id+'">Guardar</button><button class="btn ghost sm" data-a="ecancel">Cancelar</button></div><p class="hint" style="margin:6px 0 0">Si cambias el texto, se actualiza también en todas las semanas y entrenamientos donde aparece.</p></div>';return;}
+      h+='<div class="it"><button class="itb" data-a="edit" data-v="bc:'+c.id+'">'+esc(c.t)+'<small>'+(o.plan?"Planificado "+o.plan+(o.plan===1?" semana":" semanas")+" (última S"+o.ult+")":"Sin planificar")+' · '+(o.trab?"Trabajado "+o.trab+(o.trab===1?" vez":" veces")+", último "+corta(o.ultT):"Sin trabajar")+'</small></button>'+(ui.confirm==="delc"+c.id?'<button class="btn danger sm" data-a="delc" data-v="'+c.id+'">Borrar</button>':'<button class="x" data-a="askdelc" data-v="'+c.id+'" aria-label="Borrar '+esc(c.t)+'">×</button>')+'</div>';
     });
     h+='</div>';
   });
@@ -588,7 +600,8 @@ function vBanco(){
 }
 function vCodigos(){
   var h='<div class="card"><h2>Códigos comunicativos</h2>';
-  (cfg().codigos||[]).forEach(function(c,i){h+='<div class="it"><span><b>'+esc(c.t)+'</b><small>'+esc(c.s)+'</small></span>'+(ui.confirm==="delt"+i?'<button class="btn danger sm" data-a="delt" data-v="'+i+'">Borrar</button>':'<button class="x" data-a="askdelt" data-v="'+i+'" aria-label="Borrar '+esc(c.t)+'">×</button>')+'</div>';});
+  (cfg().codigos||[]).forEach(function(c,i){if(ui.edit==="cd:"+i){h+='<div class="it ed"><label class="f">Término<input id="ec_t" value="'+esc(c.t)+'"></label><label class="f">Significado<textarea id="ec_s" rows="2">'+esc(c.s)+'</textarea></label><div class="row"><button class="btn sm" data-a="cdsave" data-v="'+i+'">Guardar</button><button class="btn ghost sm" data-a="ecancel">Cancelar</button></div></div>';return;}
+    h+='<div class="it"><button class="itb" data-a="edit" data-v="cd:'+i+'"><b>'+esc(c.t)+'</b><small>'+esc(c.s)+'</small></button>'+(ui.confirm==="delt"+i?'<button class="btn danger sm" data-a="delt" data-v="'+i+'">Borrar</button>':'<button class="x" data-a="askdelt" data-v="'+i+'" aria-label="Borrar '+esc(c.t)+'">×</button>')+'</div>';});
   h+='</div><div class="card"><h2>Nuevo término</h2><label class="f">Término<input id="ct"></label><label class="f" style="margin-top:10px">Significado<textarea id="cs" rows="2"></textarea></label><button class="btn block" data-a="nuevot" style="margin-top:10px">Añadir</button></div>';
   return h;
 }
@@ -608,7 +621,20 @@ document.addEventListener("click",function(e){
   var b=e.target.closest("[data-a]");if(!b||b.disabled)return;
   var a=b.dataset.a,v=b.dataset.v,keep=true,w=week(ui.wn);
   if(a.indexOf("ask")!==0)ui.confirm=null;
+  if(["tab","wn","verw","cerrar","ses","pick","bseg"].indexOf(a)>=0)ui.edit=null;
   switch(a){
+    case"edit":ui.edit=v;break;
+    case"ecancel":ui.edit=null;break;
+    case"wisave":var nt2=($("ed_t").value||"").replace(/\s+/g," ").trim();if(!nt2){toast("El contenido no puede quedar vacío");return;}var old=w.b[b.dataset.b][+b.dataset.i];w.b[b.dataset.b][+b.dataset.i]=nt2;sesionesSemana(w).forEach(function(x){var hl=(x.hecho||{})[b.dataset.b];if(hl)hl.forEach(function(t,k){if(t===old)hl[k]=nt2;});});ui.edit=null;save();break;
+    case"mover":var L2=w.b[b.dataset.b],i2=+b.dataset.i,j2=i2+(+v);var tmp=L2[i2];L2[i2]=L2[j2];L2[j2]=tmp;ui.edit="wi:"+b.dataset.b+":"+j2;save();break;
+    case"ewsave":var l0=$("ew_l").value;if(!pd(l0)){toast("Fecha no válida");return;}if(pd(l0).getDay()!==1){l0=add(l0,(1-pd(l0).getDay()-7)%7);toast("Ajustada al lunes "+corta(l0));}w.lunes=l0;w.mes=($("ew_m").value||"").trim()||w.mes;w.sem=+$("ew_s").value||w.sem;w.tri=+$("ew_t").value;ui.edit=null;save();break;
+    case"askdelw":ui.confirm="delw";break;
+    case"delw":S.docs=S.docs.filter(function(d){return d!==w;});ui.edit=null;ui.wn=null;save();toast("Semana borrada");keep=false;break;
+    case"askcopiar":ui.confirm="copiar";break;
+    case"copiar":var pw=week(w.n-1);w.b=JSON.parse(JSON.stringify(pw.b));w.terms=(pw.terms||[]).slice();if(!w.obj)w.obj=pw.obj||"";save();toast("Contenidos copiados de la semana "+pw.n);break;
+    case"nuevaw":var wl=weeks(),last=wl[wl.length-1],nn=last?last.n+1:1,lun=last?add(last.lunes,7):iso(new Date()),dl=pd(lun);var nw={id:"w"+("0"+nn).slice(-2),k:"w",n:nn,tri:last?last.tri:1,mes:MESL[dl.getMonth()].charAt(0).toUpperCase()+MESL[dl.getMonth()].slice(1),sem:Math.ceil(dl.getDate()/7),lunes:lun,obj:"",b:{},terms:[]};BLK.forEach(function(x){nw.b[x[0]]=[];});S.docs.push(nw);save();ui.wn=nn;ui.tab="semana";ui.edit="week";keep=false;toast("Semana "+nn+" creada");break;
+    case"bcsave":var bc=bancoItem(v),ntx=($("eb_t").value||"").replace(/\s+/g," ").trim();if(!ntx){toast("El contenido no puede quedar vacío");return;}renombrar(bc.t,ntx);bc.t=ntx;bc.b=$("eb_b").value;bc.g=($("eb_g").value||"").trim()||bc.g;ui.edit=null;save();toast("Contenido actualizado");break;
+    case"cdsave":var cdd=cfg().codigos[+v],ot=cdd.t;cdd.t=($("ec_t").value||"").trim()||cdd.t;cdd.s=($("ec_s").value||"").trim();if(norm(ot)!==norm(cdd.t))weeks().forEach(function(x){(x.terms||[]).forEach(function(t,k){if(norm(t)===norm(ot))x.terms[k]=cdd.t;});});ui.edit=null;save();break;
     case"tab":ui.tab=v;ui.sid=null;ui.pick=null;ui.q="";keep=false;break;
     case"cerrar":ui.sid=null;keep=false;break;
     case"ses":ui.sid=v;ui.pick=null;keep=false;break;
@@ -640,6 +666,14 @@ document.addEventListener("click",function(e){
   }
   if(keep)rerenderKeepScroll();else{render();window.scrollTo(0,0);}
 });
+/* Cambia un texto de contenido en todas las semanas y entrenamientos. */
+function renombrar(de,a){
+  if(de===a)return;var k=norm(de);
+  S.docs.forEach(function(d){
+    if(d.k==="w")BLK.forEach(function(b){var l=d.b[b[0]]||[];l.forEach(function(t,i){if(norm(t)===k)l[i]=a;});});
+    if(d.k==="s"&&d.hecho)Object.keys(d.hecho).forEach(function(x){d.hecho[x].forEach(function(t,i){if(norm(t)===k)d.hecho[x][i]=a;});});
+  });
+}
 function bancoItem(id){var l=cfg().banco||[];for(var i=0;i<l.length;i++)if(l[i].id===id)return l[i];return null;}
 document.addEventListener("input",function(e){
   var t=e.target,d=t.dataset;

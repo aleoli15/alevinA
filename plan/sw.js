@@ -1,5 +1,5 @@
 // Partidos Alevín A — funcionamiento sin conexión
-var CACHE = "alevin-plan-v1";
+var CACHE = "alevin-plan-v2";
 var FILES = ["./", "index.html", "sync.js", "manifest.webmanifest", "icons/plan-192.png", "icons/plan-512.png", "icons/plan-touch-180.png"];
 
 self.addEventListener("install", function (e) {
