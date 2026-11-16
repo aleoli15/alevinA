@@ -563,7 +563,6 @@ function vConv(m){
     h+='<div class="pl '+(on?"":"off")+'"><span class="num">'+p.num+'</span><div class="n"><span>'+esc(p.name)+'</span>'+infoConv(ST,p)+(on||n===0?"":'<input class="inp" data-mot="'+p.id+'" value="'+esc(m.motivos[p.id]||"")+'" placeholder="Motivo de la desconvocatoria" autocomplete="off">')+'</div><button class="chk '+(on?"on":"")+'" data-a="conv" data-v="'+p.id+'" aria-pressed="'+on+'" aria-label="Convocar a '+esc(p.name)+'">✓</button></div>';
   });
   h+='</div>';
-  if(n)h+='<div class="card"><h2>Mensaje para las familias</h2><textarea id="wa" rows="9" readonly aria-label="Mensaje de convocatoria">'+esc(waText(m))+'</textarea><button class="btn dark block" data-a="copiar" style="margin-top:10px">Copiar mensaje</button></div>';
   h+='<div class="row"><button class="btn ghost" data-a="convtodos" style="flex:1">'+(n?"Quitar todos":"Marcar los "+Math.min(R.maxConv,S.roster.length)+" primeros")+'</button><button class="btn dark" data-a="sec" data-v="sextos" style="flex:1">Ir a sextos</button></div>';
   return h;
 }
@@ -756,7 +755,7 @@ function vSettings(){
   h+='<div class="card"><h2>Partidos del calendario</h2><p class="sub" style="margin:0 0 10px">Añade los partidos de un archivo de calendario. Los que ya existan (misma fecha y rival) no se duplican.</p><label class="btn ghost block" style="text-align:center">Importar partidos<input type="file" id="impm" accept="application/json,.json" hidden></label></div>';
   h+='<div class="card"><h2>Equipo y normativa</h2><label class="f" style="margin-bottom:12px">Nombre del equipo en marcador y mensajes<input type="text" data-team="nombre" value="'+esc(equipo())+'" autocomplete="off"></label><button class="btn ghost block" data-a="tab" data-v="normativa">Ver normativa y valores</button></div>';
   h+='<div class="card"><h2>Instalar en el móvil</h2><div class="rule"><b>iPhone</b><p>Abre la app en Safari, pulsa Compartir y elige «Añadir a pantalla de inicio».</p></div><div class="rule"><b>Android</b><p>Abre la app en Chrome, pulsa el menú y elige «Instalar aplicación».</p></div></div>';
-  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Partidos Alevín A · versión 1.5<br><span class="sub">'+S.matches.length+' partidos guardados · '+S.roster.length+' jugadores</span></p></div>';
+  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Partidos Alevín A · versión 1.6<br><span class="sub">'+S.matches.length+' partidos guardados · '+S.roster.length+' jugadores</span></p></div>';
   return h;
 }
 
@@ -805,7 +804,6 @@ document.addEventListener("click",function(e){
     case"tm":if(!m.tm)m.tm={};var hf=(m.liveSx||0)<F(m).n/2?"h1":"h2",mxt=hf==="h1"?2:3;m.tm[hf]=Math.max(0,Math.min(mxt,(m.tm[hf]||0)+(+b.dataset.d)));break;
     case"lfal":m.faltas[v]=Math.max(0,Math.min(F(m).R.faltas,(m.faltas[v]||0)+(+b.dataset.d)));break;
     case"lsw":var la=sxOf(m,v,true),ls=m.liveSx||0;if(ls===F(m).reg&&la[ls]){if(!m.part)m.part={};m.part[v]=true;}la[ls]=la[ls]?0:1;break;
-    case"copiar":copiar(waText(m));return;
     case"ev":
       if(b.dataset.scope==="obj"){var o=m.obj[v];o.ev=o.ev===b.dataset.e?"":b.dataset.e;}
       else{if(!m.ind[v])m.ind[v]={t:"",ev:""};m.ind[v].ev=m.ind[v].ev===b.dataset.e?"":b.dataset.e;}
