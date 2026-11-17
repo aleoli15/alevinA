@@ -301,6 +301,15 @@ body.modal{overflow:hidden}
 .it.ed textarea{margin:0}.it.ed .row{align-items:center}
 .wtools{margin:-4px 0 12px}
 .x:disabled{opacity:.3}
+
+.sesw{display:flex;gap:6px;align-items:stretch;margin-bottom:6px}.sesw .ses{margin:0;flex:1;min-width:0}
+.pdfb{flex:none;display:flex;align-items:center;justify-content:center;width:58px;border-radius:10px;background:#ececea;color:#111;font-weight:900;font-size:13px;text-decoration:none;letter-spacing:.04em}
+.pdfbig{margin:-4px 0 12px;background:var(--red);color:#fff;border-color:var(--red)}
+.pt .cd{width:150px;min-width:150px;max-width:150px}
+.dchs{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+.dch{display:inline-block;min-width:38px;padding:4px 5px;border-radius:7px;background:#202327;color:#7d8187;font-size:12px;font-weight:800;text-decoration:none;text-align:center}
+.dch.on{background:#ececea;color:#111}.dch.no{text-decoration:line-through}
+.pt td.cd small{display:block;margin-top:5px;font-size:11px;color:var(--mute);font-weight:700}
 details summary{cursor:pointer;margin-top:10px}a.gn{text-align:center;text-decoration:none}a.gn[hidden]{display:none}
 /* colores por bloque */
 .blk{border-top:4px solid var(--bc)}
@@ -384,7 +393,7 @@ table.pt{border-collapse:separate;border-spacing:0;font-size:12.5px;line-height:
 "use strict";
 var LOGO=window.LOGO,SEED=window.SEED;
 var KEY="alevinA.plan.v1",CKEY="alevinA.plan.cache";
-var VERSION="1.5";
+var VERSION="1.6";
 var BLK=[["ti","Técnica individual"],["tai","Táctica individual"],["tc","Táctica colectiva"],["d1","Defensa 1x1"],["dc","Defensa colectiva"],["nh","Normas / hábitos"]];
 var BN={};BLK.forEach(function(b){BN[b[0]]=b[1];});
 var BC={ti:"#ff5a6e",tai:"#4aa3ff",tc:"#f5a524",d1:"#b18cff",dc:"#2ec4a5",nh:"#f472b6"};
@@ -411,6 +420,7 @@ function loadCache(){var c=null;try{c=JSON.parse(localStorage.getItem(CKEY));}ca
 var S=load(),C=loadCache(),saveFail=false,GN={};
 try{GN=JSON.parse(localStorage.getItem("alevinA.plan.gn"))||{};}catch(e){}
 function cargarGN(){if(!/^https?:$/.test(location.protocol))return;fetch("gn.json",{cache:"no-cache"}).then(function(r){return r.ok?r.json():null;}).then(function(j){if(!j||!j.f)return;var txt=JSON.stringify(j.f);if(txt===JSON.stringify(GN))return;GN=j.f;try{localStorage.setItem("alevinA.plan.gn",txt);}catch(e){}soft();}).catch(function(){});}
+function pdfSes(s){return s.gn||pdfDe(s.fecha);}
 function pdfDe(f){var x=GN[f];return x?"https://drive.google.com/file/d/"+x.id+"/view":"";}
 function store(){try{localStorage.setItem(KEY,JSON.stringify(S));saveFail=false;}catch(e){saveFail=true;}}
 function storeCache(){try{localStorage.setItem(CKEY,JSON.stringify(C));}catch(e){}}
@@ -529,6 +539,7 @@ function vHoy(){
   if(!s)return'<div class="card empty"><b>No hay entrenamientos próximos</b></div>';
   var w=weekOf(s.fecha),t=hoy();
   h+='<button class="hero" data-a="ses" data-v="'+s.id+'"><span>'+(s.fecha===t?"Hoy":"Próximo entrenamiento")+'</span><b>'+esc(cap(larga(s.fecha)))+'</b>'+(w?'<i>Semana '+w.n+' · '+esc(w.mes)+' '+w.sem+'</i>':'<i>Semana sin planificar</i>')+'</button>';
+  if(pdfSes(s))h+='<a class="btn block gn pdfbig" href="'+esc(pdfSes(s))+'" target="_blank" rel="noopener">Ver el entrenamiento en PDF</a>';
   var ps=partidosEntre(t,add(t,7));
   if(ps.length)h+='<div class="card mini"><h2>Próximo partido</h2>'+ps.slice(0,1).map(function(m){return'<b>'+esc(corta(m.fecha))+(m.hora?" · "+esc(m.hora):"")+'</b> · '+(m.cond==="V"?"en casa de ":"vs ")+esc(m.rival||"Rival por definir");}).join("")+'</div>';
   if(w){
@@ -602,7 +613,7 @@ function vSemana(){
   // entrenamientos
   h+='<div class="card"><h2>Entrenamientos</h2>';
   sesionesSemana(w).forEach(function(s){var e=estadoSes(s);
-    h+='<button class="ses" data-a="ses" data-v="'+s.id+'"><span class="d"><b>'+pd(s.fecha).getDate()+'</b><i>'+DIAC[pd(s.fecha).getDay()]+'</i></span><span class="t"><b>'+(s.extra?"Extra":"Entrenamiento")+'</b><span>'+(nAsis(s)?nAsis(s)+" asisten · ":"")+(nHecho(s)?nHecho(s)+" contenidos":"Sin contenidos marcados")+((s.gn||pdfDe(s.fecha))?" · PDF":"")+'</span></span>'+(e[0]?'<span class="pill '+e[0]+'">'+e[1]+'</span>':'<span class="pill">'+e[1]+'</span>')+'</button>';});
+    var pu=pdfSes(s);h+='<div class="sesw"><button class="ses" data-a="ses" data-v="'+s.id+'"><span class="d"><b>'+pd(s.fecha).getDate()+'</b><i>'+DIAC[pd(s.fecha).getDay()]+'</i></span><span class="t"><b>'+(s.extra?"Extra":"Entrenamiento")+'</b><span>'+(nAsis(s)?nAsis(s)+" asisten · ":"")+(nHecho(s)?nHecho(s)+" contenidos":"Sin contenidos marcados")+((s.gn||pdfDe(s.fecha))?" · PDF":"")+'</span></span>'+(e[0]?'<span class="pill '+e[0]+'">'+e[1]+'</span>':'<span class="pill">'+e[1]+'</span>')+'</button>'+(pu?'<a class="pdfb" href="'+esc(pu)+'" target="_blank" rel="noopener" aria-label="Ver el PDF del '+esc(larga(s.fecha))+'">PDF</a>':'')+'</div>';});
   h+='<div class="addx"><input type="date" id="xf" min="'+w.lunes+'" max="'+add(w.lunes,6)+'" value="'+add(w.lunes,5)+'" aria-label="Fecha del entrenamiento extra"><button class="btn dark sm" data-a="extra">Añadir extra</button></div></div>';
   var ps=partidosEntre(w.lunes,add(w.lunes,6));
   if(ps.length)h+='<div class="card"><h2>Partidos</h2>'+ps.map(function(m){return'<div class="it"><span><b>'+esc(corta(m.fecha))+(m.hora?" · "+esc(m.hora):"")+'</b> '+(m.cond==="V"?"en casa de ":"vs ")+esc(m.rival||"Rival por definir")+'<small>'+esc(m.comp||"")+'</small></span></div>';}).join("")+'</div>';
@@ -644,19 +655,19 @@ function vTemporada(){
 }
 function vTabla(){
   var cw=weekOf(hoy()),t=hoy(),h='<div class="tbar"><div class="tri-f">'+[["","Toda la temporada"],["1","1º trim."],["2","2º trim."],["3","3º trim."],["4","Post."]].map(function(x){return'<button data-a="tt" data-v="'+x[0]+'" class="'+(ui.tt===x[0]?"on":"")+'">'+x[1]+'</button>';}).join("")+'</div><button class="btn ghost sm" data-a="tc">'+(ui.tc?"Ver contenidos":"Ver resumen")+'</button></div>';
-  h+='<div class="tw"><table class="pt'+(ui.tc?" comp":"")+'"><thead><tr><th class="c0">Semana</th><th class="cobj">Objetivo</th>'+BLK.map(function(b){return'<th'+bc(b[0])+'>'+b[1]+'</th>';}).join("")+'<th>Términos</th><th class="cen">Entrenos</th></tr></thead><tbody>';
+  h+='<div class="tw"><table class="pt'+(ui.tc?" comp":"")+'"><thead><tr><th class="c0">Semana</th><th class="cen cd">Entrenos</th><th class="cobj">Objetivo</th>'+BLK.map(function(b){return'<th'+bc(b[0])+'>'+b[1]+'</th>';}).join("")+'<th>Términos</th></tr></thead><tbody>';
   var tri=0;
   weeks().forEach(function(w){
     if(ui.tt&&String(w.tri)!==ui.tt)return;
     if(w.tri!==tri){tri=w.tri;h+='<tr class="trow"><td class="c0">'+TRI[tri]+'</td><td colspan="'+(BLK.length+3)+'"></td></tr>';}
     var ss=sesionesSemana(w),pas=add(w.lunes,6)<t,sh=ss.filter(hecha).length,no=ss.filter(function(x){return x.estado==="no";}).length;
     h+='<tr data-a="verw" data-v="'+w.n+'" class="'+(w===cw?"cur":"")+(pas?" past":"")+'"><td class="c0"><b>S'+w.n+'</b><span>'+esc(w.mes.slice(0,3))+' '+w.sem+'</span><span>'+rango(w)+'</span></td>';
+    h+='<td class="cen cd"><div class="dchs">'+ss.map(function(x){var u=pdfSes(x),lab=DIAC[pd(x.fecha).getDay()].charAt(0).toUpperCase()+pd(x.fecha).getDate();return u?'<a class="dch on" href="'+esc(u)+'" target="_blank" rel="noopener" title="Ver PDF">'+lab+'</a>':'<span class="dch'+(x.estado==="no"?" no":"")+'">'+lab+'</span>';}).join("")+'</div>'+(pas||sh?'<small>'+sh+'/'+(ss.length-no)+' hechos</small>':'')+'</td>';
     h+='<td class="cobj">'+(w.obj?esc(w.obj):'<em>—</em>')+'</td>';
     BLK.forEach(function(b){var l=w.b[b[0]]||[];
       if(ui.tc)h+='<td class="cn"'+bc(b[0])+'>'+(l.length?'<span class="nb2">'+l.length+'</span>':'<em>—</em>')+'</td>';
       else h+='<td'+bc(b[0])+'>'+(l.length?l.map(function(x){return'<div class="ce">'+esc(x)+'</div>';}).join(""):'<em>—</em>')+'</td>';});
-    h+='<td>'+((w.terms||[]).length?(ui.tc?'<span class="nb2 g">'+w.terms.length+'</span>':w.terms.map(function(x){return'<div class="ce g">'+esc(x)+'</div>';}).join("")):'<em>—</em>')+'</td>';
-    h+='<td class="cen">'+(pas||sh?'<b>'+sh+'</b>/'+(ss.length-no):'<em>'+ss.length+'</em>')+'</td></tr>';
+    h+='<td>'+((w.terms||[]).length?(ui.tc?'<span class="nb2 g">'+w.terms.length+'</span>':w.terms.map(function(x){return'<div class="ce g">'+esc(x)+'</div>';}).join("")):'<em>—</em>')+'</td></tr>';
   });
   return h+'</tbody></table></div><p class="hint" style="margin:8px 2px">Toca una semana para abrirla y editarla.</p>';
 }
@@ -726,6 +737,7 @@ function toast(t){var d=$("toast");if(!d){d=document.createElement("div");d.id="
 function rerenderKeepScroll(){var y=window.scrollY,pl=document.querySelector(".plist"),py=pl?pl.scrollTop:0;render();window.scrollTo(0,y);var p2=document.querySelector(".plist");if(p2)p2.scrollTop=py;}
 function sesById(id){var p=splitSid(id);return persist(sesOf(p[0],p[1]));}
 document.addEventListener("click",function(e){
+  if(e.target.closest("a"))return;
   var b=e.target.closest("[data-a]");if(!b||b.disabled)return;
   var a=b.dataset.a,v=b.dataset.v,keep=true,w=week(ui.wn);
   if(a.indexOf("ask")!==0)ui.confirm=null;
