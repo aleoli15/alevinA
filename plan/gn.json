@@ -1,5 +1,5 @@
 {
-"upd": "2026-11-17T11:00:00Z",
+"upd": "2026-11-17T13:36:38Z",
 "f": {
 "2026-04-30": {
 "id": "1j_n50WCbJ8Cv7tVCW3teqrBwvFdzf3hD",
@@ -40,6 +40,130 @@
 "2026-05-26": {
 "id": "1g-haTom1u0SugQJYFKRTI6cADP8XmL2T",
 "t": "26-5-26"
+},
+"2026-08-25": {
+"id": "1uWIpJC9FkdkPOVrpCGRCVT1zghymGk-7",
+"t": "25-8-26"
+},
+"2026-09-01": {
+"id": "1Nr4rlhwAEIAg19W72SbawhfSZUjphidD",
+"t": "1-9-26"
+},
+"2026-09-03": {
+"id": "1cjqI264AsKisczZQI0qXjKFY9g0Lpr6D",
+"t": "3-9-26"
+},
+"2026-09-04": {
+"id": "1uGaKpo4NaYCKfZprh6af3YmMHwAMvys_",
+"t": "4-9-26"
+},
+"2026-09-08": {
+"id": "1LnYWHMEPipu1-M0ctk-lmiIIpV4vQXtj",
+"t": "8-9-26"
+},
+"2026-09-10": {
+"id": "1sbM8ITm_ugiUq2NeKIVOZdYXE5CcS3zB",
+"t": "10-9-26"
+},
+"2026-09-11": {
+"id": "1BUfEkmupkJET2kXppD25dNOEZnVw9OI_",
+"t": "11-9-26"
+},
+"2026-09-17": {
+"id": "1xXerYJLZGwRtuSKuH9TwXj0qoZbEILjv",
+"t": "17-9-26"
+},
+"2026-09-18": {
+"id": "1RXdX2g6TMLdkoUkqfPKwdgq11yt6xcE_",
+"t": "18-9-26"
+},
+"2026-09-22": {
+"id": "1QAIitVZBIqpDvb7N8TMHwVOm9aXkGp9k",
+"t": "22-9-26"
+},
+"2026-09-24": {
+"id": "1R2ZTZVCB5P78uDN_gS-9-M2yV7jj8geu",
+"t": "24-9-26"
+},
+"2026-09-25": {
+"id": "1Wm3Tg8HS2zXiyM77g5DfxN64aq6CcI6V",
+"t": "25-9-26"
+},
+"2026-09-29": {
+"id": "1S-p4S4AFL2mxKwTl-Kp0w23f_1LloU0_",
+"t": "29-9-26"
+},
+"2026-10-01": {
+"id": "18C7qg__7u2O6HKBTbcUg-c2j7pEOAkpg",
+"t": "1-10-26"
+},
+"2026-10-02": {
+"id": "1TPu1FV9-SJ3Jg3a1WT_HtMEcWito6uk3",
+"t": "2-10-26"
+},
+"2026-10-08": {
+"id": "1PaorYiDLnZN8BH_RgfZypZdv3D6HGj9u",
+"t": "8-10-26"
+},
+"2026-10-09": {
+"id": "1Xfth2N_dyxDzjXmPHevBVIVOmDPyEybO",
+"t": "9-10-26"
+},
+"2026-10-12": {
+"id": "1_5UTVa1v4xhaRD2erDHbfep3OZR92NgH",
+"t": "12-10-26"
+},
+"2026-10-13": {
+"id": "1sjJlFVny_AL7zLWfvM7N6k4ECU-S1h8q",
+"t": "13-10-26"
+},
+"2026-10-15": {
+"id": "1TV8FBXlMNSOKVrBjviFOOYNAlMWmQvn3",
+"t": "15-10-26"
+},
+"2026-10-20": {
+"id": "1mkucjKb_P-1HBD2lKoPH_3e8N_u0eRp_",
+"t": "20-10-26"
+},
+"2026-10-22": {
+"id": "1wTB7O1Z0DVOOQ1rVI21thCOwOzM0gzOt",
+"t": "22-10-26"
+},
+"2026-10-23": {
+"id": "1JDkRsI9kFoqmWpbUhEXspjhxMU773RkP",
+"t": "23-10-26"
+},
+"2026-10-27": {
+"id": "1tGSZBozEUYUGNt_dq418RzEhYmFnOPwn",
+"t": "27-10-26"
+},
+"2026-10-30": {
+"id": "1jUImv0Xkopph9VmwR4maSR6wXNdYb7WN",
+"t": "30-10-26"
+},
+"2026-11-03": {
+"id": "16gzQjCG243pj2dyTQP6mW1Omk8biAXF3",
+"t": "3-11-26"
+},
+"2026-11-05": {
+"id": "1BJss7GCfp_KCpfImE5WDAzh_4EbVM44A",
+"t": "5-11-26"
+},
+"2026-11-06": {
+"id": "1wxnHs41msV9OjT06OZUvgDaI7IBw6Epl",
+"t": "6-11-26"
+},
+"2026-11-10": {
+"id": "1p1xF_-0XHPnJMa_DGJn9C9Szgf06KFBq",
+"t": "10-11-26"
+},
+"2026-11-12": {
+"id": "1O_PkS4PyDlqmuS52Od6MojIhrd_bvavY",
+"t": "12-11-26"
+},
+"2026-11-13": {
+"id": "1IrJ3xr9b7EwTHA5ONxjTOGHAZTr2ovNp",
+"t": "13-11-26"
 }
 }
 }

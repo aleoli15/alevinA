@@ -393,7 +393,7 @@ table.pt{border-collapse:separate;border-spacing:0;font-size:12.5px;line-height:
 "use strict";
 var LOGO=window.LOGO,SEED=window.SEED;
 var KEY="alevinA.plan.v1",CKEY="alevinA.plan.cache";
-var VERSION="1.6";
+var VERSION="1.7";
 var BLK=[["ti","Técnica individual"],["tai","Táctica individual"],["tc","Táctica colectiva"],["d1","Defensa 1x1"],["dc","Defensa colectiva"],["nh","Normas / hábitos"]];
 var BN={};BLK.forEach(function(b){BN[b[0]]=b[1];});
 var BC={ti:"#ff5a6e",tai:"#4aa3ff",tc:"#f5a524",d1:"#b18cff",dc:"#2ec4a5",nh:"#f472b6"};
@@ -455,14 +455,16 @@ function persist(s){if(s.v){delete s.v;S.docs.push(s);}return s;}
 function sesionesSemana(w){
   var out=ENTRENO.map(function(o){return sesOf(add(w.lunes,o));}),fin=add(w.lunes,6),ids={};
   out.forEach(function(s){ids[s.id]=1;});
-  S.docs.forEach(function(d){if(d.k==="s"&&!ids[d.id]&&d.fecha>=w.lunes&&d.fecha<=fin)out.push(d);});
+  S.docs.forEach(function(d){if(d.k==="s"&&!ids[d.id]&&d.fecha>=w.lunes&&d.fecha<=fin){out.push(d);ids[d.id]=1;}});
+  // Un PDF de GoodNotes en un día sin entrenamiento habitual cuenta como entrenamiento extra.
+  Object.keys(GN).forEach(function(f){if(f<w.lunes||f>fin)return;if(out.some(function(x){return x.fecha===f;}))return;out.push(sesOf(f,"x1"));});
   return out.sort(function(a,b){return a.fecha<b.fecha?-1:a.fecha>b.fecha?1:a.id<b.id?-1:1;});
 }
 function sesiones(){return S.docs.filter(function(d){return d.k==="s";});}
 function nAsis(s){return Object.keys(s.asis||{}).length;}
 function nHecho(s){var n=0;Object.keys(s.hecho||{}).forEach(function(k){n+=(s.hecho[k]||[]).length;});return n;}
 /* Los entrenamientos habituales ya pasados cuentan como hechos salvo que se marquen «No hubo». */
-function hecha(s){return s.estado==="hecho"||(!s.estado&&!s.extra&&s.fecha<hoy()&&!!weekOf(s.fecha));}
+function hecha(s){return s.estado==="hecho"||(!s.estado&&(!s.extra||!!GN[s.fecha])&&s.fecha<hoy()&&!!weekOf(s.fecha));}
 function todasSesiones(){var out=[];weeks().forEach(function(w){out=out.concat(sesionesSemana(w));});var ids={};out.forEach(function(x){ids[x.id]=1;});sesiones().forEach(function(x){if(!ids[x.id])out.push(x);});return out;}
 function estadoSes(s){
   if(s.estado==="no")return["bad","No hubo"];
