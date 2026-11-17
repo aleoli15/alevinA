@@ -310,6 +310,12 @@ body.modal{overflow:hidden}
 .dch{display:inline-block;min-width:38px;padding:4px 5px;border-radius:7px;background:#202327;color:#7d8187;font-size:12px;font-weight:800;text-decoration:none;text-align:center}
 .dch.on{background:#ececea;color:#111}.dch.no{text-decoration:line-through}
 .pt td.cd small{display:block;margin-top:5px;font-size:11px;color:var(--mute);font-weight:700}
+
+.chs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px}
+.cch{background:#202327;border-left:3px solid var(--bc);padding:4px 8px;font-size:13px;font-weight:600;line-height:1.25}
+.lv.val button.on.ok{background:var(--ok);border-color:var(--ok);color:#111}
+.lv.val button.on.warn{background:var(--warn);border-color:var(--warn);color:#111}
+.lv.val button.on.bad{background:var(--bad);border-color:var(--bad);color:#111}
 details summary{cursor:pointer;margin-top:10px}a.gn{text-align:center;text-decoration:none}a.gn[hidden]{display:none}
 /* colores por bloque */
 .blk{border-top:4px solid var(--bc)}
@@ -393,7 +399,7 @@ table.pt{border-collapse:separate;border-spacing:0;font-size:12.5px;line-height:
 "use strict";
 var LOGO=window.LOGO,SEED=window.SEED;
 var KEY="alevinA.plan.v1",CKEY="alevinA.plan.cache";
-var VERSION="1.7";
+var VERSION="1.8";
 var BLK=[["ti","Técnica individual"],["tai","Táctica individual"],["tc","Táctica colectiva"],["d1","Defensa 1x1"],["dc","Defensa colectiva"],["nh","Normas / hábitos"]];
 var BN={};BLK.forEach(function(b){BN[b[0]]=b[1];});
 var BC={ti:"#ff5a6e",tai:"#4aa3ff",tc:"#f5a524",d1:"#b18cff",dc:"#2ec4a5",nh:"#f472b6"};
@@ -486,9 +492,10 @@ function partidosEntre(a,b){return(C.matches||[]).filter(function(m){return m.fe
 /* Recuento por contenido: semanas en que está planificado y sesiones en que se ha trabajado. */
 function recuento(){
   var r={};
-  function g(t){var k=norm(t);if(!r[k])r[k]={plan:0,trab:0,ult:0,ultT:""};return r[k];}
+  function g(t){var k=norm(t);if(!r[k])r[k]={plan:0,trab:0,ult:0,ultW:0};return r[k];}
   weeks().forEach(function(w){BLK.forEach(function(b){(w.b[b[0]]||[]).forEach(function(t){var o=g(t);o.plan++;if(w.n>o.ult)o.ult=w.n;});});});
-  todasSesiones().forEach(function(s){if(!hecha(s))return;Object.keys(s.hecho||{}).forEach(function(k){(s.hecho[k]||[]).forEach(function(t){var o=g(t);o.trab++;if(s.fecha>o.ultT)o.ultT=s.fecha;});});});
+  // Una semana cuenta como trabajada si ya ha empezado y tiene algún entrenamiento hecho: todos sus contenidos suman.
+  weeks().forEach(function(w){if(w.lunes>hoy()||!sesionesSemana(w).some(hecha))return;BLK.forEach(function(b){(w.b[b[0]]||[]).forEach(function(t){var o=g(t);o.trab++;if(w.n>o.ultW)o.ultW=w.n;});});});
   return r;
 }
 function planHasta(){var n=0;weeks().forEach(function(w){if(BLK.some(function(b){return(w.b[b[0]]||[]).length;}))n=w.n;});return n;}
@@ -512,7 +519,7 @@ function render(){
     return'<button data-a="tab" data-v="'+x[0]+'" class="'+(ui.tab===x[0]?"on":"")+'">'+x[1]+'</button>';}).join("");
   var h="";
   if(saveFail)h+='<div class="estado bad"><b>No se pueden guardar los datos</b>Este navegador no permite almacenamiento.</div>';
-  if(s)h+=vSesion(s,false);
+  if(s)h+=vSesion(s);
   else if(ui.tab==="hoy")h+=vHoy();
   else if(ui.tab==="semana")h+=vSemana();
   else if(ui.tab==="temporada")h+=vTemporada();
@@ -535,59 +542,56 @@ function vLogin(){
 function chips(arr){return(arr||[]).map(function(t){return'<span class="chip">'+esc(t)+'</span>';}).join("");}
 function cod(t){var c=cfg().codigos||[];for(var i=0;i<c.length;i++)if(norm(c[i].t)===norm(t))return c[i].s;return"";}
 
-/* HOY: el próximo entrenamiento, pensado para el móvil */
+/* HOY: ficha del día, todo en una pantalla */
 function vHoy(){
   var s=proxima(),h="";
   if(!s)return'<div class="card empty"><b>No hay entrenamientos próximos</b></div>';
   var w=weekOf(s.fecha),t=hoy();
   h+='<button class="hero" data-a="ses" data-v="'+s.id+'"><span>'+(s.fecha===t?"Hoy":"Próximo entrenamiento")+'</span><b>'+esc(cap(larga(s.fecha)))+'</b>'+(w?'<i>Semana '+w.n+' · '+esc(w.mes)+' '+w.sem+'</i>':'<i>Semana sin planificar</i>')+'</button>';
-  if(pdfSes(s))h+='<a class="btn block gn pdfbig" href="'+esc(pdfSes(s))+'" target="_blank" rel="noopener">Ver el entrenamiento en PDF</a>';
+  if(pdfSes(s))h+='<a class="btn block gn pdfbig" href="'+esc(pdfSes(s))+'" target="_blank" rel="noopener">Abrir entrenamiento (PDF)</a>';
+  else h+='<p class="sub" style="margin:-4px 2px 12px">Aún no hay PDF de este día en GoodNotes.</p>';
   var ps=partidosEntre(t,add(t,7));
   if(ps.length)h+='<div class="card mini"><h2>Próximo partido</h2>'+ps.slice(0,1).map(function(m){return'<b>'+esc(corta(m.fecha))+(m.hora?" · "+esc(m.hora):"")+'</b> · '+(m.cond==="V"?"en casa de ":"vs ")+esc(m.rival||"Rival por definir");}).join("")+'</div>';
   if(w){
-    if(w.obj)h+='<div class="card"><h2>Objetivo de la semana</h2><p class="obj">'+esc(w.obj)+'</p></div>';
+    h+='<div class="card"><h2>Objetivo de la semana</h2>'+(w.obj?'<p class="obj">'+esc(w.obj)+'</p>':'<p class="sub" style="margin:0">Sin objetivo. Puedes ponerlo en la pestaña Semana.</p>')+'</div>';
+    h+=contenidosSemana(w);
     if((w.terms||[]).length)h+='<div class="card"><h2>Términos de la semana</h2>'+w.terms.map(function(t){var d=cod(t);return'<div class="term"><b>'+esc(t)+'</b>'+(d?'<span>'+esc(d)+'</span>':'')+'</div>';}).join("")+'</div>';
   }
-  return h+vSesion(s,true);
+  return h+asistencia(s)+valoracion(s);
 }
-
-/* Ficha de una sesión: estado, GoodNotes, asistencia y contenidos trabajados */
-function vSesion(s,compacta){
-  var w=weekOf(s.fecha),h="",es=estadoSes(s);
-  var pas=s.fecha<hoy();
-  h+='<div class="card"><h2>Estado</h2><div class="lv"><button data-a="estado" data-v="hecho" data-s="'+s.id+'" class="'+(hecha(s)?"on":"")+'">Hecho</button><button data-a="estado" data-v="no" data-s="'+s.id+'" class="'+(s.estado==="no"?"on bad":"")+'">No hubo</button>'+(pas&&!s.extra?'':'<button data-a="estado" data-v="" data-s="'+s.id+'" class="'+(!s.estado?"on":"")+'">Previsto</button>')+'</div></div>';
-  var pdf=pdfDe(s.fecha);
-  h+='<div class="card"><h2>Sesión en GoodNotes</h2>';
-  if(pdf)h+='<a class="btn dark block gn" href="'+esc(pdf)+'" target="_blank" rel="noopener">Abrir la sesión (PDF)</a><p class="hint">Vinculada automáticamente: «'+esc(GN[s.fecha].t)+'» de tu carpeta de GoodNotes.</p>';
-  else h+='<p class="sub" style="margin:0 0 8px">Todavía no hay PDF con fecha '+esc(dmy(s.fecha))+' en la carpeta de GoodNotes. Aparecerá solo unas horas después de crearlo en el iPad.</p>';
-  if(s.gn||!pdf){
-    h+='<a id="gnbtn" class="btn ghost block gn" href="'+esc(s.gn||"#")+'" target="_blank" rel="noopener"'+(s.gn?'':' hidden')+' style="margin-top:8px">Abrir enlace manual</a>';
-    h+='<details'+(s.gn?' open':'')+'><summary class="sub">Pegar un enlace a mano</summary><label class="f" style="margin-top:8px">Enlace<input data-k="gn" data-s="'+s.id+'" value="'+esc(s.gn||"")+'" placeholder="Pega aquí el enlace" autocapitalize="none" autocorrect="off" inputmode="url"></label></details>';
-  }
-  h+='</div>';
-  // asistencia
-  var R=roster(),n=nAsis(s);
-  h+='<div class="card"><div class="cardh"><h2>Asistencia</h2><span class="sub"><b>'+n+'</b> de '+R.length+'</span><button class="btn ghost sm" data-a="asistodos" data-s="'+s.id+'">'+(n?"Quitar todos":"Todos")+'</button></div>';
+/* Contenidos de la semana en formato compacto, por bloques y con sus colores (solo lectura) */
+function contenidosSemana(w){
+  var h='<div class="card"><h2>Contenidos de la semana</h2>',n=0;
+  BLK.forEach(function(b){var l=w.b[b[0]]||[];if(!l.length)return;n+=l.length;
+    h+='<div class="cg"'+bc(b[0])+'><div class="blk-t">'+b[1]+'</div><div class="chs">'+l.map(function(t){return'<span class="cch">'+esc(t)+'</span>';}).join("")+'</div></div>';});
+  if(!n)h+='<p class="sub" style="margin:0">La semana '+w.n+' aún no tiene contenidos.</p>';
+  return h+'</div>';
+}
+function asistencia(s){
+  var R=roster(),n=nAsis(s),h='<div class="card"><div class="cardh"><h2>Asistencia</h2><span class="sub"><b>'+n+'</b> de '+R.length+'</span><button class="btn ghost sm" data-a="asistodos" data-s="'+s.id+'">'+(n?"Quitar todos":"Todos")+'</button></div>';
   if(!R.length)h+='<p class="sub">La plantilla se carga de la app de partidos al sincronizar.</p>';
   else h+='<div class="asis">'+R.map(function(p){var on=!!(s.asis||{})[p.id];return'<button class="ap'+(on?" on":"")+'" data-a="asis" data-v="'+p.id+'" data-s="'+s.id+'" aria-pressed="'+on+'"><b>'+esc(p.num)+'</b><span>'+esc(corto(p))+'</span></button>';}).join("")+'</div>';
-  h+='</div>';
-  // contenidos
-  h+='<div class="card"><div class="cardh"><h2>Contenidos trabajados</h2><span class="sub">'+nHecho(s)+' marcados</span></div>';
-  if(!w)h+='<p class="sub">Esta fecha no pertenece a ninguna semana planificada.</p>';
-  else{
-    var any=false;
-    BLK.forEach(function(b){
-      var l=w.b[b[0]]||[];if(!l.length)return;any=true;
-      var hc=(s.hecho||{})[b[0]]||[];
-      h+='<div class="cg"'+bc(b[0])+'><div class="blk-t">'+b[1]+'</div>';
-      l.forEach(function(t,i){var on=hc.indexOf(t)>=0;h+='<button class="ck'+(on?" on":"")+'" data-a="hecho" data-b="'+b[0]+'" data-i="'+i+'" data-s="'+s.id+'" aria-pressed="'+on+'"><i></i><span>'+esc(t)+'</span></button>';});
-      h+='</div>';
-    });
-    if(!any)h+='<p class="sub">La semana '+w.n+' aún no tiene contenidos. Añádelos en la pestaña Semana.</p>';
-  }
-  h+='</div>';
-  h+='<div class="card"><h2>Notas</h2><textarea rows="'+(compacta?3:5)+'" data-k="notas" data-s="'+s.id+'" placeholder="Cómo ha ido, qué repetir, incidencias…">'+esc(s.notas||"")+'</textarea></div>';
-  if(!compacta&&s.extra)h+=ui.confirm==="dels"?'<button class="btn danger block" data-a="dels" data-s="'+s.id+'">¿Seguro? Eliminar este entrenamiento</button>':'<button class="btn ghost block" data-a="askdels">Eliminar entrenamiento extra</button>';
+  return h+'</div>';
+}
+var VAL=[["b","Bien","ok"],["r","Regular","warn"],["m","Mal","bad"]];
+function valoracion(s){
+  var h='<div class="card"><h2>¿Cómo ha ido?</h2><div class="lv val">'+VAL.map(function(v){return'<button data-a="val" data-v="'+v[0]+'" data-s="'+s.id+'" class="'+(s.val===v[0]?"on "+v[2]:"")+'">'+v[1]+'</button>';}).join("")+'</div>';
+  return h+'<textarea rows="2" style="margin-top:8px" data-k="notas" data-s="'+s.id+'" placeholder="Qué repetir, qué cambiar…">'+esc(s.notas||"")+'</textarea></div>';
+}
+
+/* Ficha completa de una sesión (desde Semana) */
+function vSesion(s){
+  var w=weekOf(s.fecha),h="",pas=s.fecha<hoy();
+  var pdf=pdfSes(s);
+  if(pdf)h+='<a class="btn block gn pdfbig" href="'+esc(pdf)+'" target="_blank" rel="noopener">Abrir entrenamiento (PDF)</a>';
+  h+='<div class="card"><h2>Estado</h2><div class="lv"><button data-a="estado" data-v="hecho" data-s="'+s.id+'" class="'+(hecha(s)?"on":"")+'">Hecho</button><button data-a="estado" data-v="no" data-s="'+s.id+'" class="'+(s.estado==="no"?"on bad":"")+'">No hubo</button>'+(pas&&!s.extra?'':'<button data-a="estado" data-v="" data-s="'+s.id+'" class="'+(!s.estado?"on":"")+'">Previsto</button>')+'</div></div>';
+  h+=asistencia(s)+valoracion(s);
+  if(w)h+=contenidosSemana(w);
+  h+='<div class="card"><h2>Enlace manual</h2>';
+  if(GN[s.fecha])h+='<p class="sub" style="margin:0 0 6px">PDF vinculado automáticamente: «'+esc(GN[s.fecha].t)+'».</p>';
+  h+='<a id="gnbtn" class="btn ghost block gn" href="'+esc(s.gn||"#")+'" target="_blank" rel="noopener"'+(s.gn?'':' hidden')+'>Abrir enlace manual</a>';
+  h+='<details'+(s.gn?' open':'')+'><summary class="sub">Pegar otro enlace</summary><label class="f" style="margin-top:8px">Enlace<input data-k="gn" data-s="'+s.id+'" value="'+esc(s.gn||"")+'" placeholder="Pega aquí el enlace" autocapitalize="none" autocorrect="off" inputmode="url"></label></details></div>';
+  if(s.extra)h+=ui.confirm==="dels"?'<button class="btn danger block" data-a="dels" data-s="'+s.id+'">¿Seguro? Eliminar este entrenamiento</button>':'<button class="btn ghost block" data-a="askdels">Eliminar entrenamiento extra</button>';
   return h;
 }
 
@@ -608,14 +612,14 @@ function vSemana(){
     if(!l.length)h+='<p class="sub">Sin contenidos.</p>';
     l.forEach(function(t,i){var o=rc[norm(t)]||{plan:0,trab:0},ek="wi:"+b[0]+":"+i;
       if(ui.edit===ek){h+='<div class="it ed"><textarea id="ed_t" rows="2">'+esc(t)+'</textarea><div class="row"><button class="btn sm" data-a="wisave" data-b="'+b[0]+'" data-i="'+i+'">Guardar</button><button class="btn ghost sm" data-a="ecancel">Cancelar</button><span style="flex:1"></span><button class="x" data-a="mover" data-b="'+b[0]+'" data-i="'+i+'" data-v="-1" '+(i?"":"disabled")+' aria-label="Subir">↑</button><button class="x" data-a="mover" data-b="'+b[0]+'" data-i="'+i+'" data-v="1" '+(i<l.length-1?"":"disabled")+' aria-label="Bajar">↓</button><button class="x" data-a="quitar" data-b="'+b[0]+'" data-i="'+i+'" aria-label="Quitar">×</button></div><p class="hint" style="margin:6px 0 0">Cambia el texto solo en esta semana. Para cambiarlo en todo el plan, edítalo en Contenidos.</p></div>';return;}
-      h+='<div class="it"><button class="itb" data-a="edit" data-v="'+ek+'">'+esc(t)+'<small>'+o.plan+(o.plan===1?" semana":" semanas")+' · trabajado '+o.trab+(o.trab===1?" vez":" veces")+'</small></button><button class="x" data-a="quitar" data-b="'+b[0]+'" data-i="'+i+'" aria-label="Quitar '+esc(t)+'">×</button></div>';});
+      h+='<div class="it"><button class="itb" data-a="edit" data-v="'+ek+'">'+esc(t)+'<small>'+'planificado '+o.plan+' · trabajado '+o.trab+(o.trab===1?" semana":" semanas")+'</small></button><button class="x" data-a="quitar" data-b="'+b[0]+'" data-i="'+i+'" aria-label="Quitar '+esc(t)+'">×</button></div>';});
     h+='</div>';
   });
   h+='</div></div><div class="wk-side">';
   // entrenamientos
   h+='<div class="card"><h2>Entrenamientos</h2>';
   sesionesSemana(w).forEach(function(s){var e=estadoSes(s);
-    var pu=pdfSes(s);h+='<div class="sesw"><button class="ses" data-a="ses" data-v="'+s.id+'"><span class="d"><b>'+pd(s.fecha).getDate()+'</b><i>'+DIAC[pd(s.fecha).getDay()]+'</i></span><span class="t"><b>'+(s.extra?"Extra":"Entrenamiento")+'</b><span>'+(nAsis(s)?nAsis(s)+" asisten · ":"")+(nHecho(s)?nHecho(s)+" contenidos":"Sin contenidos marcados")+((s.gn||pdfDe(s.fecha))?" · PDF":"")+'</span></span>'+(e[0]?'<span class="pill '+e[0]+'">'+e[1]+'</span>':'<span class="pill">'+e[1]+'</span>')+'</button>'+(pu?'<a class="pdfb" href="'+esc(pu)+'" target="_blank" rel="noopener" aria-label="Ver el PDF del '+esc(larga(s.fecha))+'">PDF</a>':'')+'</div>';});
+    var pu=pdfSes(s);h+='<div class="sesw"><button class="ses" data-a="ses" data-v="'+s.id+'"><span class="d"><b>'+pd(s.fecha).getDate()+'</b><i>'+DIAC[pd(s.fecha).getDay()]+'</i></span><span class="t"><b>'+(s.extra?"Extra":"Entrenamiento")+'</b><span>'+(nAsis(s)?nAsis(s)+" asisten · ":"")+(s.val?{b:"Bien",r:"Regular",m:"Mal"}[s.val]:(nAsis(s)?"":"Sin valorar"))+((s.gn||pdfDe(s.fecha))?" · PDF":"")+'</span></span>'+(e[0]?'<span class="pill '+e[0]+'">'+e[1]+'</span>':'<span class="pill">'+e[1]+'</span>')+'</button>'+(pu?'<a class="pdfb" href="'+esc(pu)+'" target="_blank" rel="noopener" aria-label="Ver el PDF del '+esc(larga(s.fecha))+'">PDF</a>':'')+'</div>';});
   h+='<div class="addx"><input type="date" id="xf" min="'+w.lunes+'" max="'+add(w.lunes,6)+'" value="'+add(w.lunes,5)+'" aria-label="Fecha del entrenamiento extra"><button class="btn dark sm" data-a="extra">Añadir extra</button></div></div>';
   var ps=partidosEntre(w.lunes,add(w.lunes,6));
   if(ps.length)h+='<div class="card"><h2>Partidos</h2>'+ps.map(function(m){return'<div class="it"><span><b>'+esc(corta(m.fecha))+(m.hora?" · "+esc(m.hora):"")+'</b> '+(m.cond==="V"?"en casa de ":"vs ")+esc(m.rival||"Rival por definir")+'<small>'+esc(m.comp||"")+'</small></span></div>';}).join("")+'</div>';
@@ -712,7 +716,7 @@ function vBanco(){
       if(c.g!==g){g=c.g;h+='<div class="blk-t">'+esc(g)+'</div>';}
       var o=rc[norm(c.t)]||{plan:0,trab:0,ult:0,ultT:""};
       if(ui.edit==="bc:"+c.id){h+='<div class="it ed"><div class="grid" style="width:100%"><label class="f">Bloque<select id="eb_b">'+BLK.map(function(x){return'<option value="'+x[0]+'"'+(c.b===x[0]?" selected":"")+'>'+x[1]+'</option>';}).join("")+'</select></label><label class="f">Grupo<input id="eb_g" value="'+esc(c.g)+'"></label><label class="f w2">Contenido<textarea id="eb_t" rows="2">'+esc(c.t)+'</textarea></label></div><div class="row"><button class="btn sm" data-a="bcsave" data-v="'+c.id+'">Guardar</button><button class="btn ghost sm" data-a="ecancel">Cancelar</button></div><p class="hint" style="margin:6px 0 0">Si cambias el texto, se actualiza también en todas las semanas y entrenamientos donde aparece.</p></div>';return;}
-      h+='<div class="it"><button class="itb" data-a="edit" data-v="bc:'+c.id+'">'+esc(c.t)+'<small>'+(o.plan?"Planificado "+o.plan+(o.plan===1?" semana":" semanas")+" (última S"+o.ult+")":"Sin planificar")+' · '+(o.trab?"Trabajado "+o.trab+(o.trab===1?" vez":" veces")+", último "+corta(o.ultT):"Sin trabajar")+'</small></button>'+(ui.confirm==="delc"+c.id?'<button class="btn danger sm" data-a="delc" data-v="'+c.id+'">Borrar</button>':'<button class="x" data-a="askdelc" data-v="'+c.id+'" aria-label="Borrar '+esc(c.t)+'">×</button>')+'</div>';
+      h+='<div class="it"><button class="itb" data-a="edit" data-v="bc:'+c.id+'">'+esc(c.t)+'<small>'+(o.plan?"Planificado "+o.plan+(o.plan===1?" semana":" semanas")+" (última S"+o.ult+")":"Sin planificar")+' · '+(o.trab?"Trabajado "+o.trab+(o.trab===1?" semana":" semanas")+" (última S"+o.ultW+")":"Sin trabajar")+'</small></button>'+(ui.confirm==="delc"+c.id?'<button class="btn danger sm" data-a="delc" data-v="'+c.id+'">Borrar</button>':'<button class="x" data-a="askdelc" data-v="'+c.id+'" aria-label="Borrar '+esc(c.t)+'">×</button>')+'</div>';
     });
     h+='</div>';
   });
@@ -766,6 +770,7 @@ document.addEventListener("click",function(e){
     case"tt":ui.tt=v;break;
     case"tc":ui.tc=!ui.tc;break;
     case"estado":var s=sesById(b.dataset.s);s.estado=v;if(!s.estado)delete s.estado;save();break;
+    case"val":var sv=sesById(b.dataset.s);sv.val=sv.val===v?"":v;if(!sv.val)delete sv.val;if(!sv.estado&&sv.fecha<=hoy())sv.estado="hecho";save();break;
     case"asis":s=sesById(b.dataset.s);if(!s.asis)s.asis={};if(s.asis[v])delete s.asis[v];else s.asis[v]=1;if(!s.estado&&s.fecha<=hoy())s.estado="hecho";save();break;
     case"asistodos":s=sesById(b.dataset.s);if(nAsis(s))s.asis={};else{s.asis={};roster().forEach(function(p){s.asis[p.id]=1;});if(!s.estado&&s.fecha<=hoy())s.estado="hecho";}save();break;
     case"hecho":s=sesById(b.dataset.s);var ws=weekOf(s.fecha),t=ws.b[b.dataset.b][+b.dataset.i];if(!s.hecho)s.hecho={};var l=s.hecho[b.dataset.b]||(s.hecho[b.dataset.b]=[]),ix=l.indexOf(t);if(ix>=0)l.splice(ix,1);else l.push(t);if(!l.length)delete s.hecho[b.dataset.b];if(!s.estado&&s.fecha<=hoy())s.estado="hecho";save();break;
