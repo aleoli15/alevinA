@@ -1,5 +1,5 @@
 // Partidos Alevín A — funcionamiento sin conexión
-var CACHE = "alevin-plan-v10";
+var CACHE = "alevin-plan-v11";
 var FILES = ["./", "index.html", "sync.js", "manifest.webmanifest", "icons/plancal-192.png", "icons/plancal-512.png", "icons/plancal-touch-180.png"];
 
 self.addEventListener("install", function (e) {
