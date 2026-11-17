@@ -279,6 +279,31 @@ function blank(){
   return{id:"m"+Date.now()+Math.random().toString(36).slice(2,5)+(idSeq++),fecha:"",jornada:"",rival:"",cond:"L",comp:"",hora:"",llegada:"",llegadaManual:false,lugar:"",norma:true,
     conv:{},motivos:{},sx:{},faltas:{},obj:{ataque:{t:"",ev:""},defensa:{t:"",ev:""},actitud:{t:"",ev:""}},normas:"",ind:{},notas:"",score:{},tm:{},liveSx:0};
 }
+/* Partidos del calendario «ALEVIN FCBG»: se leen de partidos.json (generado desde Google Calendar).
+   Se crean los futuros que falten; si ya existe uno con la misma fecha y rival, se enlaza con el evento. */
+function importCal(){
+  if(ui.auth!=="in"||typeof fetch!=="function")return;
+  fetch("partidos.json",{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(d){
+    if(!d||!Array.isArray(d.partidos))return;
+    var ch=0,off=S.calOff||{},t0=hoy();
+    d.partidos.forEach(function(x){
+      if(!x||!x.id||!x.fecha||off[x.id])return;
+      var id="c_"+x.id,m=null;
+      S.matches.forEach(function(y){if(y.id===id||y.cal===x.id)m=y;});
+      if(!m)S.matches.forEach(function(y){if(!m&&!y.cal&&y.fecha===x.fecha&&String(y.rival).trim().toLowerCase()===String(x.rival).trim().toLowerCase())m=y;});
+      if(m&&!m.cal){m.cal=x.id;ch++;}
+      var conDatos=m&&(Object.keys(m.conv||{}).length||Object.keys(m.score||{}).length);
+      if(!m){
+        if(x.fecha<t0)return;
+        m=blank();m.id=id;m.cal=x.id;m.fecha=x.fecha;m.hora=x.hora||"";m.llegada=menos45(m.hora);m.rival=x.rival||"";m.cond=x.cond==="V"?"V":"L";m.comp=x.comp||"";m.jornada=x.jornada?String(x.jornada):"";m.lugar=x.lugar||"";if(x.formato)m.formato=x.formato;
+        S.matches.push(m);ch++;
+      }else if(!conDatos&&(m.fecha!==x.fecha||(x.hora&&m.hora!==x.hora)||(x.lugar&&m.lugar!==x.lugar))){
+        m.fecha=x.fecha;m.hora=x.hora||m.hora;if(!m.llegadaManual)m.llegada=menos45(m.hora);if(x.lugar)m.lugar=x.lugar;ch++;
+      }
+    });
+    if(ch){save();if(typing())pendingRender=true;else rerenderKeepScroll();}
+  }).catch(function(){});
+}
 function newMatch(){var m=blank();S.matches.push(m);save();return m;}
 function hoy(){var d=new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);}
 function equipo(){return S.nombre||"Alevín A Masc";}
@@ -755,7 +780,8 @@ function vSettings(){
   h+='<div class="card"><h2>Partidos del calendario</h2><p class="sub" style="margin:0 0 10px">Añade los partidos de un archivo de calendario. Los que ya existan (misma fecha y rival) no se duplican.</p><label class="btn ghost block" style="text-align:center">Importar partidos<input type="file" id="impm" accept="application/json,.json" hidden></label></div>';
   h+='<div class="card"><h2>Equipo y normativa</h2><label class="f" style="margin-bottom:12px">Nombre del equipo en marcador y mensajes<input type="text" data-team="nombre" value="'+esc(equipo())+'" autocomplete="off"></label><button class="btn ghost block" data-a="tab" data-v="normativa">Ver normativa y valores</button></div>';
   h+='<div class="card"><h2>Instalar en el móvil</h2><div class="rule"><b>iPhone</b><p>Abre la app en Safari, pulsa Compartir y elige «Añadir a pantalla de inicio».</p></div><div class="rule"><b>Android</b><p>Abre la app en Chrome, pulsa el menú y elige «Instalar aplicación».</p></div></div>';
-  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Partidos Alevín A · versión 1.6<br><span class="sub">'+S.matches.length+' partidos guardados · '+S.roster.length+' jugadores</span></p></div>';
+  h+='<div class="card"><h2>Calendario</h2><p class="sub" style="margin:0 0 10px">Los partidos del calendario «ALEVIN FCBG» se crean solos. Si borras uno que viene del calendario, no vuelve a aparecer.</p><button class="btn ghost block" data-a="recal">Comprobar calendario ahora</button></div>';
+  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Partidos Alevín A · versión 1.7<br><span class="sub">'+S.matches.length+' partidos guardados · '+S.roster.length+' jugadores</span></p></div>';
   return h;
 }
 
@@ -779,7 +805,8 @@ document.addEventListener("click",function(e){
     case"askfin":ui.confirm="fin";break;
     case"fin":m.fin=v==="1";if(m.fin){toast("Partido finalizado");ui.mid=null;ui.lt="fin";keep=false;}break;
     case"askdel":ui.confirm="del";break;
-    case"borrar":S.matches=S.matches.filter(function(x){return x.id!==m.id;});ui.mid=null;keep=false;toast("Partido eliminado");break;
+    case"recal":importCal();toast("Calendario comprobado");return;
+    case"borrar":if(m.cal){if(!S.calOff)S.calOff={};S.calOff[m.cal]=true;}S.matches=S.matches.filter(function(x){return x.id!==m.id;});ui.mid=null;keep=false;toast("Partido eliminado");break;
     case"conv":
       if(m.conv[v])delete m.conv[v];
       else{if(convocados(m).length>=F(m).R.maxConv)toast("Ya hay "+F(m).R.maxConv+" convocados, el máximo en acta");m.conv[v]=true;}
@@ -895,12 +922,14 @@ function typing(){var a=document.activeElement;return!!a&&(a.tagName==="TEXTAREA
 document.addEventListener("focusout",function(){if(pendingRender)setTimeout(function(){if(pendingRender&&!typing())rerenderKeepScroll();},60);});
 A.check=check;A.stats=stats;A.minutosDe=minutosDe;A.F=F;A.proponer=proponer;A.acumulado=acumulado;A.waText=waText;A.ui=ui;A.render=render;
 A.getState=function(){return S;};
-A.setAuth=function(st,email){ui.auth=st;ui.user=email||"";ui.loginBusy=false;if(st!=="in"){ui.mid=null;ui.tab="partidos";}render();};
+var calHecho=false;
+A.setAuth=function(st,email){ui.auth=st;ui.user=email||"";ui.loginBusy=false;if(st!=="in"){ui.mid=null;ui.tab="partidos";calHecho=false;}render();if(st==="in")setTimeout(importCal,1500);};
 A.loginResult=function(err){ui.loginBusy=false;ui.loginErr=err||"";if(err)render();};
 A.setSync=function(code,txt){ui.sync=code;ui.syncTxt=txt;var d=$("dot");if(d){d.className="dot "+code;d.title=txt;d.setAttribute("aria-label",txt);}var t=$("synctxt");if(t)t.textContent=txt;};
 A.applyRemote=function(team,matches){
-  S.roster=team.roster||[];S.rules=Object.assign({},RULES,team.rules||{});S.rulesInf=Object.assign({},RULES_INF,team.rulesInf||{});S.seq=team.seq||S.roster.length;S.nombre=team.nombre||"";S.matches=matches||[];
+  S.roster=team.roster||[];S.rules=Object.assign({},RULES,team.rules||{});S.rulesInf=Object.assign({},RULES_INF,team.rulesInf||{});S.seq=team.seq||S.roster.length;S.nombre=team.nombre||"";S.calOff=team.calOff||{};S.matches=matches||[];
   store();
+  if(!calHecho){calHecho=true;setTimeout(importCal,50);}
   if(ui.mid&&!match()){ui.mid=null;}
   if(typing())pendingRender=true;else rerenderKeepScroll();
 };

@@ -1,0 +1,181 @@
+{
+ "actualizado": "2026-11-17",
+ "partidos": [
+  {
+   "id": "6jts0682ujskhbhn82hucn6n74",
+   "fecha": "2026-10-03",
+   "hora": "11:00",
+   "rival": "TU Super CB La Zubia B",
+   "cond": "V",
+   "comp": "Liga Alevín",
+   "jornada": "1",
+   "lugar": "Pabellón Municipal La Zubia \"11 de Marzo\", C/ Tamboril 6, 18140 La Zubia",
+   "formato": "mini"
+  },
+  {
+   "id": "ncrvb6mhgsvlckr61orl2q4cu0",
+   "fecha": "2026-10-17",
+   "hora": "11:00",
+   "rival": "CB Peligros",
+   "cond": "L",
+   "comp": "Liga Infantil",
+   "jornada": "2",
+   "lugar": "CD Estadio de la Juventud, C/ Jesse Owens s/n, 18016 Granada",
+   "formato": "inf"
+  },
+  {
+   "id": "9bbnm5ue8enlo8i2n1b756ker4",
+   "fecha": "2026-10-24",
+   "hora": "09:00",
+   "rival": "GMASB Morado",
+   "cond": "V",
+   "comp": "Liga Infantil",
+   "jornada": "1",
+   "lugar": "Forus Antonio Prieto, C/ Palmita s/n, 18006 Granada",
+   "formato": "inf"
+  },
+  {
+   "id": "1f9qkbgg34jjlmtdbvr96l9k30",
+   "fecha": "2026-10-25",
+   "hora": "09:00",
+   "rival": "APDI Crestanevada CBA",
+   "cond": "V",
+   "comp": "Liga Infantil",
+   "jornada": "3",
+   "lugar": "Pabellón Municipal \"Rafael Machado Villar\", C/ León s/n, 18100 Armilla",
+   "formato": "inf"
+  },
+  {
+   "id": "va3dfa48c8dl6ljq8s6u6bfthc",
+   "fecha": "2026-11-07",
+   "hora": "09:00",
+   "rival": "Fruticatesen.com CBCM",
+   "cond": "V",
+   "comp": "Liga Infantil",
+   "jornada": "10",
+   "lugar": "Pabellón Municipal de Motril, Ronda del Mediodía 2, 18600 Motril",
+   "formato": "inf"
+  },
+  {
+   "id": "b5582n8qe6m2oudfklnqqjeg7o",
+   "fecha": "2026-11-07",
+   "hora": "13:00",
+   "rival": "GH-Setup CBCM",
+   "cond": "V",
+   "comp": "Liga Alevín",
+   "jornada": "4",
+   "lugar": "Pabellón Polideportivo Motril \"Emilio Hidalgo Pérez\", Camino Cerro del Toro 2, 18600 Motril",
+   "formato": "mini"
+  },
+  {
+   "id": "cmsi6ppt1rb510fn8g3qt4bm1c",
+   "fecha": "2026-11-08",
+   "hora": "09:30",
+   "rival": "CD Maristas Álvaro",
+   "cond": "L",
+   "comp": "Liga Alevín",
+   "jornada": "2",
+   "lugar": "CD Estadio de la Juventud, C/ Jesse Owens s/n, 18016 Granada",
+   "formato": "mini"
+  },
+  {
+   "id": "ivj602fi42g9511gmg8dm41jk8",
+   "fecha": "2026-11-14",
+   "hora": "09:30",
+   "rival": "CD Basket Vegas",
+   "cond": "L",
+   "comp": "Liga Alevín",
+   "jornada": "5",
+   "lugar": "CD Estadio de la Juventud, C/ Jesse Owens s/n, 18016 Granada",
+   "formato": "mini"
+  },
+  {
+   "id": "91uhlhbrc4ehprloghnsuv6m70",
+   "fecha": "2026-11-15",
+   "hora": "09:30",
+   "rival": "Fruticatesen.com CBCM",
+   "cond": "L",
+   "comp": "Liga Infantil",
+   "jornada": "5",
+   "lugar": "CD Estadio de la Juventud, C/ Jesse Owens s/n, 18016 Granada",
+   "formato": "inf"
+  },
+  {
+   "id": "glrl5s8s4pkspjvndtm9a9u2kc",
+   "fecha": "2026-11-21",
+   "hora": "09:30",
+   "rival": "TU Super CB La Zubia B",
+   "cond": "L",
+   "comp": "Liga Alevín",
+   "jornada": "6",
+   "lugar": "CD Estadio de la Juventud, C/ Jesse Owens s/n, 18016 Granada",
+   "formato": "mini"
+  },
+  {
+   "id": "gv82hbri1ohdkse567figju0m0",
+   "fecha": "2026-11-22",
+   "hora": "09:30",
+   "rival": "GMASB Morado",
+   "cond": "L",
+   "comp": "Liga Infantil",
+   "jornada": "6",
+   "lugar": "CD Estadio de la Juventud, C/ Jesse Owens s/n, 18016 Granada",
+   "formato": "inf"
+  },
+  {
+   "id": "vk770uruocmcgrebfotsjb8490",
+   "fecha": "2026-11-28",
+   "hora": "09:00",
+   "rival": "CD Maristas Álvaro",
+   "cond": "V",
+   "comp": "Liga Alevín",
+   "jornada": "7",
+   "lugar": "Colegio Maristas (pista exterior Mini 1), C/ Sócrates 8, 18002 Granada",
+   "formato": "mini"
+  },
+  {
+   "id": "59c7tdsl5reierbngb7h4krb1k",
+   "fecha": "2026-11-29",
+   "hora": "12:15",
+   "rival": "CB Peligros",
+   "cond": "V",
+   "comp": "Liga Infantil",
+   "jornada": "7",
+   "lugar": "Polideportivo Municipal Peligros, C/ Pintor Murillo 56, 18210 Peligros",
+   "formato": "inf"
+  },
+  {
+   "id": "34gu8pbrk0hu7aevejflh14p40",
+   "fecha": "2026-12-13",
+   "hora": "09:30",
+   "rival": "APDI Crestanevada CBA",
+   "cond": "L",
+   "comp": "Liga Infantil",
+   "jornada": "8",
+   "lugar": "CD Estadio de la Juventud, C/ Jesse Owens s/n, 18016 Granada",
+   "formato": "inf"
+  },
+  {
+   "id": "c65ltftoam5fosdhds35r155vc",
+   "fecha": "2026-12-19",
+   "hora": "09:30",
+   "rival": "GH-Setup CBCM",
+   "cond": "L",
+   "comp": "Liga Alevín",
+   "jornada": "9",
+   "lugar": "CD Estadio de la Juventud, C/ Jesse Owens s/n, 18016 Granada",
+   "formato": "mini"
+  },
+  {
+   "id": "nkb263j1o0uh84ot2fbunmvvvo",
+   "fecha": "2026-12-26",
+   "hora": "12:00",
+   "rival": "CD Basket Vegas",
+   "cond": "V",
+   "comp": "Liga Alevín",
+   "jornada": "10",
+   "lugar": "Pabellón Municipal Belicena \"Ángela Ortiz\", Vial de la Vega 91, 18101 Belicena",
+   "formato": "mini"
+  }
+ ]
+}
