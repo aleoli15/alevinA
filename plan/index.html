@@ -301,7 +301,7 @@ body.modal{overflow:hidden}
 .it.ed textarea{margin:0}.it.ed .row{align-items:center}
 .wtools{margin:-4px 0 12px}
 .x:disabled{opacity:.3}
-a.gn{text-align:center;text-decoration:none}a.gn[hidden]{display:none}
+details summary{cursor:pointer;margin-top:10px}a.gn{text-align:center;text-decoration:none}a.gn[hidden]{display:none}
 /* colores por bloque */
 .blk{border-top:4px solid var(--bc)}
 .blk h2,.sheet h2,.cg .blk-t{border-left-color:var(--bc)}
@@ -384,7 +384,7 @@ table.pt{border-collapse:separate;border-spacing:0;font-size:12.5px;line-height:
 "use strict";
 var LOGO=window.LOGO,SEED=window.SEED;
 var KEY="alevinA.plan.v1",CKEY="alevinA.plan.cache";
-var VERSION="1.4";
+var VERSION="1.5";
 var BLK=[["ti","Técnica individual"],["tai","Táctica individual"],["tc","Táctica colectiva"],["d1","Defensa 1x1"],["dc","Defensa colectiva"],["nh","Normas / hábitos"]];
 var BN={};BLK.forEach(function(b){BN[b[0]]=b[1];});
 var BC={ti:"#ff5a6e",tai:"#4aa3ff",tc:"#f5a524",d1:"#b18cff",dc:"#2ec4a5",nh:"#f472b6"};
@@ -408,7 +408,10 @@ function load(){
   return s;
 }
 function loadCache(){var c=null;try{c=JSON.parse(localStorage.getItem(CKEY));}catch(e){}return c||{roster:[],matches:[]};}
-var S=load(),C=loadCache(),saveFail=false;
+var S=load(),C=loadCache(),saveFail=false,GN={};
+try{GN=JSON.parse(localStorage.getItem("alevinA.plan.gn"))||{};}catch(e){}
+function cargarGN(){if(!/^https?:$/.test(location.protocol))return;fetch("gn.json",{cache:"no-cache"}).then(function(r){return r.ok?r.json():null;}).then(function(j){if(!j||!j.f)return;var txt=JSON.stringify(j.f);if(txt===JSON.stringify(GN))return;GN=j.f;try{localStorage.setItem("alevinA.plan.gn",txt);}catch(e){}soft();}).catch(function(){});}
+function pdfDe(f){var x=GN[f];return x?"https://drive.google.com/file/d/"+x.id+"/view":"";}
 function store(){try{localStorage.setItem(KEY,JSON.stringify(S));saveFail=false;}catch(e){saveFail=true;}}
 function storeCache(){try{localStorage.setItem(CKEY,JSON.stringify(C));}catch(e){}}
 function save(){store();if(A.onSave)A.onSave();}
@@ -425,6 +428,7 @@ function iso(d){return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+
 function add(s,n){var d=pd(s);d.setDate(d.getDate()+n);return iso(d);}
 function hoy(){return window.__hoy||iso(new Date());}
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+function dmy(f){var d=pd(f);return d?d.getDate()+"-"+(d.getMonth()+1)+"-"+String(d.getFullYear()).slice(2):"";}
 function corta(s){var d=pd(s);return d?DIAC[d.getDay()]+" "+d.getDate()+"/"+(d.getMonth()+1):"";}
 function larga(s){var d=pd(s);return d?DIAS[d.getDay()]+" "+d.getDate()+" de "+MESL[d.getMonth()]:"";}
 function rango(w){var a=pd(w.lunes),b=pd(add(w.lunes,6));return a.getMonth()===b.getMonth()?a.getDate()+"–"+b.getDate()+" "+MESES[a.getMonth()]:a.getDate()+" "+MESES[a.getMonth()]+" – "+b.getDate()+" "+MESES[b.getMonth()];}
@@ -539,10 +543,15 @@ function vSesion(s,compacta){
   var w=weekOf(s.fecha),h="",es=estadoSes(s);
   var pas=s.fecha<hoy();
   h+='<div class="card"><h2>Estado</h2><div class="lv"><button data-a="estado" data-v="hecho" data-s="'+s.id+'" class="'+(hecha(s)?"on":"")+'">Hecho</button><button data-a="estado" data-v="no" data-s="'+s.id+'" class="'+(s.estado==="no"?"on bad":"")+'">No hubo</button>'+(pas&&!s.extra?'':'<button data-a="estado" data-v="" data-s="'+s.id+'" class="'+(!s.estado?"on":"")+'">Previsto</button>')+'</div></div>';
+  var pdf=pdfDe(s.fecha);
   h+='<div class="card"><h2>Sesión en GoodNotes</h2>';
-  h+='<a id="gnbtn" class="btn dark block gn" href="'+esc(s.gn||"#")+'" target="_blank" rel="noopener"'+(s.gn?'':' hidden')+'>Abrir la sesión</a>';
-  h+='<label class="f" style="margin-top:10px">Enlace del documento<input data-k="gn" data-s="'+s.id+'" value="'+esc(s.gn||"")+'" placeholder="Pega aquí el enlace" autocapitalize="none" autocorrect="off" inputmode="url"></label>';
-  h+='<p class="hint">El documento se llama con la fecha ('+esc(s.fecha.split("-").reverse().join("/"))+'). Pega su enlace de GoodNotes o de Drive para abrirlo desde aquí.</p></div>';
+  if(pdf)h+='<a class="btn dark block gn" href="'+esc(pdf)+'" target="_blank" rel="noopener">Abrir la sesión (PDF)</a><p class="hint">Vinculada automáticamente: «'+esc(GN[s.fecha].t)+'» de tu carpeta de GoodNotes.</p>';
+  else h+='<p class="sub" style="margin:0 0 8px">Todavía no hay PDF con fecha '+esc(dmy(s.fecha))+' en la carpeta de GoodNotes. Aparecerá solo unas horas después de crearlo en el iPad.</p>';
+  if(s.gn||!pdf){
+    h+='<a id="gnbtn" class="btn ghost block gn" href="'+esc(s.gn||"#")+'" target="_blank" rel="noopener"'+(s.gn?'':' hidden')+' style="margin-top:8px">Abrir enlace manual</a>';
+    h+='<details'+(s.gn?' open':'')+'><summary class="sub">Pegar un enlace a mano</summary><label class="f" style="margin-top:8px">Enlace<input data-k="gn" data-s="'+s.id+'" value="'+esc(s.gn||"")+'" placeholder="Pega aquí el enlace" autocapitalize="none" autocorrect="off" inputmode="url"></label></details>';
+  }
+  h+='</div>';
   // asistencia
   var R=roster(),n=nAsis(s);
   h+='<div class="card"><div class="cardh"><h2>Asistencia</h2><span class="sub"><b>'+n+'</b> de '+R.length+'</span><button class="btn ghost sm" data-a="asistodos" data-s="'+s.id+'">'+(n?"Quitar todos":"Todos")+'</button></div>';
@@ -593,7 +602,7 @@ function vSemana(){
   // entrenamientos
   h+='<div class="card"><h2>Entrenamientos</h2>';
   sesionesSemana(w).forEach(function(s){var e=estadoSes(s);
-    h+='<button class="ses" data-a="ses" data-v="'+s.id+'"><span class="d"><b>'+pd(s.fecha).getDate()+'</b><i>'+DIAC[pd(s.fecha).getDay()]+'</i></span><span class="t"><b>'+(s.extra?"Extra":"Entrenamiento")+'</b><span>'+(nAsis(s)?nAsis(s)+" asisten · ":"")+(nHecho(s)?nHecho(s)+" contenidos":"Sin contenidos marcados")+(s.gn?" · GoodNotes":"")+'</span></span>'+(e[0]?'<span class="pill '+e[0]+'">'+e[1]+'</span>':'<span class="pill">'+e[1]+'</span>')+'</button>';});
+    h+='<button class="ses" data-a="ses" data-v="'+s.id+'"><span class="d"><b>'+pd(s.fecha).getDate()+'</b><i>'+DIAC[pd(s.fecha).getDay()]+'</i></span><span class="t"><b>'+(s.extra?"Extra":"Entrenamiento")+'</b><span>'+(nAsis(s)?nAsis(s)+" asisten · ":"")+(nHecho(s)?nHecho(s)+" contenidos":"Sin contenidos marcados")+((s.gn||pdfDe(s.fecha))?" · PDF":"")+'</span></span>'+(e[0]?'<span class="pill '+e[0]+'">'+e[1]+'</span>':'<span class="pill">'+e[1]+'</span>')+'</button>';});
   h+='<div class="addx"><input type="date" id="xf" min="'+w.lunes+'" max="'+add(w.lunes,6)+'" value="'+add(w.lunes,5)+'" aria-label="Fecha del entrenamiento extra"><button class="btn dark sm" data-a="extra">Añadir extra</button></div></div>';
   var ps=partidosEntre(w.lunes,add(w.lunes,6));
   if(ps.length)h+='<div class="card"><h2>Partidos</h2>'+ps.map(function(m){return'<div class="it"><span><b>'+esc(corta(m.fecha))+(m.hora?" · "+esc(m.hora):"")+'</b> '+(m.cond==="V"?"en casa de ":"vs ")+esc(m.rival||"Rival por definir")+'<small>'+esc(m.comp||"")+'</small></span></div>';}).join("")+'</div>';
@@ -812,6 +821,7 @@ A.setTeam=function(t){C.roster=(t&&t.roster)||[];storeCache();soft();};
 A.setMatches=function(l){C.matches=(l||[]).map(function(m){return{id:m.id,fecha:m.fecha,hora:m.hora,rival:m.rival,cond:m.cond,comp:m.comp};});storeCache();soft();};
 A.clearLocal=function(){try{localStorage.removeItem(KEY);localStorage.removeItem(CKEY);}catch(e){}S=load();C=loadCache();};
 render();
+cargarGN();window.addEventListener("focus",cargarGN);document.addEventListener("visibilitychange",function(){if(!document.hidden)cargarGN();});
 if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol)){try{navigator.serviceWorker.register("sw.js").catch(function(){});}catch(e){}}
 })();
 </script>
