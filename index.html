@@ -236,6 +236,9 @@ table.tp{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 .toast{position:fixed;left:50%;bottom:calc(74px + var(--sab));transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:10px;padding:10px 16px;font-weight:700;font-size:14px;z-index:40;max-width:90%;text-align:center}
 @media (min-width:600px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.cell,.fal{height:42px}.sx col.cw{width:34%}.sx td.who span{font-size:15px}.card.flush{margin-left:0;margin-right:0;border-radius:12px;border:1px solid var(--line);padding:10px 12px}}
 @media (prefers-reduced-motion:no-preference){.cell,.chk,.ev button{transition:background .12s}}
+.t3{flex:none;width:26px;height:26px;border-radius:7px;border:1.5px solid #b9bbbd;background:#fff;color:#9a9da0;font-weight:900;font-size:13px;margin-right:6px;padding:0;line-height:1}
+.t3.on{background:var(--red);border-color:var(--red);color:#fff}
+.leg i.t3i{font-style:normal;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:4px;background:var(--red);color:#fff;font-size:10px;font-weight:900;margin-right:5px;vertical-align:-3px}
 </style>
 </head>
 <body>
@@ -389,25 +392,53 @@ function pistas(m,c){
   return out;
 }
 /* Propone un reparto válido de los 5 primeros sextos. Da los sextos extra a quien menos ha jugado en la temporada. */
-function proponer(m){
-  var X=F(m),R=X.R,g=X.reg,C=convocados(m),n=C.length,T=g*R.porSexto,maxJ=g-R.minDescanso;
-  if(n<R.porSexto)return false;
-  var ok=n*R.minJugar<=T&&n*maxJ>=T,lo=ok?R.minJugar:Math.min(g,Math.floor(T/n)),hi=ok?maxJ:g;
-  var ac=acumulado(m,X.grupo),q={},rnd={};
-  C.forEach(function(p){q[p.id]=lo;rnd[p.id]=Math.random();});
-  var orden=C.slice().sort(function(a,b){return(ac.pl[a.id].sx-ac.pl[b.id].sx)||(rnd[a.id]-rnd[b.id]);});
-  var rem=T-lo*n,i=0,guard=0;
-  while(rem>0&&guard++<500){var p=orden[i%n];if(q[p.id]<hi){q[p.id]++;rem--;}i++;}
-  var plan={};C.forEach(function(p){plan[p.id]=[];});
-  for(var s=0;s<g;s++){
-    var left=g-s;
-    var cand=C.filter(function(p){return q[p.id]>0;}).map(function(p){return{p:p,k:Math.random()};});
-    cand.sort(function(a,b){
-      var ma=q[a.p.id]>=left?1:0,mb=q[b.p.id]>=left?1:0;
-      return(mb-ma)||(q[b.p.id]-q[a.p.id])||(a.k-b.k);
-    });
-    cand.slice(0,R.porSexto).forEach(function(x){plan[x.p.id][s]=1;q[x.p.id]--;});
+/* Reparto automático de sextos (periodos) regulados.
+   completar=true respeta las casillas ya marcadas; m.tres marca a quien debe jugar el máximo permitido.
+   Devuelve true o un texto con el motivo por el que no es posible. */
+function proponer(m,completar){
+  var X=F(m),R=X.R,g=X.reg,C=convocados(m),n=C.length,K=R.porSexto,T=g*K,maxJ=g-R.minDescanso;
+  if(n<K)return"Hacen falta al menos "+K+" convocados";
+  var tres=m.tres||{},ok=n*R.minJugar<=T&&n*maxJ>=T,lo=ok?R.minJugar:Math.min(g,Math.floor(T/n)),hi=ok?maxJ:g;
+  var ac=acumulado(m,X.grupo),fx={},nf={},q={},rnd={};
+  C.forEach(function(p){var a=sxOf(m,p.id);fx[p.id]=[];nf[p.id]=0;for(var k=0;k<g;k++){fx[p.id][k]=completar&&a[k]?1:0;nf[p.id]+=fx[p.id][k];}rnd[p.id]=Math.random();});
+  for(var k=0;k<g;k++){var c0=0;C.forEach(function(p){c0+=fx[p.id][k];});if(c0>K)return"En el "+(k+1)+"º "+X.u+" ya hay "+c0+" jugadores marcados";}
+  var nt=C.filter(function(p){return tres[p.id];}).length;
+  C.forEach(function(p){q[p.id]=Math.max(tres[p.id]?hi:lo,nf[p.id]);});
+  var sum=0;C.forEach(function(p){sum+=q[p.id];});
+  var poco=C.slice().sort(function(a,b){return(ac.pl[a.id].sx-ac.pl[b.id].sx)||(rnd[a.id]-rnd[b.id]);});
+  var guard=0;
+  while(sum<T&&guard++<500){var sub=false;for(var i=0;i<poco.length&&sum<T;i++){var p=poco[i];if(!tres[p.id]&&q[p.id]<hi){q[p.id]++;sum++;sub=true;}}if(!sub)break;}
+  guard=0;
+  while(sum>T&&guard++<500){var baj=false;for(var i2=poco.length-1;i2>=0&&sum>T;i2--){var p2=poco[i2];if(!tres[p2.id]&&q[p2.id]>Math.max(lo,nf[p2.id])){q[p2.id]--;sum--;baj=true;}}if(!baj)break;}
+  if(sum!==T)return nt?"Con "+nt+" jugadores a "+hi+" "+X.U+" no salen las cuentas: quita alguno o convoca a más":"No se puede completar con lo que ya está marcado";
+  // búsqueda con vuelta atrás, sexto a sexto
+  var rem={};C.forEach(function(p){rem[p.id]=q[p.id]-nf[p.id];});
+  function libres(p,desde){var c=0;for(var k=desde;k<g;k++)if(!fx[p.id][k])c++;return c;}
+  var plan={};C.forEach(function(p){plan[p.id]=fx[p.id].slice();});
+  var nodos=0;
+  function paso(s){
+    if(s===g)return C.every(function(p){return rem[p.id]===0;});
+    if(++nodos>40000)return false;
+    for(var i=0;i<C.length;i++){var p=C[i];if(rem[p.id]>libres(p,s))return false;}
+    var ya=0;C.forEach(function(p){ya+=fx[p.id][s];});
+    var need=K-ya;
+    var cand=C.filter(function(p){return!fx[p.id][s]&&rem[p.id]>0;});
+    cand.sort(function(a,b){var ua=rem[a.id]/libres(a,s),ub=rem[b.id]/libres(b,s);return(ub-ua)||(rnd[a.id]-rnd[b.id]);});
+    var elegidos=[];
+    function elige(i){
+      if(elegidos.length===need){
+        elegidos.forEach(function(p){plan[p.id][s]=1;rem[p.id]--;});
+        if(paso(s+1))return true;
+        elegidos.forEach(function(p){plan[p.id][s]=0;rem[p.id]++;});
+        return false;
+      }
+      if(cand.length-i<need-elegidos.length)return false;
+      elegidos.push(cand[i]);if(elige(i+1))return true;elegidos.pop();
+      return elige(i+1);
+    }
+    return elige(0);
   }
+  if(!paso(0))return"No hay ningún reparto válido que respete lo marcado";
   C.forEach(function(p){
     var old=sxOf(m,p.id),arr=[0,0,0,0,0,0];
     for(var k=0;k<g;k++)arr[k]=plan[p.id][k]?1:0;
@@ -597,7 +628,7 @@ function infoConv(ST,p){
   return'<small class="si">'+fmin(o.min)+' min · '+o.conv+' conv.'+(o.racha>=1?' · <b>'+o.racha+(o.racha===1?' partido fuera':' seguidos fuera')+'</b>':'')+'</small>';
 }
 function vSextos(m){
-  var X=F(m),R=X.R,g=X.reg,c=check(m),C=convocados(m),P=pistas(m,c),h="",s;
+  var X=F(m),R=X.R,g=X.reg,maxJ=g-R.minDescanso,c=check(m),C=convocados(m),P=pistas(m,c),h="",s;
   var tit={ok:"Alineación válida",warn:"Alineación incompleta",bad:"Alineación no válida",off:"Normativa no aplicada"}[c.nivel];
   h+='<div class="estado '+c.nivel+'" role="status"><b>'+tit+'</b>';
   var items=c.errs.concat(c.avisos);
@@ -613,7 +644,8 @@ function vSextos(m){
   h+='<th class="r">Tot</th><th class="g">'+(g+1)+'º</th><th>Flt</th></tr></thead><tbody>';
   C.forEach(function(p){
     var a=sxOf(m,p.id),st=c.pl[p.id],f=m.faltas[p.id]||0,hp=P[p.id]||[];
-    h+='<tr class="'+(st.out?"out":"")+'"><td class="who"><div><b>'+p.num+'</b><span>'+esc(p.name)+'</span></div></td>';
+    var t3=!!(m.tres||{})[p.id];
+    h+='<tr class="'+(st.out?"out":"")+'"><td class="who"><div>'+(X.check?'<button class="t3'+(t3?" on":"")+'" data-a="tres" data-v="'+p.id+'" aria-pressed="'+t3+'" aria-label="'+esc(p.name)+' juega '+maxJ+' de los '+g+' primeros">'+maxJ+'</button>':'')+'<b>'+p.num+'</b><span>'+esc(p.name)+'</span></div></td>';
     for(var s=0;s<g;s++)h+='<td><button class="cell '+(a[s]?"on":(hp[s]||""))+'" data-a="sx" data-v="'+p.id+'" data-s="'+s+'" aria-pressed="'+!!a[s]+'" aria-label="'+esc(p.name)+', '+X.u+' '+(s+1)+(hp[s]==="must"?", obligado":hp[s]==="no"?", no disponible":"")+'">'+(a[s]?"●":hp[s]==="must"?"!":"")+'</button></td>';
     h+='<td><span class="tot '+st.st+'">'+st.t+'</span></td>';
     h+='<td><button class="cell six '+(a[g]?"on":"")+'" data-a="sx" data-v="'+p.id+'" data-s="'+g+'" aria-pressed="'+!!a[g]+'" aria-label="'+esc(p.name)+', '+X.u+' '+(g+1)+'">'+(a[g]?"●":"")+'</button></td>';
@@ -622,10 +654,11 @@ function vSextos(m){
   h+='</tbody><tfoot><tr><td class="who">En pista</td>';
   for(s=0;s<g;s++){var k=c.sext[s];h+='<td><span class="cnt '+(k===R.porSexto?"ok":k>R.porSexto?"bad":"warn")+'">'+k+'</span></td>';}
   h+='<td></td><td><span class="cnt '+(c.sext[g]===R.porSexto?"ok":c.sext[g]>R.porSexto?"bad":"warn")+'">'+c.sext[g]+'</span></td><td></td></tr></tfoot></table></div>';
-  if(X.check)h+='<div class="leg"><span><i class="on"></i>Juega</span><span><i class="must"></i>Tiene que jugar aquí</span><span><i class="no"></i>No disponible</span></div>';
+  if(X.check)h+='<div class="leg"><span><i class="t3i">'+maxJ+'</i>Juega '+maxJ+' de los '+g+' primeros</span><span><i class="on"></i>Juega</span><span><i class="must"></i>Tiene que jugar aquí</span><span><i class="no"></i>No disponible</span></div>';
+  if(X.check)h+='<p class="hint">Marca con el botón «'+maxJ+'» a quien quieres que juegue '+maxJ+' de los '+g+' primeros '+X.U+', pon a mano lo que tengas claro y pulsa «Completar reparto».</p>';
   h+='<p class="hint">Toca una casilla para poner o quitar al jugador en ese '+X.u+'. Toca el número de faltas para sumar una; al pasar de '+R.faltas+' vuelve a 0.</p></div>';
   var hay=C.some(function(p){var a=sxOf(m,p.id);for(var i=0;i<g;i++)if(a[i])return true;return false;});
-  h+='<div class="row">'+(X.check?(ui.confirm==="prop"?'<button class="btn danger" data-a="proponer" style="flex:1">¿Sustituir el reparto actual?</button>':'<button class="btn dark" data-a="'+(hay?"askproponer":"proponer")+'" style="flex:1">'+(hay?"Proponer otro reparto":"Proponer reparto")+'</button>'):"")+(ui.confirm==="clr"?'<button class="btn danger" data-a="limpiar" style="flex:1">¿Seguro? Vaciar '+X.U+'</button>':'<button class="btn ghost" data-a="asklimpiar" style="flex:1">Vaciar '+X.U+'</button>')+'</div>';
+  h+='<div class="row">'+(X.check?(ui.confirm==="prop"?'<button class="btn danger" data-a="proponer" style="flex:1">¿Sustituir el reparto actual?</button>':(hay?'<button class="btn dark" data-a="completar" style="flex:1">Completar reparto</button><button class="btn ghost" data-a="askproponer" style="flex:1">Rehacer todo</button>':'<button class="btn dark" data-a="proponer" style="flex:1">Proponer reparto</button>')):"")+(ui.confirm==="clr"?'<button class="btn danger" data-a="limpiar" style="flex:1">¿Seguro? Vaciar '+X.U+'</button>':'<button class="btn ghost" data-a="asklimpiar" style="flex:1">Vaciar '+X.U+'</button>')+'</div>';
   return h;
 }
 function vDirecto(m){
@@ -781,7 +814,7 @@ function vSettings(){
   h+='<div class="card"><h2>Equipo y normativa</h2><label class="f" style="margin-bottom:12px">Nombre del equipo en marcador y mensajes<input type="text" data-team="nombre" value="'+esc(equipo())+'" autocomplete="off"></label><button class="btn ghost block" data-a="tab" data-v="normativa">Ver normativa y valores</button></div>';
   h+='<div class="card"><h2>Instalar en el móvil</h2><div class="rule"><b>iPhone</b><p>Abre la app en Safari, pulsa Compartir y elige «Añadir a pantalla de inicio».</p></div><div class="rule"><b>Android</b><p>Abre la app en Chrome, pulsa el menú y elige «Instalar aplicación».</p></div></div>';
   h+='<div class="card"><h2>Calendario</h2><p class="sub" style="margin:0 0 10px">Los partidos del calendario «ALEVIN FCBG» se crean solos. Si borras uno que viene del calendario, no vuelve a aparecer.</p><button class="btn ghost block" data-a="recal">Comprobar calendario ahora</button></div>';
-  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Partidos Alevín A · versión 1.7<br><span class="sub">'+S.matches.length+' partidos guardados · '+S.roster.length+' jugadores</span></p></div>';
+  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Partidos Alevín A · versión 1.8<br><span class="sub">'+S.matches.length+' partidos guardados · '+S.roster.length+' jugadores</span></p></div>';
   return h;
 }
 
@@ -820,7 +853,9 @@ document.addEventListener("click",function(e){
     case"asklimpiar":ui.confirm="clr";break;
     case"limpiar":m.sx={};m.faltas={};m.part={};break;
     case"askproponer":ui.confirm="prop";break;
-    case"proponer":if(!proponer(m))toast("Hacen falta al menos 5 convocados");break;
+    case"proponer":var rp=proponer(m,false);if(rp!==true){toast(rp);return;}break;
+    case"completar":var rc=proponer(m,true);if(rc!==true){toast(rc);return;}toast("Reparto completado");break;
+    case"tres":if(!m.tres)m.tres={};if(m.tres[v])delete m.tres[v];else m.tres[v]=1;break;
     case"fmt":m.formato=v;if((m.liveSx||0)>F(m).n-1)m.liveSx=0;break;
     case"rf":ui.rf=v;rerenderKeepScroll();return;
     case"tf":ui.tf=v;rerenderKeepScroll();return;
