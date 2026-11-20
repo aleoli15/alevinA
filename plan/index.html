@@ -236,6 +236,9 @@ table.tp{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 .toast{position:fixed;left:50%;bottom:calc(74px + var(--sab));transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:10px;padding:10px 16px;font-weight:700;font-size:14px;z-index:40;max-width:90%;text-align:center}
 @media (min-width:600px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.cell,.fal{height:42px}.sx col.cw{width:34%}.sx td.who span{font-size:15px}.card.flush{margin-left:0;margin-right:0;border-radius:12px;border:1px solid var(--line);padding:10px 12px}}
 @media (prefers-reduced-motion:no-preference){.cell,.chk,.ev button{transition:background .12s}}
+.t3{flex:none;width:26px;height:26px;border-radius:7px;border:1.5px solid #b9bbbd;background:#fff;color:#9a9da0;font-weight:900;font-size:13px;margin-right:6px;padding:0;line-height:1}
+.t3.on{background:var(--red);border-color:var(--red);color:#fff}
+.leg i.t3i{font-style:normal;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:4px;background:var(--red);color:#fff;font-size:10px;font-weight:900;margin-right:5px;vertical-align:-3px}
 :root{color-scheme:dark;--bg:#202226;--card:#2b2e33;--raise:#363a40;--raise2:#41454c;--head:#32363c;--past:#26292d;--line:#3d4148;--line2:#4a4f57;--tx:#f2f0ec;--mute:#b7bbc1;--mute2:#959aa1;--inv:#f2f0ec;--invtx:#17181b;--nav:#17181b;--cur:#3b252a;--cur0:#4a262d;--onDark:#fff;--paper:#202226;--ink:#f2f0ec;--ok:#6fd99a;--ok-bg:#1d3a28;--warn:#f3c061;--warn-bg:#443412;--bad:#ff7d90;--bad-bg:#47202a;--hdr:#26292d;--hero:#32363c}
 
 .app{max-width:1180px}nav div{max-width:1180px}
@@ -342,6 +345,11 @@ table.mapa{border-collapse:separate;border-spacing:2px;font-size:12px}
 .mapa th.m0{z-index:3;border-left:0;background:var(--head)}
 .mapa tr.mg td{background:transparent;height:auto}.mapa tr.mg .m0{border-left:0;color:var(--bc);font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;padding-top:10px}
 @media (max-width:600px){.mapa .m0{min-width:130px;max-width:130px;width:130px}}
+.sgw{display:flex;flex-direction:column;gap:6px;flex:1;min-width:0}
+.sgw select,.sgw input{width:100%;border:1px solid var(--line2);border-radius:8px;padding:8px 10px;font-size:16px;min-height:42px;background:var(--raise);color:var(--tx)}
+.sgw input[hidden]{display:none}
+.pnew{border-top:1px solid var(--line);margin-top:8px;padding-top:8px}.pnew .addx{margin-top:6px}.pnew .addx .btn{align-self:flex-start;min-height:42px}
+.lb2{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--bc)}
 details summary{cursor:pointer;margin-top:10px}a.gn{text-align:center;text-decoration:none}a.gn[hidden]{display:none}
 /* colores por bloque */
 .blk{border-top:4px solid var(--bc)}
@@ -424,7 +432,7 @@ table.pt{border-collapse:separate;border-spacing:0;font-size:12.5px;line-height:
 "use strict";
 var LOGO=window.LOGO,SEED=window.SEED;
 var KEY="alevinA.plan.v1",CKEY="alevinA.plan.cache";
-var VERSION="1.10";
+var VERSION="1.11";
 var BLK=[["ti","Técnica individual"],["tai","Táctica individual"],["tc","Táctica colectiva"],["d1","Defensa 1x1"],["dc","Defensa colectiva"],["nh","Normas / hábitos"]];
 var BN={};BLK.forEach(function(b){BN[b[0]]=b[1];});
 var BC={ti:"#ff5a6e",tai:"#4aa3ff",tc:"#f5a524",d1:"#b18cff",dc:"#2ec4a5",nh:"#f472b6"};
@@ -532,7 +540,7 @@ function render(){
   if(ui.auth!=="in"){
     $("hd").innerHTML=hd+'<div class="h-t"><b>Planificación</b><span>Alevín A · Temporada 2026/27</span></div>';
     $("nav").innerHTML="";document.querySelector("nav").style.display="none";
-    $("main").innerHTML=ui.auth==="loading"?'<div class="card empty">Cargando…</div>':vLogin();
+    $("main").innerHTML=ui.auth==="loading"?(ui.lento?'<div class="card"><h2>La app no termina de cargar</h2><p style="margin:0 0 12px;font-size:14px">'+(A.login?'Se ha cargado la app pero no responde la conexión con la nube. Comprueba que tienes internet.':'No se ha podido cargar la conexión con la nube. Puede ser una versión antigua guardada en el dispositivo o falta de conexión.')+'</p><button class="btn block" data-a="recargar">Recargar</button><button class="btn ghost block" data-a="limpiar" style="margin-top:8px">Borrar la versión guardada y recargar</button><p class="hint">Tus datos están en la nube: no se pierde nada.</p></div>':'<div class="card empty">Cargando…</div>'):vLogin();
     return;
   }
   document.querySelector("nav").style.display="";
@@ -675,7 +683,7 @@ function vPicker(){
     h+='<button class="ck'+(on?" on":"")+'" data-a="ptog" data-v="'+c.id+'" aria-pressed="'+on+'"><i></i><span>'+esc(c.t)+'<small>'+(o.plan?o.plan+(o.plan===1?" semana":" semanas"):"Sin planificar")+'</small></span></button>';
   });
   if(!items.length)h+='<p class="sub">No hay contenidos que coincidan.</p>';
-  h+='</div><div class="addx"><input class="inp" id="pn" placeholder="Nuevo contenido para el banco"><button class="btn sm" data-a="pnuevo">Crear</button></div></div>';
+  h+='</div><div class="pnew"><div class="lb2">Nuevo contenido en '+BN[b]+'</div><div class="addx"><input class="inp" id="pn" placeholder="Nombre del contenido"></div><div class="addx">'+selGrupo("pg2",b,ui.pg||gruposDe(b)[0])+'<button class="btn sm" data-a="pnuevo">Crear</button></div></div></div>';
   return h;
 }
 
@@ -777,12 +785,12 @@ function vBanco(){
     l.forEach(function(c){
       if(c.g!==g){g=c.g;h+='<div class="blk-t">'+esc(g)+'</div>';}
       var o=rc[norm(c.t)]||{plan:0,trab:0,ult:0,ultT:""};
-      if(ui.edit==="bc:"+c.id){h+='<div class="it ed"><div class="grid" style="width:100%"><label class="f">Bloque<select id="eb_b">'+BLK.map(function(x){return'<option value="'+x[0]+'"'+(c.b===x[0]?" selected":"")+'>'+x[1]+'</option>';}).join("")+'</select></label><label class="f">Grupo<input id="eb_g" value="'+esc(c.g)+'"></label><label class="f w2">Contenido<textarea id="eb_t" rows="2">'+esc(c.t)+'</textarea></label></div><div class="row"><button class="btn sm" data-a="bcsave" data-v="'+c.id+'">Guardar</button><button class="btn ghost sm" data-a="ecancel">Cancelar</button></div><p class="hint" style="margin:6px 0 0">Si cambias el texto, se actualiza también en todas las semanas y entrenamientos donde aparece.</p></div>';return;}
+      if(ui.edit==="bc:"+c.id){h+='<div class="it ed"><div class="grid" style="width:100%"><label class="f">Bloque<select id="eb_b">'+BLK.map(function(x){return'<option value="'+x[0]+'"'+(c.b===x[0]?" selected":"")+'>'+x[1]+'</option>';}).join("")+'</select></label><label class="f">Subgrupo'+selGrupo("eb_g",c.b,c.g)+'</label><label class="f w2">Contenido<textarea id="eb_t" rows="2">'+esc(c.t)+'</textarea></label></div><div class="row"><button class="btn sm" data-a="bcsave" data-v="'+c.id+'">Guardar</button><button class="btn ghost sm" data-a="ecancel">Cancelar</button></div><p class="hint" style="margin:6px 0 0">Si cambias el texto, se actualiza también en todas las semanas y entrenamientos donde aparece.</p></div>';return;}
       h+='<div class="it"><button class="itb" data-a="edit" data-v="bc:'+c.id+'">'+esc(c.t)+'<small>'+(o.plan?"Planificado "+o.plan+(o.plan===1?" semana":" semanas")+" (última S"+o.ult+")":"Sin planificar")+' · '+(o.trab?"Trabajado "+o.trab+(o.trab===1?" semana":" semanas")+" (última S"+o.ultW+")":"Sin trabajar")+'</small></button>'+(ui.confirm==="delc"+c.id?'<button class="btn danger sm" data-a="delc" data-v="'+c.id+'">Borrar</button>':'<button class="x" data-a="askdelc" data-v="'+c.id+'" aria-label="Borrar '+esc(c.t)+'">×</button>')+'</div>';
     });
     h+='</div>';
   });
-  h+='<div class="card"><h2>Nuevo contenido</h2><div class="grid"><label class="f">Bloque<select id="nb">'+BLK.map(function(b){return'<option value="'+b[0]+'"'+(ui.bb===b[0]?" selected":"")+'>'+b[1]+'</option>';}).join("")+'</select></label><label class="f">Grupo<input id="ng" placeholder="Ej.: Finalizaciones"></label><label class="f w2">Contenido<input id="nt"></label></div><button class="btn block" data-a="nuevoc" style="margin-top:10px">Añadir al banco</button></div>';
+  h+='<div class="card"><h2>Nuevo contenido</h2><div class="grid"><label class="f">Bloque<select id="nb">'+BLK.map(function(b){return'<option value="'+b[0]+'"'+(ui.bb===b[0]?" selected":"")+'>'+b[1]+'</option>';}).join("")+'</select></label><label class="f">Subgrupo'+selGrupo("ng",ui.bb||"ti",ui.pg)+'</label><label class="f w2">Contenido<input id="nt"></label></div><button class="btn block" data-a="nuevoc" style="margin-top:10px">Añadir al banco</button></div>';
   return h;
 }
 function vCodigos(){
@@ -821,8 +829,10 @@ document.addEventListener("click",function(e){
     case"askcopiar":ui.confirm="copiar";break;
     case"copiar":var pw=week(w.n-1);w.b=JSON.parse(JSON.stringify(pw.b));w.terms=(pw.terms||[]).slice();if(!w.obj)w.obj=pw.obj||"";save();toast("Contenidos copiados de la semana "+pw.n);break;
     case"nuevaw":var wl=weeks(),last=wl[wl.length-1],nn=last?last.n+1:1,lun=last?add(last.lunes,7):iso(new Date()),dl=pd(lun);var nw={id:"w"+("0"+nn).slice(-2),k:"w",n:nn,tri:last?last.tri:1,mes:MESL[dl.getMonth()].charAt(0).toUpperCase()+MESL[dl.getMonth()].slice(1),sem:Math.ceil(dl.getDate()/7),lunes:lun,obj:"",b:{},terms:[]};BLK.forEach(function(x){nw.b[x[0]]=[];});S.docs.push(nw);save();ui.wn=nn;ui.tab="semana";ui.edit="week";keep=false;toast("Semana "+nn+" creada");break;
-    case"bcsave":var bc=bancoItem(v),ntx=($("eb_t").value||"").replace(/\s+/g," ").trim();if(!ntx){toast("El contenido no puede quedar vacío");return;}renombrar(bc.t,ntx);bc.t=ntx;bc.b=$("eb_b").value;bc.g=($("eb_g").value||"").trim()||bc.g;ui.edit=null;save();toast("Contenido actualizado");break;
+    case"bcsave":var bc=bancoItem(v),ntx=($("eb_t").value||"").replace(/\s+/g," ").trim();if(!ntx){toast("El contenido no puede quedar vacío");return;}renombrar(bc.t,ntx);bc.t=ntx;bc.b=$("eb_b").value;bc.g=leerGrupo("eb_g")||bc.g;ui.edit=null;save();toast("Contenido actualizado");break;
     case"cdsave":var cdd=cfg().codigos[+v],ot=cdd.t;cdd.t=($("ec_t").value||"").trim()||cdd.t;cdd.s=($("ec_s").value||"").trim();if(norm(ot)!==norm(cdd.t))weeks().forEach(function(x){(x.terms||[]).forEach(function(t,k){if(norm(t)===norm(ot))x.terms[k]=cdd.t;});});ui.edit=null;save();break;
+    case"recargar":location.reload();return;
+    case"limpiar":try{var pr=[];if(navigator.serviceWorker)pr.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister();}));}));if(window.caches)pr.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(k){return caches.delete(k);}));}));Promise.all(pr).then(function(){location.replace(location.pathname+"?v="+Date.now());},function(){location.reload();});}catch(x){location.reload();}return;
     case"tab":ui.tab=v;ui.sid=null;ui.pick=null;ui.q="";keep=false;break;
     case"cerrar":ui.sid=null;keep=false;break;
     case"ses":ui.sid=v;ui.pick=null;keep=false;break;
@@ -844,13 +854,13 @@ document.addEventListener("click",function(e){
     case"pg":ui.pg=v;break;
     case"cpick":ui.pick=null;ui.q="";keep=false;break;
     case"ptog":var c=bancoItem(v);if(!c)return;var L=w.b[c.b]||(w.b[c.b]=[]),k=L.map(norm).indexOf(norm(c.t));if(k>=0)L.splice(k,1);else L.push(c.t);save();break;
-    case"pnuevo":var nt=($("pn").value||"").trim();if(!nt)return;var cf=cfg();cf.seq=(cf.seq||cf.banco.length)+1;var ni={id:"c"+cf.seq,b:ui.pick,g:"Nuevos",t:nt};cf.banco.push(ni);(w.b[ui.pick]||(w.b[ui.pick]=[])).push(nt);save();toast("Contenido creado y añadido");break;
+    case"pnuevo":var nt=($("pn").value||"").trim();if(!nt)return;var cf=cfg();cf.seq=(cf.seq||cf.banco.length)+1;var gP=leerGrupo("pg2");if(!gP){toast("Elige o escribe el subgrupo");return;}var ni={id:"c"+cf.seq,b:ui.pick,g:gP,t:nt};cf.banco.push(ni);(w.b[ui.pick]||(w.b[ui.pick]=[])).push(nt);save();toast("Contenido creado y añadido");break;
     case"quitar":w.b[b.dataset.b].splice(+b.dataset.i,1);save();break;
     case"qterm":w.terms.splice(+b.dataset.i,1);save();break;
     case"bseg":ui.bseg=v;ui.q="";keep=false;break;
     case"askdelc":ui.confirm="delc"+v;break;
     case"delc":cf=cfg();cf.banco=cf.banco.filter(function(x){return x.id!==v;});save();toast("Contenido borrado del banco");break;
-    case"nuevoc":var tt=($("nt").value||"").trim();if(!tt){toast("Escribe el contenido");return;}cf=cfg();cf.seq=(cf.seq||cf.banco.length)+1;cf.banco.push({id:"c"+cf.seq,b:$("nb").value,g:($("ng").value||"").trim()||"Nuevos",t:tt});save();toast("Contenido añadido");break;
+    case"nuevoc":var tt=($("nt").value||"").trim();if(!tt){toast("Escribe el contenido");return;}cf=cfg();cf.seq=(cf.seq||cf.banco.length)+1;var gN=leerGrupo("ng");if(!gN){toast("Elige o escribe el subgrupo");return;}cf.banco.push({id:"c"+cf.seq,b:$("nb").value,g:gN,t:tt});save();toast("Contenido añadido a "+BN[$("nb").value]+" · "+gN);break;
     case"askdelt":ui.confirm="delt"+v;break;
     case"delt":cfg().codigos.splice(+v,1);save();break;
     case"nuevot":var ct=($("ct").value||"").trim();if(!ct)return;cfg().codigos.push({t:ct,s:($("cs").value||"").trim()});save();toast("Término añadido");break;
@@ -868,6 +878,13 @@ function renombrar(de,a){
     if(d.k==="s"&&d.hecho)Object.keys(d.hecho).forEach(function(x){d.hecho[x].forEach(function(t,i){if(norm(t)===k)d.hecho[x][i]=a;});});
   });
 }
+function gruposDe(b){var g=[];(cfg().banco||[]).forEach(function(c){if(c.b===b&&g.indexOf(c.g)<0)g.push(c.g);});return g;}
+/* Selector de subgrupo del bloque, con opción de crear uno nuevo */
+function selGrupo(id,b,sel){
+  var gs=gruposDe(b);if(sel&&gs.indexOf(sel)<0)gs.push(sel);
+  return'<span class="sgw" id="'+id+'_w"><select id="'+id+'" data-sg="'+id+'">'+gs.map(function(g){return'<option'+(g===sel?" selected":"")+'>'+esc(g)+'</option>';}).join("")+'<option value="__nuevo"'+(!gs.length?" selected":"")+'>+ Nuevo subgrupo…</option></select><input id="'+id+'_n" placeholder="Nombre del subgrupo"'+(gs.length?' hidden':'')+'></span>';
+}
+function leerGrupo(id){var s=$(id);if(!s)return"";if(s.value==="__nuevo")return($(id+"_n").value||"").replace(/\s+/g," ").trim();return s.value;}
 function bancoItem(id){var l=cfg().banco||[];for(var i=0;i<l.length;i++)if(l[i].id===id)return l[i];return null;}
 document.addEventListener("input",function(e){
   var t=e.target,d=t.dataset;
@@ -881,6 +898,8 @@ document.addEventListener("change",function(e){
   var t=e.target;
   if(t.id==="tsel"&&t.value){var w=week(ui.wn);(w.terms||(w.terms=[])).push(t.value);save();rerenderKeepScroll();}
   if(t.id==="bb"){ui.bb=t.value;rerenderKeepScroll();}
+  if(t.id==="nb"||t.id==="eb_b"){var gid=t.id==="nb"?"ng":"eb_g",w2=$(gid+"_w");if(w2){var tmp=document.createElement("span");tmp.innerHTML=selGrupo(gid,t.value,"");w2.parentNode.replaceChild(tmp.firstChild,w2);}}
+  if(t.dataset.sg){var ni2=$(t.dataset.sg+"_n");if(ni2){ni2.hidden=t.value!=="__nuevo";if(!ni2.hidden)ni2.focus();}}
   if(t.id==="bf"){ui.bf=t.value;rerenderKeepScroll();}
 });
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&ui.pick){ui.pick=null;render();}});
@@ -903,6 +922,7 @@ A.setTeam=function(t){C.roster=(t&&t.roster)||[];storeCache();soft();};
 A.setMatches=function(l){C.matches=(l||[]).map(function(m){return{id:m.id,fecha:m.fecha,hora:m.hora,rival:m.rival,cond:m.cond,comp:m.comp};});storeCache();soft();};
 A.clearLocal=function(){try{localStorage.removeItem(KEY);localStorage.removeItem(CKEY);}catch(e){}S=load();C=loadCache();};
 render();
+setTimeout(function(){if(ui.auth==="loading"){ui.lento=true;render();}},8000);
 cargarGN();window.addEventListener("focus",cargarGN);document.addEventListener("visibilitychange",function(){if(!document.hidden)cargarGN();});
 if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol)){try{navigator.serviceWorker.register("sw.js").catch(function(){});}catch(e){}}
 })();

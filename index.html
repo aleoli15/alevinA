@@ -547,7 +547,7 @@ function render(){
   if(ui.auth!=="in"){
     $("hd").innerHTML=hd+'<div class="h-t"><b>Partidos</b><span>Alevín A · Temporada 2026/27</span></div>';
     $("nav").innerHTML="";document.querySelector("nav").style.display="none";
-    $("main").innerHTML=ui.auth==="loading"?'<div class="card empty">Cargando…</div>':vLogin();
+    $("main").innerHTML=ui.auth==="loading"?(ui.lento?'<div class="card"><h2>La app no termina de cargar</h2><p style="margin:0 0 12px;font-size:14px">'+(A.login?'Se ha cargado la app pero no responde la conexión con la nube. Comprueba que tienes internet.':'No se ha podido cargar la conexión con la nube. Puede ser una versión antigua guardada en el dispositivo o falta de conexión.')+'</p><button class="btn block" data-a="recargar">Recargar</button><button class="btn ghost block" data-a="limpiarcache" style="margin-top:8px">Borrar la versión guardada y recargar</button><p class="hint">Tus datos están en la nube: no se pierde nada.</p></div>':'<div class="card empty">Cargando…</div>'):vLogin();
     return;
   }
   document.querySelector("nav").style.display="";
@@ -837,7 +837,7 @@ function vSettings(){
   h+='<div class="card"><h2>Equipo y normativa</h2><label class="f" style="margin-bottom:12px">Nombre del equipo en marcador y mensajes<input type="text" data-team="nombre" value="'+esc(equipo())+'" autocomplete="off"></label><button class="btn ghost block" data-a="tab" data-v="normativa">Ver normativa y valores</button></div>';
   h+='<div class="card"><h2>Instalar en el móvil</h2><div class="rule"><b>iPhone</b><p>Abre la app en Safari, pulsa Compartir y elige «Añadir a pantalla de inicio».</p></div><div class="rule"><b>Android</b><p>Abre la app en Chrome, pulsa el menú y elige «Instalar aplicación».</p></div></div>';
   h+='<div class="card"><h2>Calendario</h2><p class="sub" style="margin:0 0 10px">Los partidos del calendario «ALEVIN FCBG» se crean solos. Si borras uno que viene del calendario, no vuelve a aparecer.</p><button class="btn ghost block" data-a="recal">Comprobar calendario ahora</button></div>';
-  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Partidos Alevín A · versión 1.9<br><span class="sub">'+S.matches.length+' partidos guardados · '+S.roster.length+' jugadores</span></p></div>';
+  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Partidos Alevín A · versión 1.10<br><span class="sub">'+S.matches.length+' partidos guardados · '+S.roster.length+' jugadores</span></p></div>';
   return h;
 }
 
@@ -851,6 +851,8 @@ document.addEventListener("click",function(e){
   var a=b.dataset.a,v=b.dataset.v,m=match(),keep=true;
   if(a!=="askdel"&&a!=="asklimpiar"&&a!=="askdelp"&&a!=="asksalir"&&a!=="askproponer"&&a!=="askfin")ui.confirm=null;
   switch(a){
+    case"recargar":location.reload();return;
+    case"limpiarcache":try{var pr=[];if(navigator.serviceWorker)pr.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister();}));}));if(window.caches)pr.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(k){return caches.delete(k);}));}));Promise.all(pr).then(function(){location.replace(location.pathname+"?v="+Date.now());},function(){location.reload();});}catch(x){location.reload();}return;
     case"tab":if(ui.tab==="plantilla")save();ui.pid=null;ui.tab=v;if(v==="partidos")ui.mid=null;keep=false;break;
     case"volver":ui.mid=null;keep=false;break;
     case"nuevo":ui.mid=newMatch().id;ui.sec="datos";keep=false;break;
@@ -993,6 +995,7 @@ A.applyRemote=function(team,matches){
 };
 A.clearLocal=function(){try{localStorage.removeItem(KEY);}catch(e){}S=load();};
 render();
+setTimeout(function(){if(ui.auth==="loading"){ui.lento=true;render();}},8000);
 if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol)){try{navigator.serviceWorker.register("sw.js").catch(function(){});}catch(e){}}
 })();
 </script>
