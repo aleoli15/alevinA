@@ -395,8 +395,16 @@ function pistas(m,c){
 /* Reparto automático de sextos (periodos) regulados.
    completar=true respeta las casillas ya marcadas; m.tres marca a quien debe jugar el máximo permitido.
    Devuelve true o un texto con el motivo por el que no es posible. */
-function proponer(m,completar){
-  var X=F(m),R=X.R,g=X.reg,C=convocados(m),n=C.length,K=R.porSexto,T=g*K,maxJ=g-R.minDescanso;
+function proponer(m,completar,nivel){
+  // nivel 0: sin repetir seguidos y como mucho 2 de banquillo; 1: sin repetir seguidos; 2: solo la normativa
+  if(nivel===undefined){
+    var r0=proponer(m,completar,0);if(r0===true)return true;
+    if(proponer(m,completar,1)===true){m._aviso="Hecho, pero algún jugador pasa más de 2 "+F(m).U+" seguidos en el banquillo: no había otra forma.";return true;}
+    if(proponer(m,completar,2)===true){m._aviso="Hecho, pero algún jugador repite "+F(m).u+" seguido: con "+convocados(m).length+" convocados y lo marcado no se puede evitar.";return true;}
+    return r0;
+  }
+  var sinHueco=nivel===0,sinSeguidos=nivel<2;
+  var X=F(m),R=X.R,g=X.reg,C=convocados(m),n=C.length,K=R.porSexto,T=g*K,maxJ=g-R.minDescanso,mitad=X.n/2;
   if(n<K)return"Hacen falta al menos "+K+" convocados";
   var tres=m.tres||{},ok=n*R.minJugar<=T&&n*maxJ>=T,lo=ok?R.minJugar:Math.min(g,Math.floor(T/n)),hi=ok?maxJ:g;
   var ac=acumulado(m,X.grupo),fx={},nf={},q={},rnd={};
@@ -416,19 +424,34 @@ function proponer(m,completar){
   function libres(p,desde){var c=0;for(var k=desde;k<g;k++)if(!fx[p.id][k])c++;return c;}
   var plan={};C.forEach(function(p){plan[p.id]=fx[p.id].slice();});
   var nodos=0;
+  // como mucho 2 periodos de banquillo entre dos salidas del mismo jugador
+  function hueco(s){
+    if(!sinHueco)return true;
+    for(var i=0;i<C.length;i++){var a=plan[C[i].id],L=-1;
+      for(var k=0;k<=s;k++)if(a[k])L=k;
+      if(L<0)continue;
+      var sig=-1;for(var k2=s+1;k2<g;k2++)if(a[k2]){sig=k2;break;}
+      if(sig>=0&&sig-L>3)return false;
+      if(sig<0&&rem[C[i].id]>0&&s-L>=3)return false;
+    }
+    return true;
+  }
   function paso(s){
     if(s===g)return C.every(function(p){return rem[p.id]===0;});
     if(++nodos>40000)return false;
     for(var i=0;i<C.length;i++){var p=C[i];if(rem[p.id]>libres(p,s))return false;}
     var ya=0;C.forEach(function(p){ya+=fx[p.id][s];});
     var need=K-ya;
-    var cand=C.filter(function(p){return!fx[p.id][s]&&rem[p.id]>0;});
-    cand.sort(function(a,b){var ua=rem[a.id]/libres(a,s),ub=rem[b.id]/libres(b,s);return(ub-ua)||(rnd[a.id]-rnd[b.id]);});
+    // no repetir en el periodo siguiente ni anterior, salvo entre los dos lados del descanso
+    function pegado(p){return(s>0&&plan[p.id][s-1]&&s!==mitad)||(s+1<g&&plan[p.id][s+1]&&s+1!==mitad)?1:0;}
+    var cand=C.filter(function(p){return!fx[p.id][s]&&rem[p.id]>0&&(!sinSeguidos||!pegado(p));});
+    // si hay que repetir, primero los que no repiten y después los más urgentes
+    cand.sort(function(a,b){var ua=rem[a.id]/libres(a,s),ub=rem[b.id]/libres(b,s);return(pegado(a)-pegado(b))||(ub-ua)||(rnd[a.id]-rnd[b.id]);});
     var elegidos=[];
     function elige(i){
       if(elegidos.length===need){
         elegidos.forEach(function(p){plan[p.id][s]=1;rem[p.id]--;});
-        if(paso(s+1))return true;
+        if(hueco(s)&&paso(s+1))return true;
         elegidos.forEach(function(p){plan[p.id][s]=0;rem[p.id]++;});
         return false;
       }
@@ -814,7 +837,7 @@ function vSettings(){
   h+='<div class="card"><h2>Equipo y normativa</h2><label class="f" style="margin-bottom:12px">Nombre del equipo en marcador y mensajes<input type="text" data-team="nombre" value="'+esc(equipo())+'" autocomplete="off"></label><button class="btn ghost block" data-a="tab" data-v="normativa">Ver normativa y valores</button></div>';
   h+='<div class="card"><h2>Instalar en el móvil</h2><div class="rule"><b>iPhone</b><p>Abre la app en Safari, pulsa Compartir y elige «Añadir a pantalla de inicio».</p></div><div class="rule"><b>Android</b><p>Abre la app en Chrome, pulsa el menú y elige «Instalar aplicación».</p></div></div>';
   h+='<div class="card"><h2>Calendario</h2><p class="sub" style="margin:0 0 10px">Los partidos del calendario «ALEVIN FCBG» se crean solos. Si borras uno que viene del calendario, no vuelve a aparecer.</p><button class="btn ghost block" data-a="recal">Comprobar calendario ahora</button></div>';
-  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Partidos Alevín A · versión 1.8<br><span class="sub">'+S.matches.length+' partidos guardados · '+S.roster.length+' jugadores</span></p></div>';
+  h+='<div class="card"><h2>Acerca de</h2><p style="margin:0;font-size:14px">Partidos Alevín A · versión 1.9<br><span class="sub">'+S.matches.length+' partidos guardados · '+S.roster.length+' jugadores</span></p></div>';
   return h;
 }
 
@@ -853,8 +876,8 @@ document.addEventListener("click",function(e){
     case"asklimpiar":ui.confirm="clr";break;
     case"limpiar":m.sx={};m.faltas={};m.part={};break;
     case"askproponer":ui.confirm="prop";break;
-    case"proponer":var rp=proponer(m,false);if(rp!==true){toast(rp);return;}break;
-    case"completar":var rc=proponer(m,true);if(rc!==true){toast(rc);return;}toast("Reparto completado");break;
+    case"proponer":delete m._aviso;var rp=proponer(m,false);if(rp!==true){toast(rp);return;}if(m._aviso)toast(m._aviso);delete m._aviso;break;
+    case"completar":delete m._aviso;var rc=proponer(m,true);if(rc!==true){toast(rc);return;}toast(m._aviso||"Reparto completado");delete m._aviso;break;
     case"tres":if(!m.tres)m.tres={};if(m.tres[v])delete m.tres[v];else m.tres[v]=1;break;
     case"fmt":m.formato=v;if((m.liveSx||0)>F(m).n-1)m.liveSx=0;break;
     case"rf":ui.rf=v;rerenderKeepScroll();return;
