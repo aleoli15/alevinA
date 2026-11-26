@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-17",
+ "actualizado": "2026-11-26",
  "partidos": [
   {
    "id": "6jts0682ujskhbhn82hucn6n74",
@@ -11,17 +11,6 @@
    "jornada": "1",
    "lugar": "Pabellón Municipal La Zubia \"11 de Marzo\", C/ Tamboril 6, 18140 La Zubia",
    "formato": "mini"
-  },
-  {
-   "id": "ncrvb6mhgsvlckr61orl2q4cu0",
-   "fecha": "2026-10-17",
-   "hora": "11:00",
-   "rival": "CB Peligros",
-   "cond": "L",
-   "comp": "Liga Infantil",
-   "jornada": "2",
-   "lugar": "CD Estadio de la Juventud, C/ Jesse Owens s/n, 18016 Granada",
-   "formato": "inf"
   },
   {
    "id": "9bbnm5ue8enlo8i2n1b756ker4",
@@ -165,6 +154,17 @@
    "jornada": "9",
    "lugar": "CD Estadio de la Juventud, C/ Jesse Owens s/n, 18016 Granada",
    "formato": "mini"
+  },
+  {
+   "id": "ncrvb6mhgsvlckr61orl2q4cu0",
+   "fecha": "2026-12-19",
+   "hora": "13:30",
+   "rival": "CB Peligros",
+   "cond": "L",
+   "comp": "Liga Infantil",
+   "jornada": "2",
+   "lugar": "CD Estadio de la Juventud, C/ Jesse Owens s/n, 18016 Granada",
+   "formato": "inf"
   },
   {
    "id": "nkb263j1o0uh84ot2fbunmvvvo",
